@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Nova North Shore">
+  <rect width="64" height="64" rx="12" fill="#050505"/>
+  <circle cx="32" cy="32" r="16" fill="none" stroke="#ffffff" stroke-width="5"/>
+  <path d="M32 6 38 24 58 32 38 40 32 58 26 40 6 32 26 24Z" fill="#ffffff"/>
+  <circle cx="32" cy="32" r="7" fill="#050505"/>
+</svg>
