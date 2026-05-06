@@ -44,14 +44,7 @@ const revealObserver = new IntersectionObserver(
 
 document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
 
-if (signupForm) {
-  signupForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    formNote.textContent =
-      "Thanks. This static form is ready to connect to Netlify Forms; for now, send your message to info@novanorthshore.com.";
-    signupForm.reset();
-  });
-}
+// The form is submitted normally so Netlify can capture it.
 
 if (lightbox && lightboxImage && lightboxClose) {
   const closeLightbox = () => {

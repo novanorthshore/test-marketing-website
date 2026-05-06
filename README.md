@@ -20,11 +20,15 @@ If deploying through Netlify:
 - Build command: leave blank
 - Publish directory: `.`
 
-The contact form uses Netlify Forms. In Netlify, set the form notification email to:
+The contact and RSVP forms use Netlify Forms. In Netlify, set the form notification email to:
 
 ```bash
 info@novanorthshore.com
 ```
+
+The RSVP form uses Netlify Forms too. If a form submit shows `Method Not Allowed`, check
+Netlify > Forms > Usage and configuration > Form detection and make sure form detection is
+enabled, then redeploy the site.
 
 ## Git Workflow
 
