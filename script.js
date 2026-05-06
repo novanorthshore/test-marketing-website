@@ -8,7 +8,7 @@ const lightboxImage = document.querySelector("[data-lightbox-image]");
 const lightboxClose = document.querySelector("[data-lightbox-close]");
 
 const syncHeader = () => {
-  header.classList.toggle("is-scrolled", window.scrollY > 18);
+  header.classList.toggle("is-scrolled", header.hasAttribute("data-solid-header") || window.scrollY > 18);
 };
 
 window.addEventListener("scroll", syncHeader, { passive: true });
