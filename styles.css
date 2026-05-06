@@ -762,6 +762,31 @@ h3 {
   width: 100%;
 }
 
+.thank-you-page {
+  align-items: center;
+  background: var(--cream-light);
+  display: flex;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 28px;
+  text-align: center;
+}
+
+.thank-you-content {
+  max-width: 680px;
+}
+
+.thank-you-content h1 {
+  color: var(--black);
+  font-size: clamp(88px, 14vw, 160px);
+}
+
+.thank-you-content p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: clamp(18px, 1.5vw, 22px);
+  margin: 16px auto 28px;
+}
+
 .newsletter-inner {
   margin: 0 auto;
   max-width: 760px;
