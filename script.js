@@ -48,7 +48,7 @@ if (signupForm) {
   signupForm.addEventListener("submit", (event) => {
     event.preventDefault();
     formNote.textContent =
-      "Thanks. This static form is ready to connect to Netlify Forms; for now, send your message to Info@novanorthshore.com.";
+      "Thanks. This static form is ready to connect to Netlify Forms; for now, send your message to info@novanorthshore.com.";
     signupForm.reset();
   });
 }
