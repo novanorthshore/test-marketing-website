@@ -109,7 +109,7 @@ textarea {
 .mobile-nav a,
 .site-footer nav a,
 .socials a {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -197,7 +197,7 @@ textarea {
 
 .mobile-nav a {
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-  font-size: 18px;
+  font-size: 20px;
   padding: 18px 0;
 }
 
@@ -293,15 +293,15 @@ h3 {
 .button {
   align-items: center;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: 10px;
   display: inline-flex;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 900;
   justify-content: center;
   letter-spacing: 0.12em;
-  min-height: 48px;
-  min-width: 154px;
-  padding: 14px 20px;
+  min-height: 52px;
+  min-width: 168px;
+  padding: 15px 22px;
   text-transform: uppercase;
   transition: background 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
@@ -717,10 +717,10 @@ h3 {
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: clamp(34px, 6vw, 84px);
+  gap: clamp(28px, 4vw, 52px);
   justify-content: center;
   margin: 0 auto;
-  max-width: 1120px;
+  max-width: 1480px;
   min-height: calc(100svh - var(--header-height));
   text-align: center;
   width: 100%;
@@ -750,16 +750,107 @@ h3 {
   margin-top: 28px;
 }
 
+.current-event-layout {
+  align-items: start;
+  display: grid;
+  gap: clamp(28px, 4vw, 58px);
+  grid-template-columns: minmax(360px, 680px) minmax(360px, 680px);
+  justify-content: center;
+  width: 100%;
+}
+
 .current-event-poster {
-  max-width: 620px;
+  max-width: none;
   width: 100%;
 }
 
 .current-event-poster img {
-  border-radius: 8px;
+  border-radius: 18px;
   box-shadow: 0 24px 70px rgba(17, 17, 17, 0.18);
   display: block;
   width: 100%;
+}
+
+.current-event-poster .poster-button {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.rsvp-panel {
+  color: var(--black);
+  max-width: none;
+  text-align: left;
+  width: 100%;
+}
+
+.rsvp-panel h2 {
+  color: var(--black);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  margin-bottom: 18px;
+}
+
+.rsvp-form {
+  background: var(--white);
+  border-radius: 18px;
+  color: var(--black);
+  padding: clamp(28px, 3.4vw, 42px);
+}
+
+.rsvp-form label {
+  display: block;
+  font-size: clamp(18px, 1.5vw, 23px);
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.rsvp-form label span {
+  color: var(--muted);
+  font-size: 0.82em;
+  font-weight: 500;
+}
+
+.rsvp-form input {
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  color: var(--black);
+  display: block;
+  font: inherit;
+  min-height: 70px;
+  margin-bottom: 26px;
+  padding: 16px 18px;
+  width: 100%;
+}
+
+.rsvp-form input:focus {
+  border-color: var(--olive);
+  outline: 3px solid rgba(111, 127, 70, 0.25);
+}
+
+.rsvp-form button {
+  background: var(--black);
+  border: 1px solid var(--black);
+  border-radius: 12px;
+  color: var(--white);
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  min-height: 68px;
+  padding: 18px 32px;
+  text-transform: uppercase;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.rsvp-form button:hover,
+.rsvp-form button:focus-visible {
+  background: var(--olive);
+  color: var(--white);
+  outline: none;
+  transform: translateY(-2px);
 }
 
 .thank-you-page {
@@ -838,7 +929,7 @@ h3 {
   border-radius: 4px;
   color: var(--black);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 900;
   letter-spacing: 0.12em;
   min-height: 52px;
@@ -975,8 +1066,13 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .current-event-layout {
+    grid-template-columns: 1fr;
+    max-width: 720px;
+  }
+
   .current-event-poster {
-    max-width: 620px;
+    max-width: 720px;
   }
 
   .three,
