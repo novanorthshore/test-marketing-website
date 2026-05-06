@@ -488,6 +488,13 @@ h3 {
   transition: filter 220ms ease, transform 220ms ease;
 }
 
+.event-poster,
+.current-event-poster img {
+  height: auto;
+  object-fit: contain;
+  width: 100%;
+}
+
 .poster-button:hover img,
 .gallery-button:hover img {
   filter: brightness(0.86);
@@ -768,7 +775,6 @@ h3 {
   border-radius: 18px;
   box-shadow: 0 24px 70px rgba(17, 17, 17, 0.18);
   display: block;
-  width: 100%;
 }
 
 .current-event-poster .poster-button {

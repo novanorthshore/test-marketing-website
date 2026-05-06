@@ -17,6 +17,7 @@
     <meta property="og:image" content="assets/hero-jpg.png" />
     <meta name="theme-color" content="#050505" />
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="preload" as="image" href="assets/optimized/hero-poster.webp" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -28,7 +29,7 @@
   <body>
     <header class="site-header" data-header>
       <a class="brand" href="#home" aria-label="Nova North Shore home">
-        <img class="brand-logo" src="assets/NovaLogowhite.PNG" alt="Nova North Shore" />
+        <img class="brand-logo" src="assets/optimized/NovaLogowhite.webp" alt="Nova North Shore" />
       </a>
 
       <nav class="desktop-nav" aria-label="Primary navigation">
@@ -80,9 +81,8 @@
 
     <main>
       <section class="hero" id="home" aria-label="Nova North Shore hero">
-        <video class="hero-video" autoplay muted loop playsinline poster="assets/hero-jpg.png">
-          <source src="assets/nova_shore_hero_vid.mp4" type="video/mp4" />
-          <source src="assets/hero-car-club.mp4" type="video/mp4" />
+        <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="assets/optimized/hero-poster.webp">
+          <source src="assets/optimized/nova_shore_hero_vid.mp4" type="video/mp4" />
         </video>
         <div class="media-overlay"></div>
         <div class="hero-content reveal">
@@ -128,14 +128,18 @@
               class="poster-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/may10event.png"
+              data-lightbox-src="assets/optimized/may10event.webp"
               data-lightbox-alt="Motors and Matcha Nova event poster with a Porsche at Mike Auto"
               aria-label="Open Motors and Matcha event poster"
             >
               <img
                 class="event-poster"
-                src="assets/may10event.png"
+                src="assets/optimized/may10event.webp"
                 alt="Motors and Matcha Nova event poster with a Porsche at Mike Auto"
+                width="1080"
+                height="1350"
+                loading="lazy"
+                decoding="async"
               />
             </button>
           </article>
@@ -144,14 +148,18 @@
               class="poster-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/march21event.png"
+              data-lightbox-src="assets/optimized/march21event.webp"
               data-lightbox-alt="Nova Isetta Cafe open house event poster for March 21"
               aria-label="Open Isetta Cafe event poster"
             >
               <img
                 class="event-poster"
-                src="assets/march21event.png"
+                src="assets/optimized/march21event.webp"
                 alt="Nova Isetta Cafe open house event poster for March 21"
+                width="1080"
+                height="1350"
+                loading="lazy"
+                decoding="async"
               />
             </button>
           </article>
@@ -160,14 +168,18 @@
               class="poster-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/feb12event.png"
+              data-lightbox-src="assets/optimized/feb12event.webp"
               data-lightbox-alt="Nova automotive trivia event poster presented by Good Co Bars"
               aria-label="Open automotive trivia event poster"
             >
               <img
                 class="event-poster"
-                src="assets/feb12event.png"
+                src="assets/optimized/feb12event.webp"
                 alt="Nova automotive trivia event poster presented by Good Co Bars"
+                width="1080"
+                height="1350"
+                loading="lazy"
+                decoding="async"
               />
             </button>
           </article>
@@ -183,7 +195,14 @@
       </section>
 
       <section class="feature-band" aria-label="Nova North Shore feature">
-        <img src="assets/morethanameet.JPEG" alt="Nova North Shore cars gathered at a community meet" />
+        <img
+          src="assets/optimized/morethanameet.webp"
+          alt="Nova North Shore cars gathered at a community meet"
+          width="1600"
+          height="2400"
+          loading="lazy"
+          decoding="async"
+        />
         <div class="media-overlay"></div>
         <div class="feature-content reveal">
           <h2>More Than A Meet.</h2>
@@ -205,11 +224,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery1.JPG"
+              data-lightbox-src="assets/optimized/gallery1.webp"
               data-lightbox-alt="Nova North Shore gallery photo from a local car meet"
               aria-label="Open gallery photo 1"
             >
-              <img src="assets/gallery1.JPG" alt="Nova North Shore gallery photo from a local car meet" decoding="async" />
+              <img src="assets/optimized/gallery1.webp" alt="Nova North Shore gallery photo from a local car meet" width="1600" height="1068" loading="lazy" decoding="async" />
             </button>
           </figure>
           <figure class="gallery-item reveal">
@@ -217,11 +236,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery2.JPG"
+              data-lightbox-src="assets/optimized/gallery2.webp"
               data-lightbox-alt="Nova North Shore car culture detail photo"
               aria-label="Open gallery photo 2"
             >
-              <img src="assets/gallery2.JPG" alt="Nova North Shore car culture detail photo" decoding="async" />
+              <img src="assets/optimized/gallery2.webp" alt="Nova North Shore car culture detail photo" width="1600" height="2400" loading="lazy" decoding="async" />
             </button>
           </figure>
           <figure class="gallery-item wide reveal">
@@ -229,11 +248,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery3.JPEG"
+              data-lightbox-src="assets/optimized/gallery3.webp"
               data-lightbox-alt="Nova North Shore cars and community at a meet"
               aria-label="Open gallery photo 3"
             >
-              <img src="assets/gallery3.JPEG" alt="Nova North Shore cars and community at a meet" decoding="async" />
+              <img src="assets/optimized/gallery3.webp" alt="Nova North Shore cars and community at a meet" width="1600" height="2000" loading="lazy" decoding="async" />
             </button>
           </figure>
           <figure class="gallery-item reveal">
@@ -241,11 +260,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery4.jpg"
+              data-lightbox-src="assets/optimized/gallery4.webp"
               data-lightbox-alt="Nova North Shore automotive detail photo"
               aria-label="Open gallery photo 4"
             >
-              <img src="assets/gallery4.jpg" alt="Nova North Shore automotive detail photo" decoding="async" />
+              <img src="assets/optimized/gallery4.webp" alt="Nova North Shore automotive detail photo" width="1600" height="1465" loading="lazy" decoding="async" />
             </button>
           </figure>
           <figure class="gallery-item gallery-item-long reveal">
@@ -253,11 +272,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery5.JPG"
+              data-lightbox-src="assets/optimized/gallery5.webp"
               data-lightbox-alt="Nova North Shore community moment at a car event"
               aria-label="Open gallery photo 5"
             >
-              <img src="assets/gallery5.JPG" alt="Nova North Shore community moment at a car event" decoding="async" />
+              <img src="assets/optimized/gallery5.webp" alt="Nova North Shore community moment at a car event" width="1600" height="2400" loading="lazy" decoding="async" />
             </button>
           </figure>
           <figure class="gallery-item tall reveal">
@@ -265,11 +284,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery6.jpg"
+              data-lightbox-src="assets/optimized/gallery6.webp"
               data-lightbox-alt="Nova North Shore car meet gallery photo"
               aria-label="Open gallery photo 6"
             >
-              <img src="assets/gallery6.jpg" alt="Nova North Shore car meet gallery photo" decoding="async" />
+              <img src="assets/optimized/gallery6.webp" alt="Nova North Shore car meet gallery photo" width="1600" height="2083" loading="lazy" decoding="async" />
             </button>
           </figure>
           <figure class="gallery-item reveal">
@@ -277,11 +296,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery7.JPG"
+              data-lightbox-src="assets/optimized/gallery7.webp"
               data-lightbox-alt="Nova North Shore gallery photo from a community car event"
               aria-label="Open gallery photo 7"
             >
-              <img src="assets/gallery7.JPG" alt="Nova North Shore gallery photo from a community car event" decoding="async" />
+              <img src="assets/optimized/gallery7.webp" alt="Nova North Shore gallery photo from a community car event" width="1600" height="2381" loading="lazy" decoding="async" />
             </button>
           </figure>
           <figure class="gallery-item reveal">
@@ -289,11 +308,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery8.jpg"
+              data-lightbox-src="assets/optimized/gallery8.webp"
               data-lightbox-alt="Nova North Shore automotive gallery photo"
               aria-label="Open gallery photo 8"
             >
-              <img src="assets/gallery8.jpg" alt="Nova North Shore automotive gallery photo" decoding="async" />
+              <img src="assets/optimized/gallery8.webp" alt="Nova North Shore automotive gallery photo" width="1600" height="2032" loading="lazy" decoding="async" />
             </button>
           </figure>
           <figure class="gallery-item reveal">
@@ -301,11 +320,11 @@
               class="gallery-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/gallery9.jpg"
+              data-lightbox-src="assets/optimized/gallery9.webp"
               data-lightbox-alt="Nova North Shore gallery photo from a local automotive event"
               aria-label="Open gallery photo 9"
             >
-              <img src="assets/gallery9.jpg" alt="Nova North Shore gallery photo from a local automotive event" decoding="async" />
+              <img src="assets/optimized/gallery9.webp" alt="Nova North Shore gallery photo from a local automotive event" width="1600" height="2000" loading="lazy" decoding="async" />
             </button>
           </figure>
         </div>
@@ -319,119 +338,119 @@
         <div class="highlight-grid">
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/BCLions.png" alt="BC Lions logo" />
+              <img src="assets/optimized/BCLions.webp" alt="BC Lions logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X BC Lions</h3>
             <p>In 2025, Nova collaborated with the BC Lions to plan and market their official Show &amp; Shine event, bringing fans, car enthusiasts, and local businesses together.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/MidasLogo.PNG" alt="Midas logo" />
+              <img src="assets/optimized/MidasLogo.webp" alt="Midas logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Midas North Vancouver</h3>
             <p>Nova teamed up with Midas North Vancouver to host a Euro vs. JDM event with a diverse lineup, packed crowd, and a showcase of style and performance.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/BenzoCafeLogo.PNG" alt="Benzo Cafe logo" />
+              <img src="assets/optimized/BenzoCafeLogo.webp" alt="Benzo Cafe logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Benzo Cafe</h3>
             <p>Nova joined forces with Benzo Cafe for a Cars &amp; Coffee event that blended community vibes, diverse builds, shared passion, and great coffee.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/2dj.jpg" alt="2JD Diecast logo" />
+              <img src="assets/optimized/2dj.webp" alt="2JD Diecast logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X 2JD Diecast</h3>
             <p>Nova partnered with 2JD Diecast, a local diecast distributor, to bring unique collectibles and giveaways that added extra excitement for enthusiasts of all ages.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/goodcobar.jpg" alt="Good Co Bars logo" />
+              <img src="assets/optimized/goodcobar.webp" alt="Good Co Bars logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X GoodCo Bars</h3>
             <p>Nova teamed up with GoodCo Bars to promote their F1 watch party, driving turnout and creating an unforgettable motorsport experience off the track.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/goodicecream.jpg" alt="That's Good Ice Cream logo" />
+              <img src="assets/optimized/goodicecream.webp" alt="That's Good Ice Cream logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X That's Good Ice Cream</h3>
             <p>Nova partnered with That's Good Ice Cream to bring sweet treats to car events, adding a fun and tasty element that made meets more memorable.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/vancouverhondaclub.png" alt="Vancouver Honda Club logo" />
+              <img src="assets/optimized/vancouverhondaclub.webp" alt="Vancouver Honda Club logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Vancouver Honda Club</h3>
             <p>Nova teamed up with the Vancouver Honda Club to celebrate Honda builds, bring enthusiasts together, and strengthen local car culture in Vancouver.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/UBCSCCLogo.png" alt="UBC Sports Car Club logo" />
+              <img src="assets/optimized/UBCSCCLogo.webp" alt="UBC Sports Car Club logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X UBC Sports Car Club</h3>
             <p>Nova partnered with the UBC Sports Car Club to unite student and local car communities, showcase diverse builds, and foster new connections.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/LowerMainlandEuros.png" alt="Lower Mainland Euros logo" />
+              <img src="assets/optimized/LowerMainlandEuros.webp" alt="Lower Mainland Euros logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Lower Mainland Euros</h3>
             <p>Nova partnered with Lower Mainland Euros to celebrate Euro builds, bring communities together, and create unforgettable experiences across the Lower Mainland.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/bcbeamers.jpg" alt="BC Beamers logo" />
+              <img src="assets/optimized/bcbeamers.webp" alt="BC Beamers logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X BC Beamers</h3>
             <p>Nova teamed up with BC Beamers to celebrate BMW builds, bring together the local Euro car community, and highlight standout vehicles.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/hazdriven.jpg" alt="Hanz Driven logo" />
+              <img src="assets/optimized/hazdriven.webp" alt="Hanz Driven logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X HanzDriven</h3>
             <p>Nova connected with HanzDriven to support local automotive culture through community presence, event energy, and enthusiast-focused coverage.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/drivemotorsports.jpg" alt="Drive Motorsports logo" />
+              <img src="assets/optimized/drivemotorsports.webp" alt="Drive Motorsports logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Drive Motorsports</h3>
             <p>Nova worked with Drive Motorsports as an automotive partner supporting performance-minded enthusiasts, clean builds, and local event culture.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/ThinkwareLogo.png" alt="Thinkware logo" />
+              <img src="assets/optimized/ThinkwareLogo.webp" alt="Thinkware logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Thinkware</h3>
             <p>Nova partnered with Thinkware to connect the community with practical automotive technology and support a stronger event experience.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/DiamondAuto.jpg" alt="Diamond Auto logo" />
+              <img src="assets/optimized/DiamondAuto.webp" alt="Diamond Auto logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Diamond Auto</h3>
             <p>Partnering with Diamond Auto Repair, Nova hosted a JDM-themed meet with clean builds, live DJ sets, local sponsor support, and a strong North Shore turnout.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/CRU.jpg" alt="CRU logo" />
+              <img src="assets/optimized/CRU.webp" alt="CRU logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Cru App</h3>
             <p>Nova partnered with the Cru app to help enthusiasts discover local meets, showcase builds, follow events, and connect with like-minded car lovers.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/spots garahe.png" alt="Spots Garahe logo" />
+              <img src="assets/optimized/spots-garahe.webp" alt="Spots Garahe logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Spots Garahe</h3>
             <p>Nova teamed up with Spots Garahe, a local automotive apparel brand, to bring merchandise, event support, and authentic car-culture style to the community.</p>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/DUnicorns.png" alt="Driving Unicorns logo" />
+              <img src="assets/optimized/DUnicorns.webp" alt="Driving Unicorns logo" loading="lazy" decoding="async" />
             </div>
             <h3>Nova X Driving Unicorns</h3>
             <p>Nova collaborated with Driving Unicorns, creators of automotive-inspired artwork and apparel, to bring unique designs and creative energy to events.</p>
@@ -470,7 +489,7 @@
     <footer class="site-footer">
       <div class="footer-brand">
         <a class="brand" href="#home" aria-label="Nova North Shore home">
-          <img class="brand-logo" src="assets/NovaLogowhite.PNG" alt="Nova North Shore" />
+          <img class="brand-logo" src="assets/optimized/NovaLogowhite.webp" alt="Nova North Shore" />
         </a>
         <p>Together We Drive the Passion Forward.</p>
       </div>
