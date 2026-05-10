@@ -24,7 +24,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--cream);
+  background: #383838;
   color: var(--charcoal);
   font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
   line-height: 1.5;
@@ -242,6 +242,13 @@ textarea {
 
 .eyebrow.dark {
   color: var(--olive);
+}
+
+.current-event-partner-card .eyebrow.dark {
+  color: var(--black);
+  font-size: 20px;
+  letter-spacing: 0.18em;
+  margin-bottom: 20px;
 }
 
 .eyebrow.light {
@@ -480,6 +487,10 @@ h3 {
   display: block;
   padding: 0;
   width: 100%;
+}
+
+a.poster-button {
+  cursor: pointer;
 }
 
 .poster-button img,
@@ -764,6 +775,81 @@ h3 {
   grid-template-columns: minmax(360px, 680px) minmax(360px, 680px);
   justify-content: center;
   width: 100%;
+}
+
+.current-event-partner-card {
+  margin: clamp(32px, 4vw, 48px) auto 0;
+  max-width: 1320px;
+  width: 100%;
+}
+
+.current-event-partner-card .eyebrow.dark {
+  text-align: center;
+}
+
+.partner-card-list {
+  display: flex;
+  gap: 24px;
+  padding-bottom: 10px;
+  padding-inline: 16px;
+  justify-content: flex-start;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.partner-card-horizontal {
+  min-width: 280px;
+  flex: 1 1 280px;
+  border-radius: 18px;
+  background: transparent;
+  border-color: transparent;
+}
+
+.partner-horizontal {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 30px;
+}
+
+
+.partner-horizontal .collab-logos {
+  flex: 0 0 140px;
+  max-width: 140px;
+}
+
+.partner-horizontal .collab-logos img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.partner-horizontal .partner-details h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.partner-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .partner-horizontal {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 620px) {
+  .partner-horizontal {
+    padding: 22px;
+  }
 }
 
 .current-event-poster {
