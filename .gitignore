@@ -1,2 +1,11 @@
 # Local Netlify folder
 .netlify
+deno.lock
+
+# Dependencies
+node_modules
+
+# Local environment variables
+.env
+.env.*
+!.env.example

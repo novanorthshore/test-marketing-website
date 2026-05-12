@@ -1,0 +1,17 @@
+{
+  "name": "nova-shore",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static Nova North Shore website with Netlify Functions for paid RSVPs.",
+  "scripts": {
+    "dev": "netlify dev",
+    "check:functions": "node --check netlify/functions/create-checkout-session.js && node --check netlify/functions/stripe-webhook.js"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0",
+    "stripe": "^17.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

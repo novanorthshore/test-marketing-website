@@ -86,8 +86,8 @@
           <p>
             Nova presents the Cypress community charity event! We are collaborating with West Coast Dream Machines, Leah's Automotive, Streetlight Productions, and VanPro Detailing along with Cypress mountain to raise money for North Shore Rescue. This is an invite-only meet so please do not share the details with anybody. We hope to see you there!
           </p>
-          <p style="font-weight: bold; margin-top: 16px;">
-            A $10 charge per vehicle registered is required, there is also a $30 option that includes photos taken by Nova photographers and all proceeds will be donated to North Shore Rescue
+          <p class="event-payment-note">
+            Payment is required to confirm your RSVP. Choose a $10 standard spot or a $30 spot that includes professional photography on-site. Each attendee must RSVP separately.
           </p>
           <div class="current-event-actions">
             <!-- Update the query address below for the Cypress event location. -->
@@ -128,30 +128,64 @@
             <form
               class="rsvp-form"
               name="cypress-event-rsvp"
-              method="POST"
-              action="/thank-you.html"
-              data-netlify="true"
-              netlify
+              data-paid-rsvp-form
             >
-              <input type="hidden" name="form-name" value="cypress-event-rsvp" />
-              <input type="hidden" name="send-to" value="detailinginitial@gmail.com" />
-              <input type="hidden" name="source" value="Cypress event" />
-              <input type="hidden" name="rsvp" value="Yes" />
-
               <label for="rsvp-name">Name <span>(required)</span></label>
-              <input id="rsvp-name" type="text" name="name" required />
+              <input id="rsvp-name" type="text" name="name" autocomplete="name" required />
 
-              <label for="rsvp-email">Email, <span>(required, info will be sent closer to event date)</span></label>
-              <input id="rsvp-email" type="email" name="email" required />
+              <label for="rsvp-email">Email <span>(required)</span></label>
+              <input id="rsvp-email" type="email" name="email" autocomplete="email" required />
 
-              <label for="rsvp-vehicle">Vehicle (year, brand, model)</label>
-              <input id="rsvp-vehicle" type="text" name="vehicle" />
+              <div class="rsvp-grid">
+                <div>
+                  <label for="rsvp-vehicle-year">Vehicle year <span>(required)</span></label>
+                  <input id="rsvp-vehicle-year" type="text" name="vehicleYear" inputmode="numeric" maxlength="4" required />
+                </div>
+                <div>
+                  <label for="rsvp-vehicle-make">Vehicle make <span>(required)</span></label>
+                  <input id="rsvp-vehicle-make" type="text" name="vehicleMake" required />
+                </div>
+              </div>
+
+              <label for="rsvp-vehicle-model">Vehicle model <span>(required)</span></label>
+              <input id="rsvp-vehicle-model" type="text" name="vehicleModel" required />
+
+              <label for="rsvp-license-plate">License plate <span>(required)</span></label>
+              <input id="rsvp-license-plate" type="text" name="licensePlate" autocomplete="off" required />
 
               <label for="rsvp-instagram">Instagram (optional, for tag)</label>
-              <input id="rsvp-instagram" type="text" name="instagram" />
+              <input id="rsvp-instagram" type="text" name="instagram" autocomplete="off" />
 
-              <button type="submit">Submit RSVP</button>
+              <fieldset class="rsvp-options">
+                <legend>RSVP type <span>(required)</span></legend>
+                <label class="rsvp-option">
+                  <input type="radio" name="rsvpType" value="standard" required />
+                  <span>
+                    <strong>$10 Standard RSVP</strong>
+                    <small>One confirmed event spot.</small>
+                  </span>
+                </label>
+                <label class="rsvp-option">
+                  <input type="radio" name="rsvpType" value="photography" required />
+                  <span>
+                    <strong>$30 RSVP + professional photography</strong>
+                    <small>One confirmed event spot with on-site Nova photography.</small>
+                  </span>
+                </label>
+              </fieldset>
+
+              <label class="rsvp-policy">
+                <input type="checkbox" name="noRefundAccepted" value="true" required />
+                <span>I understand this RSVP is confirmed only after payment succeeds, and all sales are final with no refunds or cancellations.</span>
+              </label>
+
+              <p class="rsvp-status" data-paid-rsvp-status aria-live="polite"></p>
+
+              <button type="submit" data-paid-rsvp-submit>Continue To Secure Payment</button>
             </form>
+            <noscript>
+              <p class="rsvp-status is-error">JavaScript is required to start secure payment for this RSVP.</p>
+            </noscript>
           </div>
         </div>
         <div class="current-event-partner-card reveal">
@@ -224,5 +258,6 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="paid-rsvp.js"></script>
   </body>
 </html>

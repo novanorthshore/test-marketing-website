@@ -760,6 +760,10 @@ a.poster-button {
   margin: 18px 0 0;
 }
 
+.event-payment-note {
+  font-weight: 800;
+}
+
 .current-event-actions {
   display: flex;
   flex-wrap: wrap;
@@ -917,9 +921,109 @@ a.poster-button {
   width: 100%;
 }
 
+.rsvp-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr 1fr;
+}
+
 .rsvp-form input:focus {
   border-color: var(--olive);
   outline: 3px solid rgba(111, 127, 70, 0.25);
+}
+
+.rsvp-options {
+  border: 0;
+  display: grid;
+  gap: 12px;
+  margin: 2px 0 24px;
+  padding: 0;
+}
+
+.rsvp-options legend {
+  color: var(--black);
+  font-size: clamp(18px, 1.5vw, 23px);
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.rsvp-options legend span {
+  color: var(--muted);
+  font-size: 0.82em;
+  font-weight: 500;
+}
+
+.rsvp-option {
+  align-items: flex-start;
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  cursor: pointer;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: auto 1fr;
+  margin: 0;
+  padding: 16px;
+}
+
+.rsvp-option:has(input:checked) {
+  border-color: var(--olive);
+  box-shadow: 0 0 0 3px rgba(111, 127, 70, 0.2);
+}
+
+.rsvp-option input,
+.rsvp-policy input {
+  accent-color: var(--olive);
+  height: 22px;
+  margin: 3px 0 0;
+  min-height: auto;
+  width: 22px;
+}
+
+.rsvp-option strong,
+.rsvp-option small {
+  display: block;
+}
+
+.rsvp-option strong {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.rsvp-option small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.rsvp-policy {
+  align-items: flex-start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto 1fr;
+  margin-bottom: 18px;
+}
+
+.rsvp-policy span {
+  color: var(--charcoal);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rsvp-status {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  min-height: 22px;
+}
+
+.rsvp-status.is-error {
+  color: #9d1d1d;
+}
+
+.rsvp-status.is-success {
+  color: var(--olive);
 }
 
 .rsvp-form button {
@@ -943,6 +1047,12 @@ a.poster-button {
   color: var(--white);
   outline: none;
   transform: translateY(-2px);
+}
+
+.rsvp-form button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
 }
 
 .thank-you-page {
@@ -1235,6 +1345,7 @@ a.poster-button {
 
   .three,
   .highlight-grid,
+  .rsvp-grid,
   .signup-form,
   .site-footer {
     grid-template-columns: 1fr;

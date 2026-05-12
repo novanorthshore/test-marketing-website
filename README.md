@@ -5,7 +5,8 @@ Static website for Nova North Shore. Built with plain HTML, CSS, and JavaScript 
 ## Files
 
 - `index.html` - Main website page.
-- `current-event.html` - Current event page with poster and Google Maps button.
+- `current-event.html` - Current free RSVP event page with poster, Google Maps button, and Netlify RSVP form.
+- `cypress-event.html` - Paid event RSVP page with poster, Google Maps button, and Stripe Checkout form.
 - `thank-you.html` - Netlify form success page.
 - `styles.css` - Site styling and responsive layout.
 - `script.js` - Header behavior, mobile menu, reveal animations, and image lightbox.
@@ -19,16 +20,91 @@ If deploying through Netlify:
 
 - Build command: leave blank
 - Publish directory: `.`
+- Functions directory: `netlify/functions`
 
-The contact and RSVP forms use Netlify Forms. In Netlify, set the form notification email to:
+The contact form and non-paid RSVP forms use Netlify Forms. In Netlify, set the form notification email to:
 
 ```bash
 info@novanorthshore.com
 ```
 
-The RSVP form uses Netlify Forms too. If a form submit shows `Method Not Allowed`, check
-Netlify > Forms > Usage and configuration > Form detection and make sure form detection is
-enabled, then redeploy the site.
+The Cypress paid RSVP does not submit to Netlify Forms directly; it uses Stripe Checkout and the
+Stripe webhook writes confirmed payments to Google Sheets. If a remaining free form submit shows
+`Method Not Allowed`, check Netlify > Forms > Usage and configuration > Form detection and make
+sure form detection is enabled, then redeploy the site.
+
+## Paid Cypress RSVP
+
+`cypress-event.html` uses Stripe Checkout instead of direct Netlify Forms. The RSVP is only saved
+after Stripe confirms successful payment through the webhook.
+
+Install dependencies before local function testing:
+
+```bash
+npm install
+```
+
+Run the site and Netlify Functions locally:
+
+```bash
+npm run dev
+```
+
+This expects the Netlify CLI to be installed. If it is not installed, run:
+
+```bash
+npx netlify-cli dev
+```
+
+Required Netlify environment variables:
+
+```bash
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_STANDARD_PRICE_ID=
+STRIPE_PHOTOGRAPHY_PRICE_ID=
+SITE_URL=
+GOOGLE_SHEET_ID=
+GOOGLE_SERVICE_ACCOUNT_EMAIL=
+GOOGLE_PRIVATE_KEY=
+GOOGLE_SHEET_TAB=Confirmed RSVPs
+```
+
+Use `.env.example` as the local development template. Do not commit a real `.env` file.
+
+Stripe setup:
+
+- Create one-time CAD prices for `$10` standard RSVP and `$30` RSVP with professional photography.
+- Add the live/test price IDs to Netlify.
+- Configure the webhook endpoint:
+
+```text
+https://YOUR-SITE.netlify.app/.netlify/functions/stripe-webhook
+```
+
+- Subscribe the webhook to `checkout.session.completed`.
+
+Google Sheets setup:
+
+- Create a Google Cloud service account and enable the Google Sheets API.
+- Share the RSVP sheet with the service account email.
+- Make sure the sheet tab exists. Default tab name: `Confirmed RSVPs`.
+- The function will add headers if the first row is empty.
+- The paid RSVP sheet includes license plate as a required check-in field.
+
+Confirmation emails:
+
+- Custom confirmation emails are not sent by this site.
+- If attendee payment receipts are needed, enable Stripe receipt emails in Stripe.
+- The Google Sheet is the confirmed RSVP/check-in source of truth.
+
+Local Stripe webhook testing:
+
+```bash
+stripe listen --forward-to localhost:8888/.netlify/functions/stripe-webhook
+```
+
+Use the webhook signing secret printed by the Stripe CLI as `STRIPE_WEBHOOK_SECRET` while testing.
 
 ## Git Workflow
 
