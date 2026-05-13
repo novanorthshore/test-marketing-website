@@ -5,7 +5,7 @@
   "description": "Static Nova North Shore website with Netlify Functions for paid RSVPs.",
   "scripts": {
     "dev": "netlify dev",
-    "check:functions": "node --check netlify/functions/create-checkout-session.js && node --check netlify/functions/stripe-webhook.js"
+    "check:functions": "node --check netlify/functions/create-checkout-session.js && node --check netlify/functions/get-rsvp-availability.js && node --check netlify/functions/stripe-webhook.js"
   },
   "dependencies": {
     "googleapis": "^144.0.0",

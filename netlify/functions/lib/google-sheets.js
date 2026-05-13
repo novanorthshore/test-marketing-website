@@ -104,16 +104,16 @@ const getConfirmedEmailRow = async (email, eventName) => {
     range: sheetRange("A:Q"),
   });
 
-  const normalizedEmail = String(email || "").toLowerCase();
+  const normalizedEmail = String(email || "").trim().toLowerCase();
   const rows = response.data.values || [];
   const index = rows.findIndex((row, rowIndex) => {
     if (rowIndex === 0) {
       return false;
     }
 
-    const paymentStatus = String(row[1] || "").toLowerCase();
-    const rowEmail = String(row[7] || "").toLowerCase();
-    const rowEventName = row[14] || "";
+    const paymentStatus = String(row[1] || "").trim().toLowerCase();
+    const rowEmail = String(row[7] || "").trim().toLowerCase();
+    const rowEventName = String(row[14] || "").trim();
     return paymentStatus === "paid" && rowEmail === normalizedEmail && rowEventName === eventName;
   });
 
@@ -125,6 +125,28 @@ const getConfirmedEmailRow = async (email, eventName) => {
     rowNumber: index + 1,
     values: rows[index],
   };
+};
+
+const getConfirmedRsvpCount = async (eventName) => {
+  await ensureHeaders();
+
+  const sheets = await getSheetsClient();
+  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: sheetRange("A:Q"),
+  });
+
+  const rows = response.data.values || [];
+  return rows.filter((row, rowIndex) => {
+    if (rowIndex === 0) {
+      return false;
+    }
+
+    const paymentStatus = String(row[1] || "").trim().toLowerCase();
+    const rowEventName = String(row[14] || "").trim();
+    return paymentStatus === "paid" && rowEventName === eventName;
+  }).length;
 };
 
 const appendConfirmedRsvp = async (rowValues) => {
@@ -167,6 +189,7 @@ module.exports = {
   SHEET_COLUMNS,
   appendConfirmedRsvp,
   getConfirmedEmailRow,
+  getConfirmedRsvpCount,
   getSessionRow,
   markSessionNotes,
 };

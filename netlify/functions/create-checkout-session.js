@@ -1,5 +1,6 @@
 const stripeFactory = require("stripe");
-const { getRsvpOption } = require("./lib/event-config");
+const { EVENT_CONFIG, getRsvpOption } = require("./lib/event-config");
+const { getConfirmedRsvpCount } = require("./lib/google-sheets");
 const { metadataFromRsvp, validatePaidRsvp } = require("./lib/validate-rsvp");
 
 const jsonResponse = (statusCode, body) => ({
@@ -40,6 +41,17 @@ exports.handler = async (event) => {
   }
 
   try {
+    const bookedCount = await getConfirmedRsvpCount(EVENT_CONFIG.name);
+    if (bookedCount >= EVENT_CONFIG.maxCapacity) {
+      return jsonResponse(409, {
+        error: "This event is sold out. No new paid RSVPs are being accepted.",
+        soldOut: true,
+        bookedCount,
+        maxCapacity: EVENT_CONFIG.maxCapacity,
+        remainingCount: 0,
+      });
+    }
+
     const stripe = stripeFactory(requiredEnv("STRIPE_SECRET_KEY"));
     const option = getRsvpOption(validation.data.rsvpType);
     const priceId = requiredEnv(option.priceEnv);

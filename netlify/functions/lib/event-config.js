@@ -1,6 +1,7 @@
 const EVENT_CONFIG = {
   id: "cypress-event-2026",
   name: "Nova Cypress Event",
+  maxCapacity: 120,
   priceOptions: {
     standard: {
       label: "Standard RSVP",

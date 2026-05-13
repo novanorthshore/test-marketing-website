@@ -764,6 +764,128 @@ a.poster-button {
   font-weight: 800;
 }
 
+.current-event-copy p.event-conduct-note {
+  background: #fff1f1;
+  border: 3px solid #b31212;
+  border-radius: 16px;
+  color: #b31212;
+  font-style: italic;
+  font-weight: 900;
+  padding: 18px;
+  text-transform: uppercase;
+}
+
+.event-parking-notice {
+  background: #fffbe6;
+  border: 3px solid #d8a400;
+  border-radius: 18px;
+  display: grid;
+  gap: 20px;
+  margin: 32px 0 0 50%;
+  max-width: none;
+  padding: clamp(16px, 2vw, 28px);
+  text-align: left;
+  transform: translateX(-50%);
+  width: min(96vw, 1800px);
+}
+
+.event-parking-copy h2 {
+  color: var(--black);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(16px, 1.2vw, 20px);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.event-parking-copy p {
+  margin-top: 12px;
+}
+
+.current-event-copy .event-parking-copy p {
+  color: var(--black);
+  font-size: clamp(12px, 0.8vw, 14px);
+  font-weight: 800;
+}
+
+.current-event-copy .event-parking-copy .parking-warning {
+  background: #ffe66b;
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  color: var(--black);
+  font-weight: 950;
+  padding: 14px 16px;
+  text-transform: uppercase;
+}
+
+.parking-map-button {
+  background: transparent;
+  border: 0;
+  cursor: zoom-in;
+  display: block;
+  padding: 0;
+  width: 100%;
+}
+
+.parking-map-button img {
+  border: 3px solid var(--black);
+  border-radius: 16px;
+  box-shadow: 0 28px 90px rgba(17, 17, 17, 0.28);
+  height: auto;
+  object-fit: contain;
+  width: 100%;
+}
+
+.event-scroll-cue {
+  align-items: center;
+  color: var(--black);
+  display: inline-flex;
+  flex-direction: column;
+  font-size: 13px;
+  font-weight: 950;
+  justify-self: center;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.event-scroll-cue-top {
+  background: var(--black);
+  border-radius: 10px;
+  color: var(--white);
+  margin: 20px auto 0;
+  padding: 14px 22px 18px;
+}
+
+.event-scroll-cue-top .event-scroll-arrow {
+  border-color: var(--white);
+}
+
+.event-scroll-arrow {
+  animation: scrollCueBounce 1.25s ease-in-out infinite;
+  border-bottom: 3px solid var(--black);
+  border-right: 3px solid var(--black);
+  display: block;
+  height: 18px;
+  margin-top: 8px;
+  transform: rotate(45deg);
+  width: 18px;
+}
+
+@keyframes scrollCueBounce {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0) rotate(45deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(8px) rotate(45deg);
+  }
+}
+
 .current-event-actions {
   display: flex;
   flex-wrap: wrap;
@@ -886,6 +1008,65 @@ a.poster-button {
   font-weight: 900;
   letter-spacing: 0.02em;
   margin-bottom: 18px;
+}
+
+.rsvp-availability {
+  align-items: baseline;
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  color: var(--black);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 18px;
+  font-weight: 900;
+  gap: 8px 12px;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+}
+
+.rsvp-availability strong {
+  font-size: 30px;
+}
+
+.rsvp-availability small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.rsvp-availability.is-sold-out {
+  border-color: #9d1d1d;
+  color: #9d1d1d;
+}
+
+.rsvp-availability.is-sold-out small {
+  color: #9d1d1d;
+}
+
+.rsvp-sold-out {
+  background: var(--white);
+  border: 2px solid #9d1d1d;
+  border-radius: 18px;
+  color: var(--black);
+  padding: clamp(28px, 3.4vw, 42px);
+}
+
+.rsvp-sold-out h3 {
+  color: #9d1d1d;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.rsvp-sold-out p {
+  color: var(--charcoal);
+  font-size: clamp(17px, 1.4vw, 21px);
+  font-weight: 800;
+  margin: 0;
 }
 
 .rsvp-form {

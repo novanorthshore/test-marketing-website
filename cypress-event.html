@@ -84,8 +84,45 @@
           <p class="eyebrow dark">Nova Charity Collaboration</p>
           <h1>Cypress Event</h1>
           <p>
-            Nova presents the Cypress community charity event! We are collaborating with West Coast Dream Machines, Leah's Automotive, Streetlight Productions, and VanPro Detailing along with Cypress mountain to raise money for North Shore Rescue. This is an invite-only meet so please do not share the details with anybody. We hope to see you there!
+            Nova presents the Cypress Mountain Charity Event!
           </p>
+          <p>
+            You and your vehicle have been chosen to be a part of a unique lineup of beautiful cars on the peak of Vancouver's Cypress Mountain.
+          </p>
+          <p>
+            Huge thank you to Cypress Mountain and BC Parks for allowing us to host this event to raise money for North Shore Rescue.
+          </p>
+          <p class="event-conduct-note">
+            There will be zero tolerance for revving, burnouts, or any similar activities. There will be police presence on-site.
+          </p>
+          <a class="event-scroll-cue event-scroll-cue-top" href="#paid-rsvp" aria-label="Scroll to paid RSVP form">
+            <span>Paid RSVP Below</span>
+            <span class="event-scroll-arrow" aria-hidden="true"></span>
+          </a>
+          <div class="event-parking-notice">
+            <div class="event-parking-copy">
+              <h2>Parking Instructions</h2>
+              <p class="parking-warning">Only park in the approved lot. Follow the red route. Do not park in the yellow-marked area.</p>
+              <p>This is the only area we have permission to use. Parking anywhere else puts Nova North Shore's relationship with Cypress Mountain at risk.</p>
+            </div>
+            <button
+              class="poster-button parking-map-button"
+              type="button"
+              data-lightbox-open
+              data-lightbox-src="assets/lot_map.png"
+              data-lightbox-alt="Cypress Mountain approved event parking lot map"
+              aria-label="Open Cypress Mountain approved parking map"
+            >
+              <img
+                src="assets/lot_map.png"
+                alt="Cypress Mountain approved event parking lot map showing where attendees should park"
+                width="1176"
+                height="731"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+          </div>
           <p class="event-payment-note">
             Payment is required to confirm your RSVP. Choose a $10 standard spot or a $30 spot that includes professional photography on-site. Each attendee must RSVP separately.
           </p>
@@ -123,8 +160,16 @@
             </button>
           </div>
 
-          <div class="rsvp-panel reveal">
+          <div class="rsvp-panel reveal" id="paid-rsvp">
             <h2>Nova Cypress Event</h2>
+            <div class="rsvp-availability" data-rsvp-availability aria-live="polite">
+              <strong data-rsvp-booked>0</strong>/<span data-rsvp-capacity>120</span> booked
+              <small data-rsvp-remaining>Checking available spots...</small>
+            </div>
+            <div class="rsvp-sold-out" data-rsvp-sold-out hidden>
+              <h3>Fully Booked</h3>
+              <p>All 120 paid RSVP spots have been claimed. Thank you for the support.</p>
+            </div>
             <form
               class="rsvp-form"
               name="cypress-event-rsvp"
