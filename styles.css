@@ -19,6 +19,7 @@
 }
 
 html {
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -28,6 +29,7 @@ body {
   color: var(--charcoal);
   font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
   line-height: 1.5;
+  overflow-x: hidden;
 }
 
 body.menu-open,
@@ -1553,6 +1555,54 @@ a.poster-button {
 
   .feature-content {
     max-width: calc(100% - 44px);
+  }
+
+  .current-event {
+    overflow: hidden;
+  }
+
+  .current-event-copy {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .current-event-copy h1 {
+    font-size: clamp(56px, 17vw, 78px);
+    line-height: 0.95;
+  }
+
+  .current-event-copy p:not(.eyebrow) {
+    font-size: clamp(17px, 4.8vw, 20px);
+    line-height: 1.42;
+  }
+
+  .current-event-copy p.event-conduct-note {
+    border-radius: 14px;
+    font-size: clamp(18px, 5.2vw, 24px);
+    padding: 16px;
+  }
+
+  .event-scroll-cue-top {
+    width: min(100%, 300px);
+  }
+
+  .event-parking-notice {
+    border-width: 2px;
+    gap: 12px;
+    margin: 28px 0 0;
+    padding: 12px;
+    transform: none;
+    width: 100%;
+  }
+
+  .current-event-copy .event-parking-copy .parking-warning {
+    padding: 12px;
+  }
+
+  .parking-map-button img {
+    border-width: 2px;
+    border-radius: 12px;
+    box-shadow: 0 18px 48px rgba(17, 17, 17, 0.22);
   }
 
   .collab-logos {
