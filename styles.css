@@ -766,6 +766,31 @@ a.poster-button {
   font-weight: 800;
 }
 
+.event-info-highlight {
+  color: var(--black);
+  margin: 24px auto 0;
+}
+
+.current-event-copy .event-info-highlight p {
+  color: var(--black);
+  font-size: clamp(16px, 1.3vw, 20px);
+  font-weight: 900;
+  margin: 8px 0 0;
+}
+
+.current-event-copy .event-info-highlight p:first-child {
+  margin-top: 0;
+}
+
+.event-info-highlight strong {
+  color: var(--black);
+  display: block;
+  font-size: clamp(20px, 2vw, 30px);
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .current-event-copy p.event-conduct-note {
   background: #fff1f1;
   border: 3px solid #b31212;
@@ -994,6 +1019,33 @@ a.poster-button {
 .current-event-poster .poster-button {
   border-radius: 18px;
   overflow: hidden;
+}
+
+.event-activities-note {
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(17, 17, 17, 0.16);
+  margin-top: 18px;
+  padding: 18px;
+  text-align: left;
+}
+
+.event-activities-note h3 {
+  color: var(--black);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(18px, 1.5vw, 24px);
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.event-activities-note p {
+  color: var(--charcoal);
+  font-size: clamp(15px, 1.2vw, 18px);
+  font-weight: 800;
+  margin: 0;
 }
 
 .rsvp-panel {
@@ -1580,6 +1632,19 @@ a.poster-button {
     border-radius: 14px;
     font-size: clamp(18px, 5.2vw, 24px);
     padding: 16px;
+  }
+
+  .event-info-highlight {
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .current-event-copy .event-info-highlight p {
+    font-size: clamp(15px, 4.2vw, 18px);
+  }
+
+  .event-info-highlight strong {
+    font-size: clamp(18px, 5vw, 24px);
   }
 
   .event-scroll-cue-top {
