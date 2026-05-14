@@ -97,7 +97,7 @@ const handleCheckoutSessionCompleted = async ({ stripe, session }) => {
 
   if (!existingRow) {
     await appendConfirmedRsvp(buildSheetRow(verified));
-  } else if ((existingRow.values[16] || "").includes("Processed webhook")) {
+  } else if ((existingRow.layout?.notes || "").includes("Processed webhook")) {
     return;
   }
 
