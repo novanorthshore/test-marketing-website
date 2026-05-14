@@ -10,6 +10,7 @@ if (paidRsvpForm) {
   const soldOutElement = document.querySelector("[data-rsvp-sold-out]");
   const formControls = Array.from(paidRsvpForm.querySelectorAll("input"));
   const defaultButtonText = submitButton.textContent;
+  const availabilityCacheKey = "nova-cypress-rsvp-availability";
   let isSoldOut = false;
 
   const setStatus = (message, type = "") => {
@@ -47,6 +48,48 @@ if (paidRsvpForm) {
     submitButton.textContent = isLoading ? "Opening Secure Checkout..." : defaultButtonText;
   };
 
+  const renderAvailability = (availability) => {
+    if (!availability) {
+      return;
+    }
+
+    if (bookedElement) {
+      bookedElement.textContent = String(availability.bookedCount);
+    }
+
+    if (capacityElement) {
+      capacityElement.textContent = String(availability.maxCapacity);
+    }
+
+    if (remainingElement) {
+      remainingElement.textContent = availability.soldOut
+        ? "Fully booked"
+        : `${availability.remainingCount} spot${availability.remainingCount === 1 ? "" : "s"} remaining`;
+    }
+
+    setSoldOut(Boolean(availability.soldOut));
+    if (availability.soldOut) {
+      setStatus("This event is sold out. No new paid RSVPs are being accepted.", "error");
+    }
+  };
+
+  const loadCachedAvailability = () => {
+    try {
+      const cachedAvailability = JSON.parse(localStorage.getItem(availabilityCacheKey) || "null");
+      renderAvailability(cachedAvailability);
+    } catch (error) {
+      localStorage.removeItem(availabilityCacheKey);
+    }
+  };
+
+  const cacheAvailability = (availability) => {
+    try {
+      localStorage.setItem(availabilityCacheKey, JSON.stringify(availability));
+    } catch (error) {
+      return;
+    }
+  };
+
   const updateAvailability = async () => {
     try {
       const response = await fetch("/.netlify/functions/get-rsvp-availability", {
@@ -60,24 +103,8 @@ if (paidRsvpForm) {
         throw new Error(result.error || "Availability could not be loaded.");
       }
 
-      if (bookedElement) {
-        bookedElement.textContent = String(result.bookedCount);
-      }
-
-      if (capacityElement) {
-        capacityElement.textContent = String(result.maxCapacity);
-      }
-
-      if (remainingElement) {
-        remainingElement.textContent = result.soldOut
-          ? "Fully booked"
-          : `${result.remainingCount} spot${result.remainingCount === 1 ? "" : "s"} remaining`;
-      }
-
-      setSoldOut(Boolean(result.soldOut));
-      if (result.soldOut) {
-        setStatus("This event is sold out. No new paid RSVPs are being accepted.", "error");
-      }
+      renderAvailability(result);
+      cacheAvailability(result);
 
       return result;
     } catch (error) {
@@ -162,5 +189,6 @@ if (paidRsvpForm) {
     }
   });
 
+  loadCachedAvailability();
   updateAvailability();
 }
