@@ -38,10 +38,9 @@ sure form detection is enabled, then redeploy the site.
 `cypress-event.html` uses Stripe Checkout instead of direct Netlify Forms. The RSVP is only saved
 after Stripe confirms successful payment through the webhook.
 
-The paid event capacity is shared across both Stripe prices. The website reads the confirmed paid
-row count from Google Sheets, displays the booked/remaining count, and stops creating Checkout
-Sessions once the event reaches 120 confirmed paid RSVPs. Stripe collects payment; Google Sheets is
-the shared stock tracker.
+The paid event capacity is shared across both Stripe prices. The checkout function reads the
+confirmed paid row count from Google Sheets and stops creating Checkout Sessions once the event
+reaches 120 confirmed paid RSVPs. Stripe collects payment; Google Sheets is the shared stock tracker.
 
 Install dependencies before local function testing:
 

@@ -1064,40 +1064,6 @@ a.poster-button {
   margin-bottom: 18px;
 }
 
-.rsvp-availability {
-  align-items: baseline;
-  background: var(--white);
-  border: 2px solid var(--black);
-  border-radius: 12px;
-  color: var(--black);
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 18px;
-  font-weight: 900;
-  gap: 8px 12px;
-  margin-bottom: 18px;
-  padding: 16px 18px;
-}
-
-.rsvp-availability strong {
-  font-size: 30px;
-}
-
-.rsvp-availability small {
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.rsvp-availability.is-sold-out {
-  border-color: #9d1d1d;
-  color: #9d1d1d;
-}
-
-.rsvp-availability.is-sold-out small {
-  color: #9d1d1d;
-}
-
 .rsvp-sold-out {
   background: var(--white);
   border: 2px solid #9d1d1d;
