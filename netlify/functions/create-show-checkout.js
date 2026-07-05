@@ -58,8 +58,8 @@ exports.handler = async (event) => {
     }
 
     const stripe = stripeFactory(requiredEnv("STRIPE_SECRET_KEY"));
-    const priceId = requiredEnv(BLOCK_PARTY_CONFIG.price.priceEnv);
     const siteUrl = requiredEnv("SITE_URL").replace(/\/$/, "");
+    const configuredPriceId = process.env[BLOCK_PARTY_CONFIG.price.priceEnv]?.trim();
 
     const metadata = {
       eventId: BLOCK_PARTY_CONFIG.id,
@@ -69,15 +69,25 @@ exports.handler = async (event) => {
       email: application.email,
     };
 
+    const lineItems = configuredPriceId
+      ? [{ price: configuredPriceId, quantity: 1 }]
+      : [
+          {
+            price_data: {
+              currency: "cad",
+              unit_amount: BLOCK_PARTY_CONFIG.price.amountCents,
+              product_data: {
+                name: BLOCK_PARTY_CONFIG.price.label,
+              },
+            },
+            quantity: 1,
+          },
+        ];
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: application.email,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       payment_method_types: ["card"],
       allow_promotion_codes: false,
       automatic_tax: {
