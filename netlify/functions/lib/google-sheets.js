@@ -1,4 +1,4 @@
-const { google } = require("googleapis");
+const { getSheetsClient, requiredEnv } = require("./google-auth");
 
 const SHEET_COLUMNS = [
   "Timestamp",
@@ -20,17 +20,6 @@ const SHEET_COLUMNS = [
   "Notes",
 ];
 
-let sheetsClient;
-
-const requiredEnv = (name) => {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-
-  return value;
-};
-
 const getSheetTab = () => process.env.GOOGLE_SHEET_TAB || "Confirmed RSVPs";
 
 const sheetRange = (a1Range) => {
@@ -48,21 +37,6 @@ const columnName = (columnIndex) => {
   }
 
   return column;
-};
-
-const getSheetsClient = async () => {
-  if (sheetsClient) {
-    return sheetsClient;
-  }
-
-  const auth = new google.auth.JWT({
-    email: requiredEnv("GOOGLE_SERVICE_ACCOUNT_EMAIL"),
-    key: requiredEnv("GOOGLE_PRIVATE_KEY").replace(/\\n/g, "\n"),
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  sheetsClient = google.sheets({ version: "v4", auth });
-  return sheetsClient;
 };
 
 const getSheetRows = async () => {

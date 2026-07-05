@@ -22,7 +22,27 @@ const EVENT_CONFIG = {
 
 const getRsvpOption = (rsvpType) => EVENT_CONFIG.priceOptions[rsvpType] || null;
 
+// Block Party Car Show. NOTE: amountCents / amountDisplay are a PLACEHOLDER
+// registration fee. Update these to the real fee and create a matching Stripe
+// Price, then set SHOW_STRIPE_PRICE_ID in the environment.
+const BLOCK_PARTY_CONFIG = {
+  id: "block-party-2026",
+  name: "Nova North Shore Block Party Car Show",
+  maxCapacity: 150,
+  dateDisplay: "Sunday, July 19, 2026",
+  location: "Lloyd Avenue & West 14th Street, North Vancouver BC (3rd St W to 15th St W)",
+  showHours: "11:00 AM to 4:00 PM",
+  checkIn: "10:00 AM (please arrive by 10:30 AM at the latest)",
+  price: {
+    label: "Block Party Car Show Registration",
+    priceEnv: "SHOW_STRIPE_PRICE_ID",
+    amountCents: 3000,
+    amountDisplay: "$30.00 CAD",
+  },
+};
+
 module.exports = {
   EVENT_CONFIG,
+  BLOCK_PARTY_CONFIG,
   getRsvpOption,
 };

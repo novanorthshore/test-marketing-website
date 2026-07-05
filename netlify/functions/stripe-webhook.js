@@ -1,7 +1,8 @@
 const stripeFactory = require("stripe");
-const { EVENT_CONFIG, getRsvpOption } = require("./lib/event-config");
+const { EVENT_CONFIG, BLOCK_PARTY_CONFIG, getRsvpOption } = require("./lib/event-config");
 const { rsvpFromMetadata } = require("./lib/validate-rsvp");
 const { appendConfirmedRsvp, getSessionRow, markSessionNotes } = require("./lib/google-sheets");
+const { markPaymentStatus } = require("./lib/applications-sheet");
 
 const jsonResponse = (statusCode, body) => ({
   statusCode,
@@ -91,7 +92,29 @@ const verifySessionPayment = async ({ stripe, session }) => {
   };
 };
 
+const handleBlockPartyCheckoutCompleted = async ({ stripe, session }) => {
+  const expandedSession = await stripe.checkout.sessions.retrieve(session.id, {
+    expand: ["payment_intent"],
+  });
+
+  if (expandedSession.payment_status !== "paid") {
+    throw new Error(`Checkout Session ${session.id} is not paid.`);
+  }
+
+  const applicationId = expandedSession.metadata?.applicationId;
+  if (!applicationId) {
+    throw new Error(`Checkout Session ${session.id} is missing an application ID.`);
+  }
+
+  await markPaymentStatus(applicationId, "Paid", expandedSession.id);
+};
+
 const handleCheckoutSessionCompleted = async ({ stripe, session }) => {
+  if (session.metadata?.eventId === BLOCK_PARTY_CONFIG.id) {
+    await handleBlockPartyCheckoutCompleted({ stripe, session });
+    return;
+  }
+
   const verified = await verifySessionPayment({ stripe, session });
   const existingRow = await getSessionRow(verified.session.id);
 
