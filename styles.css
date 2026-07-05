@@ -508,6 +508,24 @@ a.poster-button {
   width: 100%;
 }
 
+.events .event-poster {
+  aspect-ratio: 4 / 5;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
+}
+
+.events .poster-button {
+  border-radius: 14px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.events .card-grid.three > article {
+  height: 100%;
+}
+
 .poster-button:hover img,
 .gallery-button:hover img {
   filter: brightness(0.86);

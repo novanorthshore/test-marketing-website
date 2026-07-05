@@ -8,6 +8,3 @@
 
 [functions]
   node_bundler = "esbuild"
-
-[functions."process-approvals"]
-  schedule = "*/2 * * * *"
