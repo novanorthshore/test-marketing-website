@@ -2,6 +2,10 @@
   publish = "."
   functions = "netlify/functions"
 
+# Sheet tab name is not a secret; its value ("Applications") appears in public files.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "GOOGLE_APPLICATIONS_SHEET_TAB"
+
 [functions]
   node_bundler = "esbuild"
 
