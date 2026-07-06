@@ -19,16 +19,65 @@ const escapeHtml = (value) => String(value || "")
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&#39;");
 
-const valueOrTbd = (value) => {
-  const trimmed = String(value || "").trim();
-  return trimmed ? escapeHtml(trimmed) : "To be assigned";
-};
 
 const buildVehicleLabel = (application) => [
   application.vehicleYear,
   application.vehicleMake,
   application.vehicleModel,
 ].map((part) => String(part || "").trim()).filter(Boolean).join(" ");
+
+const buildCarDetailsSection = (application) => {
+  const carNumber = String(application.carNumber || "").trim();
+  const category = String(application.category || "").trim();
+  const displayZone = String(application.displayZone || "").trim();
+  const hasAssignments = Boolean(carNumber || category || displayZone);
+
+  const heading = `<h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Your Car Details</h2>`;
+
+  if (!hasAssignments) {
+    return `${heading}
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.5;">
+                  Your car number, show category, and display zone will be assigned to you at check-in when you arrive on Lloyd Avenue.
+                </p>`;
+  }
+
+  const detailRow = (label, value) => `
+    <tr>
+      <td style="padding:4px 0;color:#555;font-size:14px;">${escapeHtml(label)}</td>
+      <td style="padding:4px 0;color:#111;font-size:14px;font-weight:700;text-align:right;">${escapeHtml(value)}</td>
+    </tr>`;
+
+  return `${heading}
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:24px;">
+                  ${carNumber ? detailRow("Car number", carNumber) : ""}
+                  ${category ? detailRow("Category", category) : ""}
+                  ${displayZone ? detailRow("Display zone", displayZone) : ""}
+                </table>
+                <p style="margin:-12px 0 24px;font-size:14px;line-height:1.5;color:#555;">
+                  Any remaining show details will be assigned to you at check-in when you arrive on Lloyd Avenue.
+                </p>`;
+};
+
+const buildCarDetailsText = (application) => {
+  const carNumber = String(application.carNumber || "").trim();
+  const category = String(application.category || "").trim();
+  const displayZone = String(application.displayZone || "").trim();
+  const hasAssignments = Boolean(carNumber || category || displayZone);
+
+  if (!hasAssignments) {
+    return [
+      "YOUR CAR DETAILS",
+      "Your car number, show category, and display zone will be assigned to you at check-in when you arrive on Lloyd Avenue.",
+    ].join("\n");
+  }
+
+  const lines = ["YOUR CAR DETAILS"];
+  if (carNumber) lines.push(`Car number: ${carNumber}`);
+  if (category) lines.push(`Category: ${category}`);
+  if (displayZone) lines.push(`Display zone: ${displayZone}`);
+  lines.push("Any remaining show details will be assigned to you at check-in when you arrive on Lloyd Avenue.");
+  return lines.join("\n");
+};
 
 const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
   const firstName = String(application.name || "").trim().split(/\s+/)[0] || "there";
@@ -75,12 +124,7 @@ const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
                   ${detailRow("Car check-in", escapeHtml(BLOCK_PARTY_CONFIG.checkIn))}
                 </table>
 
-                <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Your Car Details</h2>
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:24px;">
-                  ${detailRow("Car number", valueOrTbd(application.carNumber))}
-                  ${detailRow("Category", valueOrTbd(application.category))}
-                  ${detailRow("Display zone", valueOrTbd(application.displayZone))}
-                </table>
+                ${buildCarDetailsSection(application)}
 
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Complete Your Registration</h2>
                 <p style="margin:0 0 20px;font-size:16px;line-height:1.5;">
@@ -100,13 +144,13 @@ const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
                   Once payment is confirmed you will receive a final details email closer to the event with your exact display spot, check-in instructions, dash plaque details, and the full day schedule.
                 </p>
                 <p style="margin:0 0 24px;font-size:15px;line-height:1.5;">
-                  On the day of the event please check in at the registration booth on Lloyd Avenue at 10:00 AM with your confirmation email. Your dash plaque and car number will be waiting for you.
+                  On the day of the event please check in at the registration booth on Lloyd Avenue at 2:00 PM with your confirmation email. Your dash plaque and car number will be waiting for you.
                 </p>
 
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">A Few Things To Know</h2>
                 <ul style="margin:0 0 24px;padding-left:20px;font-size:15px;line-height:1.6;color:#333;">
-                  <li>All vehicles must be in place by 10:45 AM. No vehicles will be permitted onto the show field after 11:00 AM.</li>
-                  <li>Vehicles may not leave the display area until the official end of the show at 4:00 PM.</li>
+                  <li>All vehicles must be in place by 2:45 PM. No vehicles will be permitted onto the show field after 3:00 PM.</li>
+                  <li>Vehicles may not leave the display area until the official end of the show at 7:00 PM.</li>
                   <li>Your Instagram handle will be featured on your dash plaque and voting profile, so make sure it is spelled correctly in your application. Reply to this email if you need to update it.</li>
                 </ul>
 
@@ -144,10 +188,7 @@ const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
     `Show hours: ${BLOCK_PARTY_CONFIG.showHours}`,
     `Car check-in: ${BLOCK_PARTY_CONFIG.checkIn}`,
     "",
-    "YOUR CAR DETAILS",
-    `Car number: ${String(application.carNumber || "").trim() || "To be assigned"}`,
-    `Category: ${String(application.category || "").trim() || "To be assigned"}`,
-    `Display zone: ${String(application.displayZone || "").trim() || "To be assigned"}`,
+    buildCarDetailsText(application),
     "",
     "COMPLETE YOUR REGISTRATION",
     `Registration fee: ${amountDisplay}`,

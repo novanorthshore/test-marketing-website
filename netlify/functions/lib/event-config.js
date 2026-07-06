@@ -31,8 +31,8 @@ const BLOCK_PARTY_CONFIG = {
   maxCapacity: 150,
   dateDisplay: "Sunday, July 19, 2026",
   location: "Lloyd Avenue & West 14th Street, North Vancouver BC (3rd St W to 15th St W)",
-  showHours: "11:00 AM to 4:00 PM",
-  checkIn: "10:00 AM (please arrive by 10:30 AM at the latest)",
+  showHours: "3:00 PM to 7:00 PM",
+  checkIn: "2:00 PM (please arrive by 2:30 PM at the latest)",
   price: {
     label: "Block Party Car Show Registration",
     priceEnv: "SHOW_STRIPE_PRICE_ID",
