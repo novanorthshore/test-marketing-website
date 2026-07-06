@@ -278,6 +278,110 @@ const markPaymentStatus = async (applicationId, status, sessionId) => {
   return true;
 };
 
+const ROW_COLORS = {
+  green: { red: 198 / 255, green: 239 / 255, blue: 206 / 255 },
+  red: { red: 255 / 255, green: 199 / 255, blue: 206 / 255 },
+  white: { red: 1, green: 1, blue: 1 },
+};
+
+let cachedApplicationsSheetId = null;
+
+const getApplicationsSheetId = async () => {
+  if (cachedApplicationsSheetId !== null) {
+    return cachedApplicationsSheetId;
+  }
+
+  const sheets = await getSheetsClient();
+  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
+  const tabName = getApplicationsTab();
+  const metadata = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets.properties(sheetId,title)",
+  });
+
+  const sheet = (metadata.data.sheets || []).find(
+    (entry) => entry.properties?.title === tabName
+  );
+
+  if (!sheet?.properties?.sheetId && sheet?.properties?.sheetId !== 0) {
+    throw new Error(`Applications tab "${tabName}" not found.`);
+  }
+
+  cachedApplicationsSheetId = sheet.properties.sheetId;
+  return cachedApplicationsSheetId;
+};
+
+const setRowBackgroundColor = async (rowNumber, color) => {
+  if (rowNumber < 2) {
+    return;
+  }
+
+  const sheets = await getSheetsClient();
+  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
+  const sheetId = await getApplicationsSheetId();
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          repeatCell: {
+            range: {
+              sheetId,
+              startRowIndex: rowNumber - 1,
+              endRowIndex: rowNumber,
+              startColumnIndex: 0,
+              endColumnIndex: APPLICATION_COLUMNS.length,
+            },
+            cell: {
+              userEnteredFormat: {
+                backgroundColor: color,
+              },
+            },
+            fields: "userEnteredFormat.backgroundColor",
+          },
+        },
+      ],
+    },
+  });
+};
+
+const syncApplicationRowColor = async (application) => {
+  if (!application?.rowNumber || application.rowNumber < 2) {
+    return;
+  }
+
+  const status = String(application.status || "").trim().toLowerCase();
+  const paymentStatus = String(application.paymentStatus || "").trim().toLowerCase();
+
+  if (status === "approved" && paymentStatus === "paid") {
+    await setRowBackgroundColor(application.rowNumber, ROW_COLORS.green);
+    return;
+  }
+
+  if (status === "approved") {
+    await setRowBackgroundColor(application.rowNumber, ROW_COLORS.red);
+    return;
+  }
+
+  await setRowBackgroundColor(application.rowNumber, ROW_COLORS.white);
+};
+
+const syncAllApplicationRowColors = async () => {
+  await ensureApplicationHeaders();
+
+  const rows = await getApplicationRows();
+
+  for (let index = 1; index < rows.length; index += 1) {
+    const application = parseApplicationRow(rows[index], index + 1);
+    if (!application.applicationId) {
+      continue;
+    }
+
+    await syncApplicationRowColor(application);
+  }
+};
+
 module.exports = {
   APPLICATION_COLUMNS,
   appendApplication,
@@ -285,4 +389,6 @@ module.exports = {
   getApprovedUnsentApplications,
   markAcceptanceEmailSent,
   markPaymentStatus,
+  syncApplicationRowColor,
+  syncAllApplicationRowColors,
 };

@@ -224,7 +224,139 @@ const sendAcceptanceEmail = async ({ application, paymentUrl, paymentDeadline })
   return data;
 };
 
+const buildPaymentConfirmationEmail = ({ application, sessionId, amountPaid }) => {
+  const firstName = String(application.name || "").trim().split(/\s+/)[0] || "there";
+  const vehicleLabel = buildVehicleLabel(application) || "your vehicle";
+  const amountDisplay = amountPaid || BLOCK_PARTY_CONFIG.price.amountDisplay;
+  const receiptRef = String(sessionId || "").trim();
+
+  const subject = "Payment Confirmed - Nova North Shore Block Party Car Show";
+
+  const detailRow = (label, value) => `
+    <tr>
+      <td style="padding:4px 0;color:#555;font-size:14px;">${escapeHtml(label)}</td>
+      <td style="padding:4px 0;color:#111;font-size:14px;font-weight:700;text-align:right;">${value}</td>
+    </tr>`;
+
+  const html = `<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#111;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="background:#0a0a0a;padding:28px 32px;text-align:center;">
+                <h1 style="margin:0;color:#ffffff;font-size:22px;letter-spacing:0.06em;text-transform:uppercase;">Nova North Shore</h1>
+                <p style="margin:6px 0 0;color:#c7d0a8;font-size:15px;letter-spacing:0.14em;text-transform:uppercase;">Block Party Car Show</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px;">
+                <p style="margin:0 0 16px;font-size:16px;">Hi ${escapeHtml(firstName)},</p>
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.5;">
+                  Thank you — your registration payment has been received and your spot at the Nova North Shore Block Party Car Show is <strong>confirmed.</strong>
+                </p>
+                <p style="margin:0 0 24px;font-size:16px;line-height:1.5;">
+                  We are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> on Lloyd Avenue on July 19th. Please save this email as your receipt.
+                </p>
+
+                <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Payment Receipt</h2>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:24px;">
+                  ${detailRow("Name", escapeHtml(application.name))}
+                  ${detailRow("Vehicle", escapeHtml(vehicleLabel))}
+                  ${detailRow("Amount paid", escapeHtml(amountDisplay))}
+                  ${receiptRef ? detailRow("Confirmation", escapeHtml(receiptRef)) : ""}
+                </table>
+
+                <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Event Details</h2>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:24px;">
+                  ${detailRow("Event", escapeHtml(BLOCK_PARTY_CONFIG.name))}
+                  ${detailRow("Date", escapeHtml(BLOCK_PARTY_CONFIG.dateDisplay))}
+                  ${detailRow("Location", escapeHtml(BLOCK_PARTY_CONFIG.location))}
+                  ${detailRow("Show hours", escapeHtml(BLOCK_PARTY_CONFIG.showHours))}
+                  ${detailRow("Car check-in", escapeHtml(BLOCK_PARTY_CONFIG.checkIn))}
+                </table>
+
+                ${buildCarDetailsSection(application)}
+
+                <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">What Happens Next</h2>
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.5;">
+                  Closer to the event you will receive a final details email with your exact display spot, check-in instructions, dash plaque details, and the full day schedule.
+                </p>
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.5;">
+                  On the day of the event please check in at the registration booth on Lloyd Avenue at 2:00 PM with this confirmation email. Your dash plaque and car number will be waiting for you.
+                </p>
+
+                <p style="margin:0 0 4px;font-size:15px;">See you there.</p>
+                <p style="margin:24px 0 0;font-size:15px;font-weight:700;">Giant Tsai</p>
+                <p style="margin:2px 0 0;font-size:14px;color:#555;">Founder, Nova North Shore</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#0a0a0a;padding:18px 32px;text-align:center;">
+                <p style="margin:0;color:#888;font-size:12px;">Nova North Shore &bull; North Vancouver, BC</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+  const text = [
+    `Hi ${firstName},`,
+    "",
+    "Thank you — your registration payment has been received and your spot at the Nova North Shore Block Party Car Show is confirmed.",
+    "",
+    `We are excited to have your ${vehicleLabel} on Lloyd Avenue on July 19th. Please save this email as your receipt.`,
+    "",
+    "PAYMENT RECEIPT",
+    `Name: ${application.name}`,
+    `Vehicle: ${vehicleLabel}`,
+    `Amount paid: ${amountDisplay}`,
+    receiptRef ? `Confirmation: ${receiptRef}` : "",
+    "",
+    "EVENT DETAILS",
+    `Event: ${BLOCK_PARTY_CONFIG.name}`,
+    `Date: ${BLOCK_PARTY_CONFIG.dateDisplay}`,
+    `Location: ${BLOCK_PARTY_CONFIG.location}`,
+    `Show hours: ${BLOCK_PARTY_CONFIG.showHours}`,
+    `Car check-in: ${BLOCK_PARTY_CONFIG.checkIn}`,
+    "",
+    buildCarDetailsText(application),
+    "",
+    "See you there.",
+    "Giant Tsai",
+    "Founder, Nova North Shore",
+  ].filter(Boolean).join("\n");
+
+  return { subject, html, text };
+};
+
+const sendPaymentConfirmationEmail = async ({ application, sessionId, amountPaid }) => {
+  const resend = new Resend(requiredEnv("RESEND_API_KEY"));
+  const { subject, html, text } = buildPaymentConfirmationEmail({ application, sessionId, amountPaid });
+
+  const { data, error } = await resend.emails.send({
+    from: getFromAddress(),
+    to: [application.email],
+    subject,
+    html,
+    text,
+  });
+
+  if (error) {
+    throw new Error(`Resend failed: ${error.message || JSON.stringify(error)}`);
+  }
+
+  return data;
+};
+
 module.exports = {
   buildAcceptanceEmail,
   sendAcceptanceEmail,
+  buildPaymentConfirmationEmail,
+  sendPaymentConfirmationEmail,
 };

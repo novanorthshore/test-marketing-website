@@ -1202,6 +1202,73 @@ a.poster-button {
   text-transform: uppercase;
 }
 
+.show-detail-card p:not(.show-detail-eyebrow) {
+  color: var(--charcoal);
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0;
+  padding: 0 18px;
+}
+
+.show-detail-card p:not(.show-detail-eyebrow):first-of-type {
+  padding-top: 16px;
+}
+
+.show-detail-card p:not(.show-detail-eyebrow):last-of-type {
+  padding-bottom: 18px;
+}
+
+.show-detail-card p + p {
+  margin-top: 1.25rem;
+}
+
+.show-detail-card p strong {
+  color: var(--black);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.block-party-event-page .current-event-layout {
+  grid-template-columns: minmax(400px, 920px) minmax(360px, 680px);
+}
+
+.block-party-event-page .current-event-poster .poster-button,
+.block-party-event-page .current-event-poster img {
+  width: 100%;
+}
+
+.block-party-event-page .show-detail-card {
+  margin-top: 22px;
+}
+
+.block-party-event-page .show-detail-card .show-detail-eyebrow {
+  font-size: 14px;
+  padding: 12px 22px;
+}
+
+.block-party-event-page .show-detail-card p:not(.show-detail-eyebrow) {
+  font-size: clamp(16px, 1.3vw, 19px);
+  line-height: 1.6;
+  padding: 0 22px;
+}
+
+.block-party-event-page .show-detail-card p:not(.show-detail-eyebrow):first-of-type {
+  padding-top: 20px;
+}
+
+.block-party-event-page .show-detail-card p:not(.show-detail-eyebrow):last-of-type {
+  padding-bottom: 22px;
+}
+
+.block-party-event-page .show-detail-card p + p {
+  margin-top: 1.4rem;
+}
+
+.block-party-event-page .show-detail-card p strong {
+  font-size: 16px;
+}
+
 .show-detail-card h3 {
   color: var(--black);
   font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
@@ -1880,8 +1947,16 @@ a.poster-button {
     max-width: 720px;
   }
 
+  .block-party-event-page .current-event-layout {
+    max-width: 920px;
+  }
+
   .current-event-poster {
     max-width: 720px;
+  }
+
+  .block-party-event-page .current-event-poster {
+    max-width: 920px;
   }
 
   .three,

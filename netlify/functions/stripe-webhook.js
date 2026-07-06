@@ -2,7 +2,8 @@ const stripeFactory = require("stripe");
 const { EVENT_CONFIG, BLOCK_PARTY_CONFIG, getRsvpOption } = require("./lib/event-config");
 const { rsvpFromMetadata } = require("./lib/validate-rsvp");
 const { appendConfirmedRsvp, getSessionRow, markSessionNotes } = require("./lib/google-sheets");
-const { markPaymentStatus } = require("./lib/applications-sheet");
+const { markPaymentStatus, getApplicationById, syncApplicationRowColor } = require("./lib/applications-sheet");
+const { sendPaymentConfirmationEmail } = require("./lib/email");
 
 const jsonResponse = (statusCode, body) => ({
   statusCode,
@@ -106,7 +107,32 @@ const handleBlockPartyCheckoutCompleted = async ({ stripe, session }) => {
     throw new Error(`Checkout Session ${session.id} is missing an application ID.`);
   }
 
+  const application = await getApplicationById(applicationId);
+  if (!application) {
+    throw new Error(`Application ${applicationId} was not found.`);
+  }
+
+  if (application.paymentStatus.toLowerCase() === "paid") {
+    return;
+  }
+
   await markPaymentStatus(applicationId, "Paid", expandedSession.id);
+
+  const updatedApplication = {
+    ...application,
+    paymentStatus: "Paid",
+    stripeSessionId: expandedSession.id,
+  };
+
+  await syncApplicationRowColor(updatedApplication);
+
+  const amountPaid = formatAmount(expandedSession.amount_total, expandedSession.currency);
+
+  await sendPaymentConfirmationEmail({
+    application: updatedApplication,
+    sessionId: expandedSession.id,
+    amountPaid,
+  });
 };
 
 const handleCheckoutSessionCompleted = async ({ stripe, session }) => {

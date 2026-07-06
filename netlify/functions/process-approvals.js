@@ -1,6 +1,8 @@
 const {
   getApprovedUnsentApplications,
   markAcceptanceEmailSent,
+  syncApplicationRowColor,
+  syncAllApplicationRowColors,
 } = require("./lib/applications-sheet");
 const { sendAcceptanceEmail } = require("./lib/email");
 const { signToken } = require("./lib/tokens");
@@ -58,6 +60,7 @@ const processApprovals = async () => {
       });
 
       await markAcceptanceEmailSent(application.applicationId);
+      await syncApplicationRowColor(application);
       results.sent += 1;
     } catch (error) {
       results.failed += 1;
@@ -68,6 +71,8 @@ const processApprovals = async () => {
       });
     }
   }
+
+  await syncAllApplicationRowColors();
 
   return results;
 };

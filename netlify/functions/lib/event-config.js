@@ -36,8 +36,8 @@ const BLOCK_PARTY_CONFIG = {
   price: {
     label: "Block Party Car Show Registration",
     priceEnv: "SHOW_STRIPE_PRICE_ID",
-    amountCents: 3000,
-    amountDisplay: "$30.00 CAD",
+    amountCents: 2500,
+    amountDisplay: "$25.00 CAD",
   },
 };
 
