@@ -1948,6 +1948,7 @@ a.poster-button {
   }
 
   .block-party-event-page .current-event-layout {
+    grid-template-columns: 1fr;
     max-width: 920px;
   }
 
@@ -2109,8 +2110,19 @@ a.poster-button {
 
   .event-parking-notice--compact {
     margin-inline: auto;
-    max-width: min(96vw, 1200px);
-    width: min(96vw, 1200px);
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .block-party-event-page .current-event-layout {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 100%;
+  }
+
+  .block-party-event-page .current-event-poster,
+  .block-party-event-page .rsvp-panel {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .current-event-copy .event-parking-copy .parking-warning {

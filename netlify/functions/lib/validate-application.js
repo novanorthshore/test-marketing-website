@@ -97,7 +97,9 @@ const validateApplication = (payload = {}) => {
     errors.licensePlate = "License plate is required.";
   }
 
-  if (payload.photo) {
+  if (!payload.photo) {
+    errors.photo = "Car photo is required.";
+  } else {
     const mimeType = cleanText(payload.photo.mimeType || "", 40);
     const base64 = typeof payload.photo.base64 === "string" ? payload.photo.base64.trim() : "";
 

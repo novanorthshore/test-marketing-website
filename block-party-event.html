@@ -14,7 +14,7 @@
       content="Apply for the Nova North Shore Block Party Car Show. Sunday July 19, 2026 on Lloyd Avenue, North Vancouver. 3 PM to 7 PM, check-in at 2 PM."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="assets/block-party-page-poster.png" />
+    <meta property="og:image" content="assets/block-party-poster.png" />
     <meta name="theme-color" content="#050505" />
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -100,7 +100,7 @@
               Spots are limited to 150 cars and this is a curated show. All applications are reviewed to make sure every car on Lloyd Avenue belongs there: classic builds, full restorations, vintage muscle, and European icons only.
             </p>
             <p class="event-conduct-note">
-              Apply below to secure a spot. Approved applicants will receive a confirmation email with payment instructions within 48 hours.
+              Apply below to secure a spot to be a show car. Approved applicants will need to pay $25 and receive a confirmation email with payment instructions within 48 hours.
             </p>
           </div>
           <a class="event-scroll-cue event-scroll-cue-top" href="#show-application" aria-label="Scroll to application form">
@@ -149,12 +149,12 @@
               class="poster-button"
               type="button"
               data-lightbox-open
-              data-lightbox-src="assets/block-party-page-poster.png"
+              data-lightbox-src="assets/block-party-poster.png"
               data-lightbox-alt="Nova North Shore Block Party Car Show event details poster"
               aria-label="Open Block Party Car Show event details poster"
             >
               <img
-                src="assets/block-party-page-poster.png"
+                src="assets/block-party-poster.png"
                 alt="Nova North Shore Block Party Car Show event details with date, location, and registration info"
                 loading="lazy"
                 decoding="async"
@@ -165,7 +165,7 @@
               <p><strong>FOOD &amp; DRINKS</strong><br />Local vendors lining Lloyd Avenue all evening</p>
               <p><strong>CAR SHOW COMPETITION</strong><br />Every show car is entered into a fully judged competition — Best American Muscle, Best European Classic, Best Restoration, Best Modified Build and more. Spectators vote for People's Choice via QR code.</p>
               <p><strong>AWARDS CEREMONY</strong><br />Winners announced live at 6:15PM on the main stage — category trophies, People's Choice, and Best in Show.</p>
-              <p><strong>FREE TO ATTEND</strong><br />Open to the public. Come for the cars, stay for the atmosphere.</p>
+              <p><strong>FREE TO ATTEND FOR SPECTATORS</strong><br />Open to the public. Come for the cars, stay for the atmosphere.</p>
             </div>
           </div>
 
@@ -220,7 +220,7 @@
                 placeholder="Tell us what makes your build stand out."
               ></textarea>
 
-              <label for="application-photo">Car photo (optional)</label>
+              <label for="application-photo">Car photo <span>(required)</span></label>
               <div class="rsvp-photo-field">
                 <input
                   id="application-photo"
@@ -228,11 +228,12 @@
                   type="file"
                   name="photo"
                   accept="image/jpeg,image/png,image/webp"
+                  required
                   data-show-application-photo
                 />
                 <label class="rsvp-file-button" for="application-photo">Choose Photo</label>
                 <p class="rsvp-file-hint" data-show-application-photo-hint>
-                  Optional. JPG, PNG, or WebP up to 4 MB. Send a better photo later if approved.
+                  Required. JPG, PNG, or WebP up to 12 MB. Send a better photo later if approved.
                 </p>
                 <p class="rsvp-photo-status-text" data-show-application-photo-wrap hidden>
                   Image Upload!

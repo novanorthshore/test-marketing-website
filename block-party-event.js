@@ -7,9 +7,9 @@ if (applicationForm) {
   const photoStatus = applicationForm.querySelector("[data-show-application-photo-wrap]");
   const photoHint = applicationForm.querySelector("[data-show-application-photo-hint]");
   const photoButton = applicationForm.querySelector(".rsvp-file-button");
-  const defaultPhotoHint = "Optional. JPG, PNG, or WebP up to 4 MB. Send a better photo later if approved.";
+  const defaultPhotoHint = "Required. JPG, PNG, or WebP up to 12 MB. Send a better photo later if approved.";
   const defaultButtonText = submitButton.textContent;
-  const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
+  const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
   const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
   let selectedPhotoFile = null;
@@ -28,6 +28,7 @@ if (applicationForm) {
   const clearPhotoPreview = () => {
     selectedPhotoFile = null;
     photoInput.value = "";
+    photoInput.setCustomValidity("");
     if (photoStatus) {
       photoStatus.hidden = true;
     }
@@ -69,7 +70,7 @@ if (applicationForm) {
 
   const compressPhoto = async (file) => {
     const image = await loadImageFromFile(file);
-    const maxWidth = 2000;
+    const maxWidth = 1800;
     const scale = image.width > maxWidth ? maxWidth / image.width : 1;
     const width = Math.max(1, Math.round(image.width * scale));
     const height = Math.max(1, Math.round(image.height * scale));
@@ -81,8 +82,8 @@ if (applicationForm) {
     const context = canvas.getContext("2d");
     context.drawImage(image, 0, 0, width, height);
 
-    const outputMimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
-    const qualities = outputMimeType === "image/jpeg" ? [0.88, 0.78, 0.68, 0.58] : [1];
+    const outputMimeType = "image/jpeg";
+    const qualities = [0.86, 0.76, 0.66, 0.56, 0.46];
 
     let bestBlob = null;
 
@@ -163,6 +164,7 @@ if (applicationForm) {
     try {
       await compressPhoto(file);
       selectedPhotoFile = file;
+      photoInput.setCustomValidity("");
       if (photoStatus) {
         photoStatus.hidden = false;
       }
@@ -187,6 +189,14 @@ if (applicationForm) {
       return;
     }
 
+    if (!selectedPhotoFile) {
+      photoInput.setCustomValidity("Upload a car photo before submitting.");
+      applicationForm.reportValidity();
+      setStatus("Upload a car photo before submitting.", "error");
+      return;
+    }
+
+    photoInput.setCustomValidity("");
     setStatus("");
     setLoading(true);
 
@@ -199,11 +209,14 @@ if (applicationForm) {
         body: JSON.stringify(await getFormPayload()),
       });
 
-      const result = await response.json().catch(() => ({}));
+      const result = await response.json().catch(() => null);
 
-      if (!response.ok || !result.ok) {
-        const fieldErrors = result.fields ? Object.values(result.fields).join(" ") : "";
-        throw new Error(result.error || fieldErrors || "Your application could not be submitted. Please try again.");
+      if (!response.ok || !result?.ok) {
+        const fieldErrors = result?.fields ? Object.values(result.fields).join(" ") : "";
+        const fallbackError = response.status === 413
+          ? "The photo upload is too large. Choose a smaller photo and try again."
+          : "Your application could not be submitted. Please try again.";
+        throw new Error(result?.error || fieldErrors || fallbackError);
       }
 
       window.location.assign("/application-submitted.html");
