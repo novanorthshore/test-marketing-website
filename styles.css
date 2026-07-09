@@ -957,6 +957,59 @@ a.poster-button {
   width: 100%;
 }
 
+.event-sponsors {
+  margin: 28px auto 0;
+  max-width: min(96vw, 1200px);
+  text-align: center;
+  width: min(96vw, 1200px);
+}
+
+.event-sponsors-heading {
+  margin: 0 auto 16px;
+  max-width: 720px;
+}
+
+.event-sponsors-heading h2 {
+  margin: 6px 0 0;
+}
+
+.event-sponsors-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.event-sponsor-card {
+  align-items: center;
+  background: #000000;
+  border: 2px solid var(--black);
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(17, 17, 17, 0.12);
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  min-height: 140px;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.event-sponsor-card img {
+  display: block;
+  height: 96px;
+  max-width: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.event-sponsor-card--hanz-driven {
+  padding: 8px 10px;
+}
+
+.event-sponsor-card--hanz-driven img {
+  height: 118px;
+  transform: scale(1.08);
+}
+
 .event-scroll-cue {
   align-items: center;
   color: var(--black);
@@ -2133,6 +2186,31 @@ a.poster-button {
     border-width: 2px;
     border-radius: 12px;
     box-shadow: 0 18px 48px rgba(17, 17, 17, 0.22);
+  }
+
+  .event-sponsors {
+    margin-top: 20px;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .event-sponsors-grid {
+    gap: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .event-sponsor-card {
+    min-height: 88px;
+    padding: 10px;
+  }
+
+  .event-sponsor-card img {
+    height: 56px;
+  }
+
+  .event-sponsor-card--hanz-driven img {
+    height: 72px;
+    transform: scale(1.06);
   }
 
   .collab-logos {
