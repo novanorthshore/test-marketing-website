@@ -79,10 +79,9 @@ const buildCarDetailsText = (application) => {
   return lines.join("\n");
 };
 
-const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
+const buildAcceptanceEmail = ({ application }) => {
   const firstName = String(application.name || "").trim().split(/\s+/)[0] || "there";
   const vehicleLabel = buildVehicleLabel(application) || "your vehicle";
-  const amountDisplay = BLOCK_PARTY_CONFIG.price.amountDisplay;
 
   const subject = "You're In - Nova North Shore Block Party Car Show";
 
@@ -112,7 +111,7 @@ const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
                   Congratulations, your application for the Nova North Shore Block Party Car Show has been <strong>approved!</strong>
                 </p>
                 <p style="margin:0 0 24px;font-size:16px;line-height:1.5;">
-                  We reviewed your application and we are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> on Lloyd Avenue on July 19th. Here are your confirmed details.
+                  We reviewed your application and we are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> on Lloyd Avenue on July 19th. Because you applied in advance, your registration is <strong>free</strong> and your spot is secured — no payment required.
                 </p>
 
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Event Details</h2>
@@ -122,29 +121,17 @@ const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
                   ${detailRow("Location", escapeHtml(BLOCK_PARTY_CONFIG.location))}
                   ${detailRow("Show hours", escapeHtml(BLOCK_PARTY_CONFIG.showHours))}
                   ${detailRow("Car check-in", escapeHtml(BLOCK_PARTY_CONFIG.checkIn))}
+                  ${detailRow("Advance registration", "Free")}
                 </table>
 
                 ${buildCarDetailsSection(application)}
 
-                <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Complete Your Registration</h2>
-                <p style="margin:0 0 20px;font-size:16px;line-height:1.5;">
-                  To secure your spot, please complete your registration fee payment of <strong>${escapeHtml(amountDisplay)}</strong> using the button below. Spots are not held until payment is received.
-                </p>
-                <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
-                  <tr>
-                    <td style="border-radius:8px;background:#0a0a0a;">
-                      <a href="${escapeHtml(paymentUrl)}" style="display:inline-block;padding:16px 32px;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;">Pay Registration Fee</a>
-                    </td>
-                  </tr>
-                </table>
-                <p style="margin:0 0 28px;font-size:14px;color:#555;">Payment deadline: <strong>${escapeHtml(paymentDeadline)}</strong></p>
-
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">What Happens Next</h2>
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.5;">
-                  Once payment is confirmed you will receive a final details email closer to the event with your exact display spot, check-in instructions, dash plaque details, and the full day schedule.
+                  Closer to the event you will receive a final details email with your exact display spot, check-in instructions, dash plaque details, and the full day schedule.
                 </p>
                 <p style="margin:0 0 24px;font-size:15px;line-height:1.5;">
-                  On the day of the event please check in at the registration booth on Lloyd Avenue at 2:00 PM with your confirmation email. Your dash plaque and car number will be waiting for you.
+                  On the day of the event please check in at the registration booth on Lloyd Avenue at 2:00 PM with this confirmation email. Your dash plaque and car number will be waiting for you.
                 </p>
 
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">A Few Things To Know</h2>
@@ -179,7 +166,7 @@ const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
     "",
     "Congratulations, your application for the Nova North Shore Block Party Car Show has been approved!",
     "",
-    `We are excited to have your ${vehicleLabel} on Lloyd Avenue on July 19th. Here are your confirmed details.`,
+    `We are excited to have your ${vehicleLabel} on Lloyd Avenue on July 19th. Because you applied in advance, your registration is free and your spot is secured — no payment required.`,
     "",
     "EVENT DETAILS",
     `Event: ${BLOCK_PARTY_CONFIG.name}`,
@@ -187,15 +174,13 @@ const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
     `Location: ${BLOCK_PARTY_CONFIG.location}`,
     `Show hours: ${BLOCK_PARTY_CONFIG.showHours}`,
     `Car check-in: ${BLOCK_PARTY_CONFIG.checkIn}`,
+    "Advance registration: Free",
     "",
     buildCarDetailsText(application),
     "",
-    "COMPLETE YOUR REGISTRATION",
-    `Registration fee: ${amountDisplay}`,
-    `Pay here: ${paymentUrl}`,
-    `Payment deadline: ${paymentDeadline}`,
-    "",
-    "Spots are not held until payment is received.",
+    "WHAT HAPPENS NEXT",
+    "Closer to the event you will receive a final details email with check-in instructions and show details.",
+    "Please check in at the registration booth on Lloyd Avenue at 2:00 PM with this confirmation email.",
     "",
     "See you there.",
     "Giant Tsai",
@@ -205,9 +190,9 @@ const buildAcceptanceEmail = ({ application, paymentUrl, paymentDeadline }) => {
   return { subject, html, text };
 };
 
-const sendAcceptanceEmail = async ({ application, paymentUrl, paymentDeadline }) => {
+const sendAcceptanceEmail = async ({ application }) => {
   const resend = new Resend(requiredEnv("RESEND_API_KEY"));
-  const { subject, html, text } = buildAcceptanceEmail({ application, paymentUrl, paymentDeadline });
+  const { subject, html, text } = buildAcceptanceEmail({ application });
 
   const { data, error } = await resend.emails.send({
     from: getFromAddress(),

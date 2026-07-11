@@ -1,43 +1,13 @@
 const {
   getApprovedUnsentApplications,
   markAcceptanceEmailSent,
+  markPaymentStatus,
   syncApplicationRowColor,
   syncAllApplicationRowColors,
 } = require("./lib/applications-sheet");
 const { sendAcceptanceEmail } = require("./lib/email");
-const { signToken } = require("./lib/tokens");
-
-const requiredEnv = (name) => {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-
-  return value;
-};
-
-const getPaymentDeadlineDays = () => {
-  const parsed = Number(process.env.SHOW_PAYMENT_DEADLINE_DAYS);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 7;
-};
-
-const formatDeadline = (date) => {
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }).format(date);
-  } catch (error) {
-    return date.toISOString().slice(0, 10);
-  }
-};
 
 const processApprovals = async () => {
-  const siteUrl = requiredEnv("SITE_URL").replace(/\/$/, "");
-  const deadlineDays = getPaymentDeadlineDays();
-  const deadline = formatDeadline(new Date(Date.now() + deadlineDays * 24 * 60 * 60 * 1000));
-
   const applications = await getApprovedUnsentApplications();
 
   const results = {
@@ -50,15 +20,17 @@ const processApprovals = async () => {
     results.processed += 1;
 
     try {
-      const token = signToken({ applicationId: application.applicationId });
-      const paymentUrl = `${siteUrl}/show-payment.html?token=${encodeURIComponent(token)}`;
+      const paymentStatus = String(application.paymentStatus || "").trim().toLowerCase();
 
-      await sendAcceptanceEmail({
-        application,
-        paymentUrl,
-        paymentDeadline: deadline,
-      });
+      // Advance applications are free. Mark unpaid approved rows as Free so the
+      // sheet turns green and no payment link is required. Leave Paid alone so
+      // already-paid applicants can be refunded manually in Stripe.
+      if (paymentStatus !== "paid" && paymentStatus !== "free") {
+        await markPaymentStatus(application.applicationId, "Free");
+        application.paymentStatus = "Free";
+      }
 
+      await sendAcceptanceEmail({ application });
       await markAcceptanceEmailSent(application.applicationId);
       await syncApplicationRowColor(application);
       results.sent += 1;

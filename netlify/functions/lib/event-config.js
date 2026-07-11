@@ -22,9 +22,9 @@ const EVENT_CONFIG = {
 
 const getRsvpOption = (rsvpType) => EVENT_CONFIG.priceOptions[rsvpType] || null;
 
-// Block Party Car Show. NOTE: amountCents / amountDisplay are a PLACEHOLDER
-// registration fee. Update these to the real fee and create a matching Stripe
-// Price, then set SHOW_STRIPE_PRICE_ID in the environment.
+// Block Party Car Show pricing:
+// Advance applications (through this form) are free once approved.
+// Walk-ins on event day are $10 cash/card at check-in.
 const BLOCK_PARTY_CONFIG = {
   id: "block-party-2026",
   name: "Nova North Shore Block Party Car Show",
@@ -33,11 +33,22 @@ const BLOCK_PARTY_CONFIG = {
   location: "Lloyd Avenue & West 14th Street, North Vancouver BC (3rd St W to 15th St W)",
   showHours: "3:00 PM to 7:00 PM",
   checkIn: "2:00 PM (please arrive by 2:30 PM at the latest)",
+  advanceRegistration: {
+    amountCents: 0,
+    amountDisplay: "Free",
+    label: "Advance application (approved show cars)",
+  },
+  walkIn: {
+    amountCents: 1000,
+    amountDisplay: "$10.00 CAD",
+    label: "Walk-in day of show",
+  },
+  // Kept for legacy Stripe payment tooling / receipts for anyone who paid before the fee drop.
   price: {
     label: "Block Party Car Show Registration",
     priceEnv: "SHOW_STRIPE_PRICE_ID",
-    amountCents: 2500,
-    amountDisplay: "$25.00 CAD",
+    amountCents: 0,
+    amountDisplay: "Free",
   },
 };
 

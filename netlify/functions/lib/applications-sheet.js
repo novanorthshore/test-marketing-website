@@ -354,7 +354,7 @@ const syncApplicationRowColor = async (application) => {
   const status = String(application.status || "").trim().toLowerCase();
   const paymentStatus = String(application.paymentStatus || "").trim().toLowerCase();
 
-  if (status === "approved" && paymentStatus === "paid") {
+  if (status === "approved" && (paymentStatus === "paid" || paymentStatus === "free")) {
     await setRowBackgroundColor(application.rowNumber, ROW_COLORS.green);
     return;
   }
