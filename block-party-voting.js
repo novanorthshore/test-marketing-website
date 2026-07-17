@@ -26,11 +26,14 @@
 
   const votingPhotoWidth = () => {
     const w = window.innerWidth;
+    // Match displayed hero size (card width × hero scale), then × device pixel ratio.
+    const heroScale = w < 600 ? 1.14 : w < 720 ? 1.18 : 1.22;
     const cardW = w < 720
       ? Math.min(w * 0.78, 320)
-      : Math.min(w * 0.92, 560);
+      : 560;
+    const displayW = cardW * heroScale;
     const dpr = Math.min(3, window.devicePixelRatio || 2);
-    return Math.min(2000, Math.ceil(cardW * dpr));
+    return Math.min(2400, Math.ceil(displayW * dpr));
   };
 
   const votingPhotoUrl = (url, width = votingPhotoWidth()) => {
@@ -52,7 +55,7 @@
     if (!raw || !raw.includes("res.cloudinary.com/")) {
       return "";
     }
-    const widths = [640, 960, 1280, 1600].filter((w) => w <= 2000);
+    const widths = [960, 1280, 1600, 2000, 2400];
     return widths
       .map((w) => `${votingPhotoUrl(raw, w)} ${w}w`)
       .join(", ");
@@ -389,8 +392,27 @@
     if (!car) {
       return;
     }
-    if (state.pickLabel) {
-      state.pickLabel.textContent = carTitle(car);
+
+    const year = String(car.vehicleYear || "").trim();
+    const make = String(car.vehicleMake || "").trim();
+    const model = String(car.vehicleModel || "").trim();
+    const plate = String(car.licensePlate || "").trim();
+    const handle = String(car.instagram || "").replace(/^@/, "").trim();
+
+    if (state.pickYear) {
+      state.pickYear.textContent = year || "—";
+    }
+    if (state.pickMake) {
+      state.pickMake.textContent = make || "—";
+    }
+    if (state.pickModel) {
+      state.pickModel.textContent = model || "—";
+    }
+    if (state.pickPlate) {
+      state.pickPlate.textContent = plate || "—";
+    }
+    if (state.pickIg) {
+      state.pickIg.textContent = handle ? `@${handle}` : "—";
     }
     if (state.pickButton) {
       const picked = selections[state.categoryId] === car.applicationId;
@@ -511,7 +533,7 @@
     const { img, car } = card;
     img.fetchPriority = priority;
     img.decoding = "async";
-    img.sizes = "(max-width: 719px) 78vw, 560px";
+    img.sizes = "(max-width: 719px) 90vw, 700px";
 
     const srcSet = votingPhotoSrcSet(car.photoUrl);
     if (srcSet) {
@@ -639,14 +661,49 @@
 
     const pickRow = document.createElement("div");
     pickRow.className = "voting-pick-row";
-    const pickLabel = document.createElement("p");
-    pickLabel.className = "voting-pick-label";
+
+    const pickCard = document.createElement("div");
+    pickCard.className = "voting-pick-card";
+
+    const pickFacts = document.createElement("div");
+    pickFacts.className = "voting-pick-facts";
+
+    const makeFact = (label, key) => {
+      const item = document.createElement("div");
+      item.className = "voting-pick-fact";
+      const kicker = document.createElement("span");
+      kicker.className = "voting-pick-fact-label";
+      kicker.textContent = label;
+      const value = document.createElement("span");
+      value.className = "voting-pick-fact-value";
+      value.dataset.pickFact = key;
+      value.textContent = "—";
+      item.append(kicker, value);
+      return { item, value };
+    };
+
+    const yearFact = makeFact("Year", "year");
+    const makeFactEl = makeFact("Make", "make");
+    const modelFact = makeFact("Model", "model");
+    const plateFact = makeFact("Plate", "plate");
+    const igFact = makeFact("Instagram", "ig");
+
+    pickFacts.append(
+      yearFact.item,
+      makeFactEl.item,
+      modelFact.item,
+      plateFact.item,
+      igFact.item,
+    );
+
     const pickButton = document.createElement("button");
     pickButton.type = "button";
     pickButton.className = "voting-pick-button";
     pickButton.dataset.pick = category.id;
     pickButton.textContent = "Pick this car";
-    pickRow.append(pickLabel, pickButton);
+
+    pickCard.append(pickFacts, pickButton);
+    pickRow.appendChild(pickCard);
 
     section.append(heading, stage, pickRow);
     categoriesEl.appendChild(section);
@@ -674,7 +731,11 @@
       lastPaint: 0,
       palette: { ...FALLBACK_PALETTE },
       targetPalette: { ...FALLBACK_PALETTE },
-      pickLabel,
+      pickYear: yearFact.value,
+      pickMake: makeFactEl.value,
+      pickModel: modelFact.value,
+      pickPlate: plateFact.value,
+      pickIg: igFact.value,
       pickButton,
     };
 

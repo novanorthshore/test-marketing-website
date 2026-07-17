@@ -2442,7 +2442,7 @@ a.poster-button {
 
 .voting-categories {
   display: grid;
-  gap: 22px;
+  gap: 48px;
   margin-top: 20px;
 }
 
@@ -2479,10 +2479,10 @@ a.poster-button {
 /* Full-bleed 3D stage (symmetric negative margins center to the visible area) */
 .voting-stage {
   cursor: grab;
-  height: clamp(260px, 42svh, 340px);
+  height: clamp(300px, 48svh, 380px);
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  margin-top: 10px;
+  margin-top: 8px;
   overflow: hidden;
   perspective: 1200px;
   position: relative;
@@ -2683,26 +2683,57 @@ a.poster-button {
 }
 
 .voting-pick-row {
-  align-items: center;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  height: 210px;
   margin-inline: auto;
-  margin-top: 14px;
+  margin-top: 2px;
   max-width: 720px;
-  text-align: center;
   width: 100%;
 }
 
-.voting-pick-label {
-  color: var(--black);
-  font-size: 15px;
+.voting-pick-card {
+  background: var(--white);
+  border: 1px solid var(--divider);
+  border-radius: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 14px 16px;
+  width: 100%;
+}
+
+.voting-pick-facts {
+  display: grid;
+  gap: 8px 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.voting-pick-fact {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+
+.voting-pick-fact-label {
+  color: var(--muted);
+  font-size: 10px;
   font-weight: 800;
-  line-height: 1.35;
-  margin: 0;
-  max-width: 100%;
-  text-align: center;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.voting-pick-fact-value {
+  color: var(--black);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
   white-space: normal;
   word-break: break-word;
 }
@@ -2713,15 +2744,16 @@ a.poster-button {
   border-radius: 999px;
   color: var(--white);
   cursor: pointer;
+  flex: 0 0 auto;
   font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.06em;
   min-height: 48px;
-  padding: 0 24px;
+  padding: 0 28px;
   text-transform: uppercase;
   touch-action: manipulation;
   transition: background 160ms ease, color 160ms ease, transform 140ms ease;
-  width: min(100%, 320px);
+  width: 100%;
 }
 
 .voting-pick-button:hover,
@@ -2911,7 +2943,7 @@ body.voting-modal-open {
   }
 
   .voting-stage {
-    height: clamp(360px, 55svh, 480px);
+    height: clamp(360px, 52svh, 440px);
     perspective: 1500px;
   }
 
@@ -2935,24 +2967,23 @@ body.voting-modal-open {
   }
 
   .voting-pick-row {
-    align-items: center;
-    flex-direction: row;
-    gap: 12px;
-    justify-content: space-between;
-    text-align: left;
+    height: 148px;
+    margin-top: 4px;
   }
 
-  .voting-pick-label {
+  .voting-pick-card {
+    align-items: center;
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .voting-pick-facts {
     flex: 1 1 auto;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     min-width: 0;
-    overflow: hidden;
-    text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .voting-pick-button {
-    flex: 0 0 auto;
     width: auto;
   }
 }
@@ -2972,7 +3003,7 @@ body.voting-modal-open {
   }
 
   .voting-categories {
-    gap: 28px;
+    gap: 64px;
     margin-top: 24px;
   }
 
@@ -2982,8 +3013,8 @@ body.voting-modal-open {
   }
 
   .voting-stage {
-    height: clamp(460px, 78vh, 680px);
-    margin-top: 14px;
+    height: clamp(440px, 58vh, 560px);
+    margin-top: 10px;
     perspective: 1800px;
   }
 

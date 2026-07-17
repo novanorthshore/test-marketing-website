@@ -252,6 +252,7 @@ const listApprovedVotingCars = async () => {
       vehicleYear: String(row.vehicleYear || "").trim(),
       vehicleMake: String(row.vehicleMake || "").trim(),
       vehicleModel: String(row.vehicleModel || "").trim(),
+      licensePlate: String(row.licensePlate || "").trim(),
       instagram: String(row.instagram || "").trim(),
       photoUrl: String(row.photoUrl || "").trim(),
     }))
