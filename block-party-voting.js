@@ -4,17 +4,31 @@
   const MAX_DEPTH = 150;     // px, translateZ toward camera at center
   const MIN_SCALE = 0.78;    // size of side cards
   const SCALE_RANGE = 0.24;  // focus boost at center
-  const GAP = 40;            // px spacing between cards
   const FRICTION = 0.9;      // velocity decay (lower = more friction)
   const WHEEL_SENS = 0.55;
   const DRAG_SENS = 1.15;
   const SNAP_STOP_V = 18;    // px/s below which we snap to nearest card
   const REACTIVE_BG = false;  // flip to true to enable the canvas gradient
 
+  // Space between cards scales with viewport so the hero grow never overlaps neighbors.
+  const getGap = () => {
+    const w = window.innerWidth;
+    if (w < 480) {
+      return Math.round(Math.max(44, Math.min(w * 0.16, 64)));
+    }
+    if (w < 720) {
+      return 72;
+    }
+    return 90;
+  };
+
   const FALLBACK_PALETTE = { r1: 244, g1: 205, b1: 92, r2: 214, g2: 210, b2: 196 };
 
   const votingPhotoWidth = () => {
-    const cardW = Math.min(window.innerWidth * 0.92, 560);
+    const w = window.innerWidth;
+    const cardW = w < 720
+      ? Math.min(w * 0.78, 320)
+      : Math.min(w * 0.92, 560);
     const dpr = Math.min(3, window.devicePixelRatio || 2);
     return Math.min(2000, Math.ceil(cardW * dpr));
   };
@@ -334,7 +348,8 @@
       return;
     }
     const cardW = first.el.offsetWidth || 260;
-    state.step = cardW + GAP;
+    const gap = getGap();
+    state.step = cardW + gap;
     state.track = state.step * state.cards.length;
     state.vwHalf = (state.stage.clientWidth || window.innerWidth) / 2;
     state.cards.forEach((card, index) => {
@@ -400,6 +415,9 @@
       state.targetPalette = { ...paletteFor(car.applicationId) };
     }
     refreshPick(state);
+    if (state.visible) {
+      hydrateAround(state);
+    }
   };
 
   const updateCarousel = (state, dt, time) => {
@@ -484,6 +502,45 @@
   };
 
   // ---- Build DOM --------------------------------------------------------
+  const loadCardImage = (card, priority = "low") => {
+    if (!card || card.imageRequested) {
+      return;
+    }
+    card.imageRequested = true;
+
+    const { img, car } = card;
+    img.fetchPriority = priority;
+    img.decoding = "async";
+    img.sizes = "(max-width: 719px) 78vw, 560px";
+
+    const srcSet = votingPhotoSrcSet(car.photoUrl);
+    if (srcSet) {
+      img.srcset = srcSet;
+    }
+    img.src = votingPhotoUrl(car.photoUrl);
+
+    if (img.complete && img.naturalWidth) {
+      img.classList.add("is-loaded");
+    } else {
+      img.addEventListener("load", () => img.classList.add("is-loaded"), { once: true });
+    }
+  };
+
+  const hydrateAround = (state, radius = 3) => {
+    if (!state?.cards?.length) {
+      return;
+    }
+    const n = state.cards.length;
+    const center = state.activeIndex >= 0
+      ? state.activeIndex
+      : Math.floor(n / 2);
+
+    for (let offset = -radius; offset <= radius; offset += 1) {
+      const index = (center + offset + n * 4) % n;
+      loadCardImage(state.cards[index], Math.abs(offset) <= 1 ? "high" : "low");
+    }
+  };
+
   const createCard = (state, car, index) => {
     const el = document.createElement("article");
     el.className = "voting-card";
@@ -499,21 +556,12 @@
     const img = new Image();
     img.className = "voting-card__img";
     img.crossOrigin = "anonymous";
-    img.decoding = "async";
-    img.loading = "eager";
-    img.fetchPriority = "high";
     img.draggable = false;
     img.alt = car.vehicleLabel || "Show car";
     img.addEventListener("error", () => {
       el.classList.add("has-error");
     });
-    const photoW = votingPhotoWidth();
-    img.sizes = "(max-width: 720px) 92vw, 560px";
-    const srcSet = votingPhotoSrcSet(car.photoUrl);
-    if (srcSet) {
-      img.srcset = srcSet;
-    }
-    img.src = votingPhotoUrl(car.photoUrl, photoW);
+    // src is set later via hydrateAround — avoids flooding the network on open
 
     const fallback = document.createElement("div");
     fallback.className = "voting-card__fallback";
@@ -538,10 +586,10 @@
     frame.append(img, fallback, badge, meta);
     el.appendChild(frame);
 
-    return { el, img, car, x: index * state.step };
+    return { el, img, car, x: index * state.step, imageRequested: false };
   };
 
-  const buildCategory = (category) => {
+  const buildCategory = (category, isPrimary = false) => {
     const order = shuffle(cars);
 
     const section = document.createElement("section");
@@ -553,7 +601,7 @@
     heading.innerHTML = `
       <p class="eyebrow dark">Category</p>
       <h2></h2>
-      <p class="voting-category-hint">Drag or use the arrows, then pick the centered car.</p>
+      <p class="voting-category-hint">Swipe or use the arrows, then pick the centered car.</p>
     `;
     heading.querySelector("h2").textContent = category.label;
 
@@ -616,7 +664,7 @@
       activeIndex: -1,
       snapTarget: null,
       dragging: false,
-      visible: true,
+      visible: isPrimary,
       stage,
       cardsRoot,
       bg,
@@ -743,34 +791,6 @@
   });
 
   // ---- Startup ----------------------------------------------------------
-  const waitForImages = () => {
-    const imgs = [];
-    Object.values(carousels).forEach((state) => {
-      state.cards.forEach((card) => imgs.push(card.img));
-    });
-    return Promise.all(imgs.map((img) => {
-      if (img.complete) {
-        return Promise.resolve();
-      }
-      return new Promise((resolve) => {
-        img.addEventListener("load", resolve, { once: true });
-        img.addEventListener("error", resolve, { once: true });
-      });
-    }));
-  };
-
-  const decodeAllImages = () => {
-    const tasks = [];
-    Object.values(carousels).forEach((state) => {
-      state.cards.forEach((card) => {
-        if (typeof card.img.decode === "function") {
-          tasks.push(card.img.decode().catch(() => {}));
-        }
-      });
-    });
-    return Promise.allSettled(tasks);
-  };
-
   const measureAll = () => {
     Object.values(carousels).forEach((state) => {
       measure(state);
@@ -795,9 +815,12 @@
         const state = carousels[entry.target.dataset.categorySection];
         if (state) {
           state.visible = entry.isIntersecting;
+          if (entry.isIntersecting) {
+            hydrateAround(state);
+          }
         }
       });
-    }, { rootMargin: "120px 0px" });
+    }, { rootMargin: "160px 0px" });
 
     categoriesEl.querySelectorAll("[data-category-section]").forEach((section) => observer.observe(section));
   };
@@ -806,27 +829,14 @@
     categoriesEl.innerHTML = "";
     Object.keys(carousels).forEach((key) => delete carousels[key]);
 
-    categories.forEach((category) => buildCategory(category));
+    categories.forEach((category, index) => buildCategory(category, index === 0));
 
-    // First measure so cards have positions before images resolve.
+    // Show the carousel immediately — hydrate nearby photos in the background.
     measureAll();
-
-    await waitForImages();
-    await decodeAllImages();
-
-    // Force a paint pass so textures are ready.
     Object.values(carousels).forEach((state) => {
-      state.cards.forEach((card) => {
-        void card.el.offsetHeight;
-      });
-    });
-
-    if (REACTIVE_BG) {
-      buildPalette();
-    }
-    measureAll();
-
-    Object.values(carousels).forEach((state) => {
+      if (state.visible) {
+        hydrateAround(state, 4);
+      }
       state.stage.classList.add("is-ready");
     });
 

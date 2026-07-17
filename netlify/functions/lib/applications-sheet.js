@@ -228,9 +228,14 @@ const buildVehicleLabel = (application) => [
 ].map((part) => String(part || "").trim()).filter(Boolean).join(" ");
 
 const listApprovedVotingCars = async () => {
-  await ensureApplicationHeaders();
-
-  const rows = await getApplicationRows();
+  // Fast path: one Sheets values.get — skip tab/header ensure (already set up in production).
+  const sheets = await getSheetsClient();
+  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: applicationsRange(`A:${LAST_COLUMN_LETTER}`),
+  });
+  const rows = response.data.values || [];
 
   return rows
     .map((values, index) => parseApplicationRow(values, index + 1))

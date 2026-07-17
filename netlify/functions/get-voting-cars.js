@@ -6,11 +6,11 @@ const {
   isVotingOpen,
 } = require("./lib/vote-config");
 
-const jsonResponse = (statusCode, body) => ({
+const jsonResponse = (statusCode, body, cacheControl = "no-store") => ({
   statusCode,
   headers: {
     "Content-Type": "application/json",
-    "Cache-Control": "no-store",
+    "Cache-Control": cacheControl,
   },
   body: JSON.stringify(body),
 });
@@ -42,7 +42,7 @@ exports.handler = async (event) => {
       eventId: VOTING_EVENT_ID,
       eventName: VOTING_EVENT_NAME,
       cars,
-    });
+    }, "public, max-age=20, s-maxage=60, stale-while-revalidate=120");
   } catch (error) {
     console.error("Unable to load voting cars", error);
     return jsonResponse(500, {
