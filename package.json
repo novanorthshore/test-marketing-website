@@ -5,13 +5,14 @@
   "description": "Static Nova North Shore website with Netlify Functions for paid RSVPs.",
   "scripts": {
     "dev": "netlify dev",
-    "check:functions": "node --check netlify/functions/create-checkout-session.js && node --check netlify/functions/stripe-webhook.js && node --check netlify/functions/submit-application.js && node --check netlify/functions/create-show-checkout.js && node --check netlify/functions/process-approvals.js"
+    "check:functions": "node --check netlify/functions/create-checkout-session.js && node --check netlify/functions/stripe-webhook.js && node --check netlify/functions/submit-application.js && node --check netlify/functions/create-show-checkout.js && node --check netlify/functions/process-approvals.js && node --check netlify/functions/get-voting-cars.js && node --check netlify/functions/send-vote-code.js && node --check netlify/functions/submit-votes.js"
   },
   "dependencies": {
     "cloudinary": "^2.10.0",
     "googleapis": "^144.0.0",
     "resend": "^6.17.1",
-    "stripe": "^17.7.0"
+    "stripe": "^17.7.0",
+    "twilio": "^5.13.1"
   },
   "engines": {
     "node": ">=18"

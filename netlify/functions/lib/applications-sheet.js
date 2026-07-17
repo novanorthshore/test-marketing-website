@@ -221,6 +221,53 @@ const getApprovedUnsentApplications = async () => {
     ));
 };
 
+const buildVehicleLabel = (application) => [
+  application.vehicleYear,
+  application.vehicleMake,
+  application.vehicleModel,
+].map((part) => String(part || "").trim()).filter(Boolean).join(" ");
+
+const listApprovedVotingCars = async () => {
+  await ensureApplicationHeaders();
+
+  const rows = await getApplicationRows();
+
+  return rows
+    .map((values, index) => parseApplicationRow(values, index + 1))
+    .filter((row, index) => (
+      index > 0 &&
+      row.applicationId &&
+      row.status.toLowerCase() === "approved" &&
+      String(row.photoUrl || "").trim()
+    ))
+    .map((row) => ({
+      applicationId: row.applicationId,
+      carNumber: row.carNumber || "",
+      vehicleLabel: buildVehicleLabel(row),
+      vehicleYear: String(row.vehicleYear || "").trim(),
+      vehicleMake: String(row.vehicleMake || "").trim(),
+      vehicleModel: String(row.vehicleModel || "").trim(),
+      instagram: String(row.instagram || "").trim(),
+      photoUrl: String(row.photoUrl || "").trim(),
+    }))
+    .sort((a, b) => {
+      const aNumber = Number.parseInt(a.carNumber, 10);
+      const bNumber = Number.parseInt(b.carNumber, 10);
+      const aHasNumber = Number.isFinite(aNumber);
+      const bHasNumber = Number.isFinite(bNumber);
+
+      if (aHasNumber && bHasNumber && aNumber !== bNumber) {
+        return aNumber - bNumber;
+      }
+
+      if (aHasNumber !== bHasNumber) {
+        return aHasNumber ? -1 : 1;
+      }
+
+      return a.vehicleLabel.localeCompare(b.vehicleLabel);
+    });
+};
+
 const getApplicationById = async (applicationId) => {
   const normalizedId = String(applicationId || "").trim();
   if (!normalizedId) {
@@ -387,6 +434,7 @@ module.exports = {
   appendApplication,
   getApplicationById,
   getApprovedUnsentApplications,
+  listApprovedVotingCars,
   markAcceptanceEmailSent,
   markPaymentStatus,
   syncApplicationRowColor,

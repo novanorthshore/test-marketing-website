@@ -2,9 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Block Party Voting | Nova North Shore</title>
-    <meta name="description" content="Vote in the Nova North Shore Block Party Car Show." />
+    <meta name="description" content="Vote in the Nova North Shore Block Party Car Show. Pick one car in each category." />
+    <meta name="robots" content="noindex" />
     <meta name="theme-color" content="#050505" />
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -15,61 +16,99 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <header class="site-header is-scrolled" data-header data-solid-header>
+  <body class="voting-page">
+    <header class="voting-topbar">
       <a class="brand" href="index.html#home" aria-label="Nova North Shore home">
         <img class="brand-logo" src="assets/optimized/NovaLogowhite.webp" alt="Nova North Shore" />
       </a>
-
-      <nav class="desktop-nav" aria-label="Primary navigation">
-        <a href="index.html#home">Home</a>
-        <a href="index.html#story">Story</a>
-        <a href="index.html#events">Events</a>
-        <a href="block-party-event.html">Current Event</a>
-        <a href="index.html#gallery">Gallery</a>
-        <a href="index.html#partners">Partners</a>
-        <a href="index.html#contact">Contact</a>
-      </nav>
-
-      <div class="header-actions" aria-label="Social links">
-        <a href="https://www.instagram.com/novanorthshore/" aria-label="Nova North Shore on Instagram" rel="noreferrer">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="16" rx="5"></rect>
-            <circle cx="12" cy="12" r="3.5"></circle>
-            <path d="M17.5 6.5h.01"></path>
-          </svg>
-        </a>
-        <a href="https://www.facebook.com/NovaNorthShore/" aria-label="Nova North Shore on Facebook" rel="noreferrer">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M14 8h3V4h-3c-3 0-5 2-5 5v3H6v4h3v4h4v-4h3l1-4h-4V9c0-.6.4-1 1-1Z"></path>
-          </svg>
-        </a>
-        <a href="mailto:info@novanorthshore.com" aria-label="Email Nova North Shore">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 6h16v12H4Z"></path>
-            <path d="m4 7 8 6 8-6"></path>
-          </svg>
-        </a>
-      </div>
-
-      <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" data-menu-toggle>
-        <span></span>
-        <span></span>
-      </button>
-
-      <nav class="mobile-nav" aria-label="Mobile navigation" data-mobile-nav>
-        <a href="index.html#home">Home</a>
-        <a href="index.html#story">Story</a>
-        <a href="index.html#events">Events</a>
-        <a href="block-party-event.html">Current Event</a>
-        <a href="index.html#gallery">Gallery</a>
-        <a href="index.html#partners">Partners</a>
-        <a href="index.html#contact">Contact</a>
-      </nav>
+      <p class="voting-topbar-title">Block Party Voting</p>
     </header>
 
-    <main></main>
+    <main class="voting-main">
+      <section class="voting-hero">
+        <p class="eyebrow dark">Spectator Ballot</p>
+        <h1>Cast Your Votes</h1>
+        <p class="voting-hero-copy">
+          Swipe through every approved show car and pick one winner in each category. Verify with your phone at the end — one ballot per number.
+        </p>
+      </section>
 
-    <script src="script.js"></script>
+      <p class="voting-status" data-voting-status aria-live="polite">Loading show cars…</p>
+
+      <div class="voting-progress" data-voting-progress hidden>
+        <p data-voting-progress-text>0 of 3 selected</p>
+        <div class="voting-progress-track" aria-hidden="true">
+          <span class="voting-progress-fill" data-voting-progress-fill></span>
+        </div>
+      </div>
+
+      <div class="voting-categories" data-voting-categories></div>
+
+      <div class="voting-closed" data-voting-closed hidden>
+        <h2>Voting is closed</h2>
+        <p>Thanks for coming to the Block Party. Awards are being tallied on stage.</p>
+        <a class="button button-dark" href="block-party-event.html">Back to event</a>
+      </div>
+
+      <div class="voting-success" data-voting-success hidden>
+        <h2>You're all set</h2>
+        <p>Your votes are in. Thanks for helping pick the Block Party winners.</p>
+        <a class="button button-dark" href="block-party-event.html">Back to event</a>
+      </div>
+    </main>
+
+    <div class="voting-submit-bar" data-voting-submit-bar hidden>
+      <button type="button" class="voting-submit-button" data-voting-submit disabled>
+        Submit votes
+      </button>
+    </div>
+
+    <div class="voting-modal" data-voting-modal hidden>
+      <div class="voting-modal-backdrop" data-voting-modal-close></div>
+      <div class="voting-modal-sheet" role="dialog" aria-modal="true" aria-labelledby="voting-verify-title">
+        <button type="button" class="voting-modal-close" data-voting-modal-close aria-label="Close">Close</button>
+        <h2 id="voting-verify-title">Verify your ballot</h2>
+        <p class="voting-modal-copy">
+          Enter your mobile number. We’ll text you a code to confirm this is your one vote.
+        </p>
+
+        <form class="voting-verify-form" data-voting-verify-form>
+          <label for="voting-phone">Mobile phone</label>
+          <input
+            id="voting-phone"
+            name="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            placeholder="(604) 555-1234"
+            required
+            data-voting-phone
+          />
+
+          <div class="voting-code-field" data-voting-code-wrap hidden>
+            <label for="voting-code">Verification code</label>
+            <input
+              id="voting-code"
+              name="code"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="8"
+              placeholder="6-digit code"
+              data-voting-code
+            />
+          </div>
+
+          <p class="voting-modal-status" data-voting-modal-status aria-live="polite"></p>
+
+          <div class="voting-modal-actions">
+            <button type="button" class="button button-map" data-voting-send-code>Send code</button>
+            <button type="submit" class="button button-dark" data-voting-confirm disabled>Confirm votes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="block-party-voting.js"></script>
   </body>
 </html>
