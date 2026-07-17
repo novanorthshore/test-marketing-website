@@ -668,9 +668,11 @@
     const pickFacts = document.createElement("div");
     pickFacts.className = "voting-pick-facts";
 
-    const makeFact = (label, key) => {
+    const makeFact = (label, key, extraClass = "") => {
       const item = document.createElement("div");
-      item.className = "voting-pick-fact";
+      item.className = extraClass
+        ? `voting-pick-fact ${extraClass}`
+        : "voting-pick-fact";
       const kicker = document.createElement("span");
       kicker.className = "voting-pick-fact-label";
       kicker.textContent = label;
@@ -686,7 +688,7 @@
     const makeFactEl = makeFact("Make", "make");
     const modelFact = makeFact("Model", "model");
     const plateFact = makeFact("Plate", "plate");
-    const igFact = makeFact("Instagram", "ig");
+    const igFact = makeFact("Instagram", "ig", "voting-pick-fact--instagram");
 
     pickFacts.append(
       yearFact.item,
