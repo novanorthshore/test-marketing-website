@@ -339,9 +339,125 @@ const sendPaymentConfirmationEmail = async ({ application, sessionId, amountPaid
   return data;
 };
 
+const EVENT_INFO_FLYER_CID = "nova-event-info-flyer";
+
+const buildEventInfoEmail = ({ application }) => {
+  const firstName = String(application.name || "").trim().split(/\s+/)[0] || "there";
+  const vehicleLabel = buildVehicleLabel(application) || "your vehicle";
+
+  const subject = "Event Info - Nova North Shore Block Party Car Show";
+
+  const html = `<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#111;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="background:#0a0a0a;padding:28px 32px;text-align:center;">
+                <h1 style="margin:0;color:#ffffff;font-size:22px;letter-spacing:0.06em;text-transform:uppercase;">Nova North Shore</h1>
+                <p style="margin:6px 0 0;color:#c7d0a8;font-size:15px;letter-spacing:0.14em;text-transform:uppercase;">Block Party Car Show</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px;">
+                <p style="margin:0 0 16px;font-size:16px;">Hi ${escapeHtml(firstName)},</p>
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.5;">
+                  Final event info for Sunday — everything you need for your <strong>${escapeHtml(vehicleLabel)}</strong> is in the flyer below.
+                </p>
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.5;color:#333;">
+                  <strong>Show car roll-in:</strong> 2:00 PM – 3:00 PM<br />
+                  <strong>Entrance:</strong> West side of 14th Street, from Pemberton Avenue<br />
+                  All registered show vehicles must be parked before the event opens at 3:00 PM.
+                </p>
+                <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#555;">
+                  Save this email and bring it with you to check-in.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 16px 32px;text-align:center;">
+                <img
+                  src="cid:${EVENT_INFO_FLYER_CID}"
+                  alt="Nova Block Party Car Show event info flyer"
+                  width="568"
+                  style="display:block;width:100%;max-width:568px;height:auto;border:0;margin:0 auto;"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px 32px;">
+                <p style="margin:0 0 4px;font-size:15px;">See you on Lloyd Avenue.</p>
+                <p style="margin:24px 0 0;font-size:15px;font-weight:700;">Giant Tsai</p>
+                <p style="margin:2px 0 0;font-size:14px;color:#555;">Founder, Nova North Shore</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#0a0a0a;padding:18px 32px;text-align:center;">
+                <p style="margin:0;color:#888;font-size:12px;">Nova North Shore &bull; North Vancouver, BC</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+  const text = [
+    `Hi ${firstName},`,
+    "",
+    `Final event info for Sunday — everything you need for your ${vehicleLabel} is in the attached flyer.`,
+    "",
+    "Show car roll-in: 2:00 PM – 3:00 PM",
+    "Entrance: West side of 14th Street, from Pemberton Avenue",
+    "All registered show vehicles must be parked before the event opens at 3:00 PM.",
+    "",
+    "See you on Lloyd Avenue.",
+    "Giant Tsai",
+    "Founder, Nova North Shore",
+  ].join("\n");
+
+  return { subject, html, text };
+};
+
+const sendEventInfoEmail = async ({ application, flyerBuffer }) => {
+  if (!flyerBuffer || !Buffer.isBuffer(flyerBuffer)) {
+    throw new Error("Missing event info flyer attachment.");
+  }
+
+  const resend = new Resend(requiredEnv("RESEND_API_KEY"));
+  const { subject, html, text } = buildEventInfoEmail({ application });
+
+  const { data, error } = await resend.emails.send({
+    from: getFromAddress(),
+    to: [application.email],
+    subject,
+    html,
+    text,
+    attachments: [
+      {
+        filename: "nova-block-party-event-info.png",
+        content: flyerBuffer,
+        contentId: EVENT_INFO_FLYER_CID,
+        contentType: "image/png",
+      },
+    ],
+  });
+
+  if (error) {
+    throw new Error(`Resend failed: ${error.message || JSON.stringify(error)}`);
+  }
+
+  return data;
+};
+
 module.exports = {
   buildAcceptanceEmail,
   sendAcceptanceEmail,
   buildPaymentConfirmationEmail,
   sendPaymentConfirmationEmail,
+  buildEventInfoEmail,
+  sendEventInfoEmail,
 };

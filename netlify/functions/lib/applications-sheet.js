@@ -1,4 +1,5 @@
 const { getSheetsClient, requiredEnv } = require("./google-auth");
+const { getEligibleVotingCategoryIds } = require("./vote-config");
 
 const APPLICATION_COLUMNS = [
   "Timestamp",
@@ -22,6 +23,9 @@ const APPLICATION_COLUMNS = [
   "Payment Status",
   "Stripe Session ID",
   "Notes",
+  "Voting Category",
+  "Modified",
+  "Event Info Email Sent",
 ];
 
 const COL = {
@@ -46,9 +50,12 @@ const COL = {
   paymentStatus: 18,
   stripeSessionId: 19,
   notes: 20,
+  votingCategory: 21,
+  modified: 22,
+  eventInfoEmailSent: 23,
 };
 
-const LAST_COLUMN_LETTER = "U";
+const LAST_COLUMN_LETTER = "X";
 
 const columnLetter = (columnIndex) => {
   let column = "";
@@ -112,18 +119,39 @@ const ensureApplicationHeaders = async () => {
     range: applicationsRange("1:1"),
   });
 
-  if (current.data.values && current.data.values.length > 0 && current.data.values[0].length > 0) {
+  const existing = (current.data.values && current.data.values[0]) || [];
+
+  if (existing.length === 0) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: applicationsRange(`A1:${LAST_COLUMN_LETTER}1`),
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [APPLICATION_COLUMNS],
+      },
+    });
     return;
   }
 
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: applicationsRange(`A1:${LAST_COLUMN_LETTER}1`),
-    valueInputOption: "RAW",
-    requestBody: {
-      values: [APPLICATION_COLUMNS],
-    },
-  });
+  // Fill blank trailing header cells (e.g. Voting Category / Event Info) without
+  // overwriting any header the sheet already has.
+  const nextHeaders = APPLICATION_COLUMNS.map((label, index) => (
+    String(existing[index] || "").trim() || label
+  ));
+  const needsUpdate = nextHeaders.some((label, index) => (
+    String(existing[index] || "").trim() !== label
+  ));
+
+  if (needsUpdate) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: applicationsRange(`A1:${LAST_COLUMN_LETTER}1`),
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [nextHeaders],
+      },
+    });
+  }
 };
 
 const getApplicationRows = async () => {
@@ -162,6 +190,9 @@ const parseApplicationRow = (values, rowNumber) => ({
   paymentStatus: String(values[COL.paymentStatus] || "").trim(),
   stripeSessionId: String(values[COL.stripeSessionId] || "").trim(),
   notes: values[COL.notes] || "",
+  votingCategory: String(values[COL.votingCategory] || values[COL.category] || "").trim(),
+  modifiedFlag: String(values[COL.modified] || "").trim(),
+  eventInfoEmailSent: String(values[COL.eventInfoEmailSent] || "").trim(),
 });
 
 const buildApplicationRow = ({ applicationId, application, photo, photoUploadFailed = false }) => {
@@ -221,6 +252,22 @@ const getApprovedUnsentApplications = async () => {
     ));
 };
 
+const getApprovedUnsentEventInfoApplications = async () => {
+  await ensureApplicationHeaders();
+
+  const rows = await getApplicationRows();
+
+  return rows
+    .map((values, index) => parseApplicationRow(values, index + 1))
+    .filter((row, index) => (
+      index > 0 &&
+      row.applicationId &&
+      row.status.toLowerCase() === "approved" &&
+      row.email &&
+      !row.eventInfoEmailSent
+    ));
+};
+
 const buildVehicleLabel = (application) => [
   application.vehicleYear,
   application.vehicleMake,
@@ -245,17 +292,25 @@ const listApprovedVotingCars = async () => {
       row.status.toLowerCase() === "approved" &&
       String(row.photoUrl || "").trim()
     ))
-    .map((row) => ({
-      applicationId: row.applicationId,
-      carNumber: row.carNumber || "",
-      vehicleLabel: buildVehicleLabel(row),
-      vehicleYear: String(row.vehicleYear || "").trim(),
-      vehicleMake: String(row.vehicleMake || "").trim(),
-      vehicleModel: String(row.vehicleModel || "").trim(),
-      licensePlate: String(row.licensePlate || "").trim(),
-      instagram: String(row.instagram || "").trim(),
-      photoUrl: String(row.photoUrl || "").trim(),
-    }))
+    .map((row) => {
+      const votingCategory = String(row.votingCategory || row.category || "").trim();
+      const modifiedFlag = String(row.modifiedFlag || "").trim();
+
+      return {
+        applicationId: row.applicationId,
+        carNumber: row.carNumber || "",
+        vehicleLabel: buildVehicleLabel(row),
+        vehicleYear: String(row.vehicleYear || "").trim(),
+        vehicleMake: String(row.vehicleMake || "").trim(),
+        vehicleModel: String(row.vehicleModel || "").trim(),
+        licensePlate: String(row.licensePlate || "").trim(),
+        instagram: String(row.instagram || "").trim(),
+        photoUrl: String(row.photoUrl || "").trim(),
+        votingCategory,
+        modifiedFlag,
+        eligibleCategoryIds: getEligibleVotingCategoryIds({ votingCategory, modifiedFlag }),
+      };
+    })
     .sort((a, b) => {
       const aNumber = Number.parseInt(a.carNumber, 10);
       const bNumber = Number.parseInt(b.carNumber, 10);
@@ -313,6 +368,16 @@ const markAcceptanceEmailSent = async (applicationId, timestamp = new Date().toI
   }
 
   await setCellValue(row.rowNumber, COL.acceptanceEmailSent, timestamp);
+  return true;
+};
+
+const markEventInfoEmailSent = async (applicationId, timestamp = new Date().toISOString()) => {
+  const row = await getApplicationById(applicationId);
+  if (!row) {
+    return false;
+  }
+
+  await setCellValue(row.rowNumber, COL.eventInfoEmailSent, timestamp);
   return true;
 };
 
@@ -440,8 +505,10 @@ module.exports = {
   appendApplication,
   getApplicationById,
   getApprovedUnsentApplications,
+  getApprovedUnsentEventInfoApplications,
   listApprovedVotingCars,
   markAcceptanceEmailSent,
+  markEventInfoEmailSent,
   markPaymentStatus,
   syncApplicationRowColor,
   syncAllApplicationRowColors,

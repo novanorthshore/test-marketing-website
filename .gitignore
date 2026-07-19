@@ -10,3 +10,7 @@ node_modules
 .env.*
 !.env.example
 .plans
+
+# Local exports / working data
+*.csv
+Nova Sponsorship Tracker*.csv

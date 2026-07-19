@@ -73,7 +73,12 @@ const ensureVoteHeaders = async () => {
   });
 
   if (current.data.values && current.data.values.length > 0 && current.data.values[0].length > 0) {
-    return;
+    const existing = current.data.values[0].map((value) => String(value || "").trim());
+    const matches = VOTE_COLUMNS.length === existing.length
+      && VOTE_COLUMNS.every((header, index) => header === existing[index]);
+    if (matches) {
+      return;
+    }
   }
 
   await sheets.spreadsheets.values.update({

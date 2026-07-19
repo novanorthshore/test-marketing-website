@@ -26,19 +26,30 @@ exports.handler = async (event) => {
         ok: false,
         open: false,
         error: "Voting is closed right now.",
-        categories: VOTING_CATEGORIES,
+        categories: VOTING_CATEGORIES.map(({ id, label }) => ({ id, label })),
         eventId: VOTING_EVENT_ID,
         eventName: VOTING_EVENT_NAME,
         cars: [],
       });
     }
 
-    const cars = await listApprovedVotingCars();
+    const cars = (await listApprovedVotingCars()).map((car) => ({
+      applicationId: car.applicationId,
+      carNumber: car.carNumber,
+      vehicleLabel: car.vehicleLabel,
+      vehicleYear: car.vehicleYear,
+      vehicleMake: car.vehicleMake,
+      vehicleModel: car.vehicleModel,
+      licensePlate: car.licensePlate,
+      instagram: car.instagram,
+      photoUrl: car.photoUrl,
+      eligibleCategoryIds: car.eligibleCategoryIds || [],
+    }));
 
     return jsonResponse(200, {
       ok: true,
       open: true,
-      categories: VOTING_CATEGORIES,
+      categories: VOTING_CATEGORIES.map(({ id, label }) => ({ id, label })),
       eventId: VOTING_EVENT_ID,
       eventName: VOTING_EVENT_NAME,
       cars,

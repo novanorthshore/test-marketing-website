@@ -91,6 +91,15 @@ exports.handler = async (event) => {
         });
       }
 
+      const eligible = Array.isArray(car.eligibleCategoryIds)
+        ? car.eligibleCategoryIds
+        : [];
+      if (!eligible.includes(category.id)) {
+        return jsonResponse(400, {
+          error: `"${car.vehicleLabel}" is not eligible for ${category.label}. Refresh and try again.`,
+        });
+      }
+
       carLabelsById[applicationId] = car.carNumber
         ? `#${car.carNumber} ${car.vehicleLabel}`
         : car.vehicleLabel;

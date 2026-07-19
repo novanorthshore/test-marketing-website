@@ -151,7 +151,7 @@
 
   const syncProgress = () => {
     const count = selectedCount();
-    const total = categories.length || 3;
+    const total = categories.length || 5;
 
     if (progressEl) {
       progressEl.hidden = categories.length === 0;
@@ -612,7 +612,13 @@
   };
 
   const buildCategory = (category, isPrimary = false) => {
-    const order = shuffle(cars);
+    const order = shuffle(
+      cars.filter((car) => (
+        Array.isArray(car.eligibleCategoryIds)
+          ? car.eligibleCategoryIds.includes(category.id)
+          : true
+      )),
+    );
 
     const section = document.createElement("section");
     section.className = "voting-category";
@@ -626,6 +632,15 @@
       <p class="voting-category-hint">Swipe or use the arrows, then pick the centered car.</p>
     `;
     heading.querySelector("h2").textContent = category.label;
+
+    if (!order.length) {
+      const empty = document.createElement("p");
+      empty.className = "voting-category-empty";
+      empty.textContent = "No cars in this category yet.";
+      section.append(heading, empty);
+      categoriesRoot.appendChild(section);
+      return null;
+    }
 
     const stage = document.createElement("div");
     stage.className = "voting-stage";
