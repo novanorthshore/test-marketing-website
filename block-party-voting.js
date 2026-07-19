@@ -1077,17 +1077,35 @@
     setModalStatus("");
 
     try {
-      const response = await fetch("/.netlify/functions/submit-votes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code, selections }),
-      });
-      const result = await response.json().catch(() => null);
+      let result = null;
+      let response = null;
 
-      if (!response.ok || !result?.ok) {
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        response = await fetch("/.netlify/functions/submit-votes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, code, selections }),
+        });
+        result = await response.json().catch(() => null);
+
+        if (response.ok && result?.ok) {
+          break;
+        }
+
         if (result?.alreadyVoted) {
           throw new Error("This phone number has already voted.");
         }
+
+        const canRetry = Boolean(result?.retryable) || response.status === 503;
+        if (!canRetry || attempt === 3) {
+          throw new Error(result?.error || "Unable to submit votes.");
+        }
+
+        setModalStatus("Voting is busy — retrying…", "error");
+        await new Promise((resolve) => setTimeout(resolve, 800 * attempt));
+      }
+
+      if (!response?.ok || !result?.ok) {
         throw new Error(result?.error || "Unable to submit votes.");
       }
 

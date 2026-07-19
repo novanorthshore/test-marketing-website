@@ -1,7 +1,10 @@
 const {
   isVotingOpen,
 } = require("./lib/vote-config");
-const { hasPhoneVoted } = require("./lib/voting-sheet");
+const {
+  hasPhoneVoted,
+  isRetryableSheetsError,
+} = require("./lib/voting-sheet");
 const {
   normalizePhoneE164,
   sendVoteVerificationCode,
@@ -84,6 +87,13 @@ exports.handler = async (event) => {
       message: error.message,
       code: error.code,
     });
+
+    if (isRetryableSheetsError(error)) {
+      return jsonResponse(503, {
+        error: "Voting is busy right now. Please wait a moment and try again.",
+        retryable: true,
+      });
+    }
 
     return jsonResponse(500, {
       error: "Unable to send a verification code right now. Please try again.",

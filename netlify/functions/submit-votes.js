@@ -5,7 +5,11 @@ const {
   getVotingCategoryIds,
   isVotingOpen,
 } = require("./lib/vote-config");
-const { appendBallot } = require("./lib/voting-sheet");
+const {
+  appendBallot,
+  hasPhoneVoted,
+  isRetryableSheetsError,
+} = require("./lib/voting-sheet");
 const {
   normalizePhoneE164,
   checkVoteVerificationCode,
@@ -70,6 +74,14 @@ exports.handler = async (event) => {
   }
 
   try {
+    // Reject already-voted phones before burning a Twilio Verify check when possible.
+    if (await hasPhoneVoted(phoneE164)) {
+      return jsonResponse(409, {
+        error: "This phone number has already voted.",
+        alreadyVoted: true,
+      });
+    }
+
     const verification = await checkVoteVerificationCode(phoneE164, code);
     if (!verification.valid) {
       return jsonResponse(400, {
@@ -138,6 +150,13 @@ exports.handler = async (event) => {
       message: error.message,
       code: error.code,
     });
+
+    if (isRetryableSheetsError(error)) {
+      return jsonResponse(503, {
+        error: "Voting is busy right now. Please wait a moment and submit again.",
+        retryable: true,
+      });
+    }
 
     return jsonResponse(500, {
       error: "Unable to submit your votes right now. Please try again.",
