@@ -2,18 +2,39 @@ const { randomUUID } = require("crypto");
 const { listApprovedVotingCars } = require("./lib/applications-sheet");
 const {
   VOTING_CATEGORIES,
+  getVotingVerificationMode,
   getVotingCategoryIds,
   isVotingOpen,
 } = require("./lib/vote-config");
 const {
   appendBallot,
+  hasEmailOrDeviceVoted,
   hasPhoneVoted,
+  hashPhone,
   isRetryableSheetsError,
+  mirrorBallotToSheet,
 } = require("./lib/voting-sheet");
 const {
   normalizePhoneE164,
   checkVoteVerificationCode,
 } = require("./lib/twilio-verify");
+const {
+  hashDevice,
+  hashEmail,
+  isValidDeviceId,
+  isValidEmail,
+  normalizeDeviceId,
+  normalizeEmail,
+  verifyEmailOtpChallenge,
+} = require("./lib/email-otp");
+const {
+  cacheVotingCars,
+  getCachedVotingCars,
+  hasRedisIdentityVoted,
+  isVotingRedisConfigured,
+  recordRedisBallot,
+} = require("./lib/voting-redis");
+const { buildRiskHashes } = require("./lib/voting-risk");
 
 const jsonResponse = (statusCode, body) => ({
   statusCode,
@@ -23,6 +44,22 @@ const jsonResponse = (statusCode, body) => ({
   },
   body: JSON.stringify(body),
 });
+
+const withTimeout = (promise, milliseconds, message) => (
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), milliseconds);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  })
+);
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -40,15 +77,34 @@ exports.handler = async (event) => {
     return jsonResponse(400, { error: "Invalid request body." });
   }
 
-  const phoneE164 = normalizePhoneE164(payload.phone);
+  const verificationMode = getVotingVerificationMode();
+  const phoneE164 = verificationMode === "twilio"
+    ? normalizePhoneE164(payload.phone)
+    : "";
+  const email = verificationMode === "email"
+    ? normalizeEmail(payload.email)
+    : "";
+  const deviceId = verificationMode === "email"
+    ? normalizeDeviceId(payload.deviceId)
+    : "";
   const code = String(payload.code || "").trim();
   const selections = payload.selections && typeof payload.selections === "object"
     ? payload.selections
     : null;
 
-  if (!phoneE164) {
+  if (verificationMode === "twilio" && !phoneE164) {
     return jsonResponse(400, {
       error: "Enter a valid mobile phone number with area code.",
+    });
+  }
+
+  if (verificationMode === "email" && !isValidEmail(email)) {
+    return jsonResponse(400, { error: "Enter a valid email address." });
+  }
+
+  if (verificationMode === "email" && !isValidDeviceId(deviceId)) {
+    return jsonResponse(400, {
+      error: "Unable to identify this browser. Refresh and try again.",
     });
   }
 
@@ -74,22 +130,67 @@ exports.handler = async (event) => {
   }
 
   try {
-    // Reject already-voted phones before burning a Twilio Verify check when possible.
-    if (await hasPhoneVoted(phoneE164)) {
-      return jsonResponse(409, {
-        error: "This phone number has already voted.",
-        alreadyVoted: true,
+    let emailHash = "";
+    let deviceHash = "";
+
+    if (verificationMode === "email") {
+      emailHash = hashEmail(email);
+      deviceHash = hashDevice(deviceId);
+
+      const alreadyVoted = isVotingRedisConfigured()
+        ? await hasRedisIdentityVoted({ identityHash: emailHash, deviceHash })
+        : await hasEmailOrDeviceVoted({ emailHash, deviceHash });
+      if (alreadyVoted) {
+        return jsonResponse(409, {
+          error: "This email or device has already voted.",
+          alreadyVoted: true,
+        });
+      }
+
+      const verification = verifyEmailOtpChallenge({
+        challenge: payload.challenge,
+        code,
+        email,
+        deviceId,
       });
+      if (!verification.valid) {
+        const expired = verification.reason === "expired";
+        return jsonResponse(400, {
+          error: expired
+            ? "That code has expired. Request a new code and try again."
+            : "That verification code is invalid. Check the email and try again.",
+        });
+      }
+    } else {
+      // Reject already-voted phones before burning a Twilio Verify check when possible.
+      const phoneHash = hashPhone(phoneE164);
+      const alreadyVoted = isVotingRedisConfigured()
+        ? await hasRedisIdentityVoted({ identityHash: phoneHash })
+        : await hasPhoneVoted(phoneE164);
+      if (alreadyVoted) {
+        return jsonResponse(409, {
+          error: "This phone number has already voted.",
+          alreadyVoted: true,
+        });
+      }
+
+      const verification = await checkVoteVerificationCode(phoneE164, code);
+      if (!verification.valid) {
+        return jsonResponse(400, {
+          error: "That verification code is invalid or expired. Request a new code and try again.",
+        });
+      }
     }
 
-    const verification = await checkVoteVerificationCode(phoneE164, code);
-    if (!verification.valid) {
-      return jsonResponse(400, {
-        error: "That verification code is invalid or expired. Request a new code and try again.",
-      });
+    let cars = isVotingRedisConfigured()
+      ? await getCachedVotingCars()
+      : null;
+    if (!cars) {
+      cars = await listApprovedVotingCars();
+      if (isVotingRedisConfigured()) {
+        await cacheVotingCars(cars);
+      }
     }
-
-    const cars = await listApprovedVotingCars();
     const carsById = new Map(cars.map((car) => [car.applicationId, car]));
     const carLabelsById = {};
 
@@ -125,13 +226,71 @@ exports.handler = async (event) => {
       ])
     );
 
-    await appendBallot({
+    const userAgent = event.headers["user-agent"] || "";
+    const { fingerprintHash, networkHash } = buildRiskHashes(
+      event,
+      payload.deviceSignature
+    );
+    const ballotInput = {
       ballotId,
       phoneE164,
+      emailHash,
+      deviceHash,
+      verificationMethod: verificationMode,
       selections: normalizedSelections,
       carLabelsById,
-      userAgent: event.headers["user-agent"] || "",
-    });
+      userAgent,
+      possibleDuplicate: false,
+      riskScore: 0,
+      riskReasons: "",
+      fingerprintHash,
+      networkHash,
+    };
+
+    if (isVotingRedisConfigured()) {
+      const identityHash = verificationMode === "email"
+        ? emailHash
+        : hashPhone(phoneE164);
+      const redisResult = await recordRedisBallot({
+        ballotId,
+        identityHash,
+        deviceHash,
+        fingerprintHash,
+        networkHash,
+        selections: normalizedSelections,
+        ballot: {
+          ballotId,
+          timestamp: new Date().toISOString(),
+          identityHash,
+          deviceHash,
+          verificationMethod: verificationMode,
+          selections: normalizedSelections,
+          carLabelsById,
+          userAgent: String(userAgent).slice(0, 240),
+          fingerprintHash,
+          networkHash,
+        },
+      });
+      ballotInput.possibleDuplicate = redisResult.possibleDuplicate;
+      ballotInput.riskScore = redisResult.riskScore;
+      ballotInput.riskReasons = redisResult.riskReasons;
+
+      // Redis is authoritative. A Sheets quota problem must never reject a vote.
+      try {
+        await withTimeout(
+          mirrorBallotToSheet(ballotInput),
+          2500,
+          "Sheets mirror timed out after Redis commit."
+        );
+      } catch (error) {
+        console.error("Ballot saved to Redis but Sheets mirror failed", {
+          ballotId,
+          message: error.message,
+        });
+      }
+    } else {
+      await appendBallot(ballotInput);
+    }
 
     return jsonResponse(200, {
       ok: true,
@@ -141,7 +300,9 @@ exports.handler = async (event) => {
   } catch (error) {
     if (error.code === "ALREADY_VOTED") {
       return jsonResponse(409, {
-        error: "This phone number has already voted.",
+        error: verificationMode === "email"
+          ? "This email or device has already voted."
+          : "This phone number has already voted.",
         alreadyVoted: true,
       });
     }

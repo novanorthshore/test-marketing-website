@@ -453,6 +453,80 @@ const sendEventInfoEmail = async ({ application, flyerBuffer }) => {
   return data;
 };
 
+const buildVotingOtpEmail = ({ code }) => {
+  const safeCode = escapeHtml(code);
+  const subject = `${code} is your Nova Block Party voting code`;
+  const html = `<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#111;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="background:#0a0a0a;padding:26px 30px;text-align:center;">
+                <h1 style="margin:0;color:#ffffff;font-size:21px;letter-spacing:0.06em;text-transform:uppercase;">Nova North Shore</h1>
+                <p style="margin:6px 0 0;color:#c7d0a8;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;">Block Party Voting</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:34px 30px;text-align:center;">
+                <p style="margin:0 0 18px;font-size:16px;line-height:1.5;">Enter this code to confirm your ballot:</p>
+                <p style="margin:0 0 20px;font-size:38px;line-height:1;font-weight:800;letter-spacing:0.18em;">${safeCode}</p>
+                <p style="margin:0;color:#555;font-size:14px;line-height:1.5;">This code expires in 10 minutes. If you did not request it, you can ignore this email.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+  const text = [
+    "Nova North Shore Block Party Voting",
+    "",
+    `Your verification code is: ${code}`,
+    "",
+    "This code expires in 10 minutes. If you did not request it, ignore this email.",
+  ].join("\n");
+
+  return { subject, html, text };
+};
+
+const sendVotingOtpEmail = async ({ email, code }) => {
+  const resend = new Resend(requiredEnv("RESEND_API_KEY"));
+  const { subject, html, text } = buildVotingOtpEmail({ code });
+  let lastError;
+
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const { data, error } = await resend.emails.send({
+      from: getFromAddress(),
+      to: [email],
+      subject,
+      html,
+      text,
+    });
+
+    if (!error) {
+      return data;
+    }
+
+    lastError = error;
+    const status = Number(error.statusCode || error.status || 0);
+    const retryable = status === 429
+      || status >= 500
+      || /rate limit|too many requests|temporar/i.test(String(error.message || ""));
+    if (!retryable || attempt === 4) {
+      break;
+    }
+
+    const delay = (500 * (2 ** (attempt - 1))) + Math.floor(Math.random() * 350);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+
+  throw new Error(`Resend failed: ${lastError?.message || JSON.stringify(lastError)}`);
+};
+
 module.exports = {
   buildAcceptanceEmail,
   sendAcceptanceEmail,
@@ -460,4 +534,6 @@ module.exports = {
   sendPaymentConfirmationEmail,
   buildEventInfoEmail,
   sendEventInfoEmail,
+  buildVotingOtpEmail,
+  sendVotingOtpEmail,
 };

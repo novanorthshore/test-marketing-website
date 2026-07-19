@@ -31,7 +31,7 @@
       <section class="voting-hero">
         <p class="eyebrow dark">Spectator Ballot</p>
         <h1>Cast Your Votes</h1>
-        <p class="voting-hero-copy">
+        <p class="voting-hero-copy" data-voting-hero-copy>
           Pick one winner in each category — People’s Choice, American Muscle, Euro Classic, JDM, and Modified Builds. Verify with your phone at the end: one ballot per number.
         </p>
       </section>
@@ -70,23 +70,38 @@
       <div class="voting-modal-backdrop" data-voting-modal-close></div>
       <div class="voting-modal-sheet" role="dialog" aria-modal="true" aria-labelledby="voting-verify-title">
         <button type="button" class="voting-modal-close" data-voting-modal-close aria-label="Close">Close</button>
-        <h2 id="voting-verify-title">Verify your ballot</h2>
-        <p class="voting-modal-copy">
+        <h2 id="voting-verify-title" data-voting-verify-title>Verify your ballot</h2>
+        <p class="voting-modal-copy" data-voting-verify-copy>
           Enter your mobile number. We’ll text you a code to confirm this is your one vote.
         </p>
 
         <form class="voting-verify-form" data-voting-verify-form>
-          <label for="voting-phone">Mobile phone</label>
-          <input
-            id="voting-phone"
-            name="phone"
-            type="tel"
-            inputmode="tel"
-            autocomplete="tel"
-            placeholder="(604) 555-1234"
-            required
-            data-voting-phone
-          />
+          <div data-voting-phone-wrap>
+            <label for="voting-phone">Mobile phone</label>
+            <input
+              id="voting-phone"
+              name="phone"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="(604) 555-1234"
+              required
+              data-voting-phone
+            />
+          </div>
+
+          <div data-voting-email-wrap hidden>
+            <label for="voting-email">Email address</label>
+            <input
+              id="voting-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              data-voting-email
+            />
+          </div>
 
           <div class="voting-code-field" data-voting-code-wrap hidden>
             <label for="voting-code">Verification code</label>

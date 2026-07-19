@@ -81,6 +81,11 @@ const isVotingOpen = () => {
   return value === "true" || value === "1" || value === "yes";
 };
 
+const getVotingVerificationMode = () => {
+  const mode = String(process.env.VOTING_VERIFICATION_MODE || "twilio").trim().toLowerCase();
+  return mode === "email" ? "email" : "twilio";
+};
+
 const getVotingCategoryIds = () => VOTING_CATEGORIES.map((category) => category.id);
 
 const getVotingCategoryById = (categoryId) => (
@@ -92,6 +97,7 @@ module.exports = {
   VOTING_EVENT_ID: BLOCK_PARTY_CONFIG.id,
   VOTING_EVENT_NAME: BLOCK_PARTY_CONFIG.name,
   isVotingOpen,
+  getVotingVerificationMode,
   getVotingCategoryIds,
   getVotingCategoryById,
   getEligibleVotingCategoryIds,

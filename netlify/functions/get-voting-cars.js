@@ -3,8 +3,13 @@ const {
   VOTING_CATEGORIES,
   VOTING_EVENT_ID,
   VOTING_EVENT_NAME,
+  getVotingVerificationMode,
   isVotingOpen,
 } = require("./lib/vote-config");
+const {
+  cacheVotingCars,
+  isVotingRedisConfigured,
+} = require("./lib/voting-redis");
 
 const jsonResponse = (statusCode, body, cacheControl = "no-store") => ({
   statusCode,
@@ -29,6 +34,7 @@ exports.handler = async (event) => {
         categories: VOTING_CATEGORIES.map(({ id, label }) => ({ id, label })),
         eventId: VOTING_EVENT_ID,
         eventName: VOTING_EVENT_NAME,
+        verificationMode: getVotingVerificationMode(),
         cars: [],
       });
     }
@@ -46,14 +52,25 @@ exports.handler = async (event) => {
       eligibleCategoryIds: car.eligibleCategoryIds || [],
     }));
 
+    if (isVotingRedisConfigured()) {
+      try {
+        await cacheVotingCars(cars);
+      } catch (error) {
+        console.error("Unable to refresh Redis voting car cache", {
+          message: error.message,
+        });
+      }
+    }
+
     return jsonResponse(200, {
       ok: true,
       open: true,
       categories: VOTING_CATEGORIES.map(({ id, label }) => ({ id, label })),
       eventId: VOTING_EVENT_ID,
       eventName: VOTING_EVENT_NAME,
+      verificationMode: getVotingVerificationMode(),
       cars,
-    }, "public, max-age=20, s-maxage=60, stale-while-revalidate=120");
+    }, "public, max-age=5, s-maxage=5");
   } catch (error) {
     console.error("Unable to load voting cars", error);
     return jsonResponse(500, {

@@ -11,17 +11,35 @@ const VOTE_COLUMNS = [
     `${category.label} Car`,
   ]),
   "User Agent",
+  "Email Hash",
+  "Device Hash",
+  "Verification Method",
+  "Possible Duplicate",
+  "Risk Score",
+  "Risk Reasons",
+  "Fingerprint Hash",
+  "Network Hash",
 ];
 
+const CATEGORY_COLUMNS_START = 3;
+const USER_AGENT_COLUMN = CATEGORY_COLUMNS_START + (VOTING_CATEGORIES.length * 2);
 const COL = {
   timestamp: 0,
   ballotId: 1,
   phoneHash: 2,
-  userAgent: VOTE_COLUMNS.length - 1,
+  userAgent: USER_AGENT_COLUMN,
+  emailHash: USER_AGENT_COLUMN + 1,
+  deviceHash: USER_AGENT_COLUMN + 2,
+  verificationMethod: USER_AGENT_COLUMN + 3,
+  possibleDuplicate: USER_AGENT_COLUMN + 4,
+  riskScore: USER_AGENT_COLUMN + 5,
+  riskReasons: USER_AGENT_COLUMN + 6,
+  fingerprintHash: USER_AGENT_COLUMN + 7,
+  networkHash: USER_AGENT_COLUMN + 8,
 };
 
 const LAST_COLUMN_LETTER = String.fromCharCode(64 + VOTE_COLUMNS.length);
-const RESULTS_MARKER = "nova-voting-results-v1";
+const RESULTS_MARKER = "nova-voting-results-v2";
 const TALLY_BLOCK_HEIGHT = 40;
 const TALLY_START_ROW = 12;
 
@@ -169,14 +187,15 @@ const buildResultsGrid = () => {
 
     grid[4 + index] = [
       category.label,
-      `=IFERROR(INDEX(A${tallyFormulaRow}:A${tallyEndRow},1),"Waiting for votes")`,
-      `=IFERROR(INDEX(B${tallyFormulaRow}:B${tallyEndRow},1),"")`,
+      // Row 1 of QUERY output is headers ("Car" / "Votes"); row 2 is the leader.
+      `=IFERROR(INDEX(A${tallyFormulaRow}:A${tallyEndRow},2),"Waiting for votes")`,
+      `=IFERROR(INDEX(B${tallyFormulaRow}:B${tallyEndRow},2),"")`,
     ];
 
     grid[tallyTitleRow - 1] = [`${category.label} — full standings`, "", ""];
-    grid[tallyHeaderRow - 1] = ["Car", "Votes", ""];
+    grid[tallyHeaderRow - 1] = ["", "", ""];
     grid[tallyFormulaRow - 1] = [
-      `=IFERROR(QUERY('${votesTab}'!${carColumn}2:${carColumn},"select Col1, count(Col1) where Col1 is not null and Col1 <> '' group by Col1 order by count(Col1) desc",0),"No votes yet")`,
+      `=IFERROR(QUERY('${votesTab}'!${carColumn}2:${carColumn},"select Col1, count(Col1) where Col1 is not null and Col1 <> '' group by Col1 order by count(Col1) desc label Col1 'Car', count(Col1) 'Votes'",0),"No votes yet")`,
       "",
       "",
     ];
@@ -286,7 +305,7 @@ const getBallotIdRows = async () => {
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
   const response = await withSheetsRetry("ballot ids get", () => sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: votesRange("B:C"),
+    range: votesRange(`B:${LAST_COLUMN_LETTER}`),
   }));
 
   return response.data.values || [];
@@ -304,6 +323,32 @@ const hasPhoneVoted = async (phoneE164) => {
 
   return rows.some((values, index) => (
     index > 0 && String(values[0] || "").trim() === phoneHash
+  ));
+};
+
+const getEmailDeviceHashRows = async () => {
+  const sheets = await getSheetsClient();
+  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
+  const emailColumn = columnLetter(COL.emailHash);
+  const deviceColumn = columnLetter(COL.deviceHash);
+  const response = await withSheetsRetry("email device hashes get", () => sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: votesRange(`${emailColumn}:${deviceColumn}`),
+  }));
+
+  return response.data.values || [];
+};
+
+const hasEmailOrDeviceVoted = async ({ emailHash, deviceHash }) => {
+  await ensureVoteHeaders();
+  const rows = await getEmailDeviceHashRows();
+
+  return rows.some((values, index) => (
+    index > 0
+    && (
+      (emailHash && String(values[0] || "").trim() === emailHash)
+      || (deviceHash && String(values[1] || "").trim() === deviceHash)
+    )
   ));
 };
 
@@ -339,7 +384,15 @@ const deleteVotesRows = async (rowNumbers) => {
 
 const buildBallotRow = ({
   ballotId,
-  phoneHash,
+  phoneHash = "",
+  emailHash = "",
+  deviceHash = "",
+  verificationMethod = "twilio",
+  possibleDuplicate = false,
+  riskScore = 0,
+  riskReasons = "",
+  fingerprintHash = "",
+  networkHash = "",
   selections,
   carLabelsById,
   userAgent,
@@ -350,10 +403,18 @@ const buildBallotRow = ({
   row[COL.ballotId] = ballotId;
   row[COL.phoneHash] = phoneHash;
   row[COL.userAgent] = String(userAgent || "").slice(0, 240);
+  row[COL.emailHash] = emailHash;
+  row[COL.deviceHash] = deviceHash;
+  row[COL.verificationMethod] = verificationMethod;
+  row[COL.possibleDuplicate] = possibleDuplicate ? "YES" : "";
+  row[COL.riskScore] = Number(riskScore || 0);
+  row[COL.riskReasons] = String(riskReasons || "");
+  row[COL.fingerprintHash] = fingerprintHash;
+  row[COL.networkHash] = networkHash;
 
   VOTING_CATEGORIES.forEach((category, index) => {
     const applicationId = selections[category.id] || "";
-    const idColumn = 3 + (index * 2);
+    const idColumn = CATEGORY_COLUMNS_START + (index * 2);
     const carColumn = idColumn + 1;
     row[idColumn] = applicationId;
     row[carColumn] = carLabelsById[applicationId] || "";
@@ -362,24 +423,150 @@ const buildBallotRow = ({
   return row;
 };
 
-/**
- * Append a ballot with concurrency-safe uniqueness:
- * 1) Fast pre-check
- * 2) Append (never overwrites another voter's row)
- * 3) Re-read hashes; keep earliest row for this phone, delete extras
- */
-const appendBallot = async ({
+const mirrorBallotToSheet = async ({
   ballotId,
-  phoneE164,
+  phoneE164 = "",
+  emailHash = "",
+  deviceHash = "",
+  verificationMethod = "twilio",
+  possibleDuplicate = false,
+  riskScore = 0,
+  riskReasons = "",
+  fingerprintHash = "",
+  networkHash = "",
   selections,
   carLabelsById,
   userAgent,
 }) => {
   await ensureVoteHeaders();
 
-  const phoneHash = hashPhone(phoneE164);
+  const sheets = await getSheetsClient();
+  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
+  const ballotRow = buildBallotRow({
+    ballotId,
+    phoneHash: phoneE164 ? hashPhone(phoneE164) : "",
+    emailHash,
+    deviceHash,
+    verificationMethod,
+    possibleDuplicate,
+    riskScore,
+    riskReasons,
+    fingerprintHash,
+    networkHash,
+    selections,
+    carLabelsById,
+    userAgent,
+  });
 
-  if (await hasPhoneVoted(phoneE164)) {
+  await withSheetsRetry("mirror Redis ballot", () => sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: votesRange(`A:${LAST_COLUMN_LETTER}`),
+    valueInputOption: "USER_ENTERED",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: {
+      values: [ballotRow],
+    },
+  }), { attempts: 2, baseDelayMs: 250 });
+};
+
+const syncRedisBallotsToSheet = async (ballots) => {
+  await ensureVoteHeaders();
+
+  const sheets = await getSheetsClient();
+  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
+  const existingResponse = await withSheetsRetry(
+    "get existing ballot ids for final sync",
+    () => sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: votesRange("B:B"),
+    })
+  );
+  const existingIds = new Set(
+    (existingResponse.data.values || [])
+      .slice(1)
+      .map((values) => String(values[0] || "").trim())
+      .filter(Boolean)
+  );
+  const missing = (Array.isArray(ballots) ? ballots : []).filter(
+    (ballot) => ballot?.ballotId && !existingIds.has(String(ballot.ballotId))
+  );
+
+  if (!missing.length) {
+    return {
+      redisBallots: Array.isArray(ballots) ? ballots.length : 0,
+      alreadyPresent: existingIds.size,
+      added: 0,
+    };
+  }
+
+  const rows = missing.map((ballot) => {
+    const verificationMethod = ballot.verificationMethod === "email"
+      ? "email"
+      : "twilio";
+    return buildBallotRow({
+      ballotId: ballot.ballotId,
+      phoneHash: verificationMethod === "twilio" ? ballot.identityHash : "",
+      emailHash: verificationMethod === "email" ? ballot.identityHash : "",
+      deviceHash: ballot.deviceHash || "",
+      verificationMethod,
+      possibleDuplicate: Boolean(ballot.possibleDuplicate),
+      riskScore: ballot.riskScore || 0,
+      riskReasons: ballot.riskReasons || "",
+      fingerprintHash: ballot.fingerprintHash || "",
+      networkHash: ballot.networkHash || "",
+      selections: ballot.selections || {},
+      carLabelsById: ballot.carLabelsById || {},
+      userAgent: ballot.userAgent || "",
+    });
+  });
+
+  await withSheetsRetry("append final Redis ballot sync", () => (
+    sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: votesRange(`A:${LAST_COLUMN_LETTER}`),
+      valueInputOption: "USER_ENTERED",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: rows },
+    })
+  ));
+
+  return {
+    redisBallots: Array.isArray(ballots) ? ballots.length : 0,
+    alreadyPresent: existingIds.size,
+    added: rows.length,
+  };
+};
+
+/**
+ * Append a ballot with concurrency-safe uniqueness:
+ * 1) Fast pre-check
+ * 2) Append (never overwrites another voter's row)
+ * 3) Re-read hashes; keep earliest row for this identity/device, delete extras
+ */
+const appendBallot = async ({
+  ballotId,
+  phoneE164 = "",
+  emailHash = "",
+  deviceHash = "",
+  verificationMethod = "twilio",
+  possibleDuplicate = false,
+  riskScore = 0,
+  riskReasons = "",
+  fingerprintHash = "",
+  networkHash = "",
+  selections,
+  carLabelsById,
+  userAgent,
+}) => {
+  await ensureVoteHeaders();
+
+  const phoneHash = phoneE164 ? hashPhone(phoneE164) : "";
+
+  const alreadyVoted = phoneE164
+    ? await hasPhoneVoted(phoneE164)
+    : await hasEmailOrDeviceVoted({ emailHash, deviceHash });
+
+  if (alreadyVoted) {
     const error = new Error("This phone number has already voted.");
     error.code = "ALREADY_VOTED";
     throw error;
@@ -390,6 +577,14 @@ const appendBallot = async ({
   const ballotRow = buildBallotRow({
     ballotId,
     phoneHash,
+    emailHash,
+    deviceHash,
+    verificationMethod,
+    possibleDuplicate,
+    riskScore,
+    riskReasons,
+    fingerprintHash,
+    networkHash,
     selections,
     carLabelsById,
     userAgent,
@@ -405,7 +600,7 @@ const appendBallot = async ({
     },
   }));
 
-  // Post-commit uniqueness: concurrent submits for the same phone can both append.
+  // Post-commit uniqueness: concurrent submits for the same identity can both append.
   const ballotRows = await getBallotIdRows();
   const matches = [];
 
@@ -416,7 +611,16 @@ const appendBallot = async ({
 
     const rowBallotId = String(values[0] || "").trim();
     const rowPhoneHash = String(values[1] || "").trim();
-    if (rowPhoneHash === phoneHash) {
+    // Range begins at B. Email/device are O/P in the sheet, so 13/14 here.
+    const rowEmailHash = String(values[13] || "").trim();
+    const rowDeviceHash = String(values[14] || "").trim();
+    const identityMatches = (
+      (phoneHash && rowPhoneHash === phoneHash)
+      || (emailHash && rowEmailHash === emailHash)
+      || (deviceHash && rowDeviceHash === deviceHash)
+    );
+
+    if (identityMatches) {
       matches.push({
         rowNumber: index + 1,
         ballotId: rowBallotId,
@@ -426,7 +630,7 @@ const appendBallot = async ({
 
   if (!matches.length) {
     // Extremely unlikely (read lag); treat as success — ballot was appended.
-    return { ballotId, phoneHash };
+    return { ballotId, phoneHash, emailHash, deviceHash };
   }
 
   matches.sort((a, b) => a.rowNumber - b.rowNumber);
@@ -443,7 +647,7 @@ const appendBallot = async ({
     throw error;
   }
 
-  return { ballotId, phoneHash };
+  return { ballotId, phoneHash, emailHash, deviceHash };
 };
 
 module.exports = {
@@ -451,8 +655,11 @@ module.exports = {
   appendBallot,
   ensureResultsSheet,
   ensureVoteHeaders,
+  hasEmailOrDeviceVoted,
   hasPhoneVoted,
   hashPhone,
+  mirrorBallotToSheet,
+  syncRedisBallotsToSheet,
   withSheetsRetry,
   isRetryableSheetsError,
 };

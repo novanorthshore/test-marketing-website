@@ -72,7 +72,13 @@
   const submitButton = document.querySelector("[data-voting-submit]");
   const modal = document.querySelector("[data-voting-modal]");
   const verifyForm = document.querySelector("[data-voting-verify-form]");
+  const heroCopy = document.querySelector("[data-voting-hero-copy]");
+  const verifyTitle = document.querySelector("[data-voting-verify-title]");
+  const verifyCopy = document.querySelector("[data-voting-verify-copy]");
+  const phoneWrap = document.querySelector("[data-voting-phone-wrap]");
   const phoneInput = document.querySelector("[data-voting-phone]");
+  const emailWrap = document.querySelector("[data-voting-email-wrap]");
+  const emailInput = document.querySelector("[data-voting-email]");
   const codeWrap = document.querySelector("[data-voting-code-wrap]");
   const codeInput = document.querySelector("[data-voting-code]");
   const sendCodeButton = document.querySelector("[data-voting-send-code]");
@@ -90,6 +96,41 @@
   const paletteCache = {};
   let rafId = null;
   let lastFrame = 0;
+  let verificationMode = "twilio";
+  let emailChallenge = "";
+
+  const getDeviceId = () => {
+    const storageKey = "nova-voting-device-id";
+    try {
+      const existing = localStorage.getItem(storageKey);
+      if (existing) {
+        return existing;
+      }
+
+      const generated = typeof window.crypto?.randomUUID === "function"
+        ? window.crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(storageKey, generated);
+      return generated;
+    } catch (error) {
+      return `session-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+    }
+  };
+
+  const deviceId = getDeviceId();
+  const screenWidth = window.screen?.width || 0;
+  const screenHeight = window.screen?.height || 0;
+  const deviceSignature = {
+    platform: navigator.userAgentData?.platform || navigator.platform || "",
+    screen: `${Math.min(screenWidth, screenHeight)}x${Math.max(screenWidth, screenHeight)}`,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+    language: navigator.language || "",
+    touchPoints: navigator.maxTouchPoints || 0,
+    hardwareConcurrency: navigator.hardwareConcurrency || 0,
+    deviceMemory: navigator.deviceMemory || 0,
+    colorDepth: window.screen?.colorDepth || 0,
+    pixelRatio: window.devicePixelRatio || 1,
+  };
 
   // ---- Small helpers ----------------------------------------------------
   const mod = (n, m) => ((n % m) + m) % m;
@@ -922,6 +963,39 @@
     startLoop();
   };
 
+  const configureVerificationUi = (mode) => {
+    verificationMode = mode === "email" ? "email" : "twilio";
+    const usesEmail = verificationMode === "email";
+
+    if (phoneWrap) {
+      phoneWrap.hidden = usesEmail;
+    }
+    if (phoneInput) {
+      phoneInput.required = !usesEmail;
+      phoneInput.disabled = usesEmail;
+    }
+    if (emailWrap) {
+      emailWrap.hidden = !usesEmail;
+    }
+    if (emailInput) {
+      emailInput.required = usesEmail;
+      emailInput.disabled = !usesEmail;
+    }
+    if (heroCopy) {
+      heroCopy.textContent = usesEmail
+        ? "Pick one winner in each category — People’s Choice, American Muscle, Euro Classic, JDM, and Modified Builds. Verify by email at the end: one ballot per email and device."
+        : "Pick one winner in each category — People’s Choice, American Muscle, Euro Classic, JDM, and Modified Builds. Verify with your phone at the end: one ballot per number.";
+    }
+    if (verifyTitle) {
+      verifyTitle.textContent = usesEmail ? "Verify your ballot by email" : "Verify your ballot";
+    }
+    if (verifyCopy) {
+      verifyCopy.textContent = usesEmail
+        ? "Enter your email address. We’ll email you a code to confirm this is your one vote."
+        : "Enter your mobile number. We’ll text you a code to confirm this is your one vote.";
+    }
+  };
+
   const loadCars = async () => {
     setStatus("Loading show cars…");
 
@@ -949,6 +1023,7 @@
 
       categories = Array.isArray(result.categories) ? result.categories : [];
       cars = Array.isArray(result.cars) ? result.cars : [];
+      configureVerificationUi(result.verificationMode);
 
       if (!cars.length) {
         setStatus("No approved show cars are ready for voting yet.", "error");
@@ -982,7 +1057,11 @@
     modal.hidden = false;
     document.body.classList.add("voting-modal-open");
     setModalStatus("");
-    phoneInput?.focus();
+    if (verificationMode === "email") {
+      emailInput?.focus();
+    } else {
+      phoneInput?.focus();
+    }
   };
 
   const closeModal = () => {
@@ -1029,6 +1108,7 @@
 
   sendCodeButton?.addEventListener("click", async () => {
     const phone = phoneInput?.value || "";
+    const email = emailInput?.value || "";
     setModalStatus("");
     sendCodeButton.disabled = true;
     sendCodeButton.textContent = "Sending…";
@@ -1037,7 +1117,12 @@
       const response = await fetch("/.netlify/functions/send-vote-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({
+          phone,
+          email,
+          deviceId,
+          deviceSignature,
+        }),
       });
       const result = await response.json().catch(() => null);
 
@@ -1054,8 +1139,9 @@
       if (confirmButton) {
         confirmButton.disabled = false;
       }
+      emailChallenge = result.challenge || "";
       codeInput?.focus();
-      setModalStatus(`Code sent to ${result.phoneMasked}.`, "success");
+      setModalStatus(`Code sent to ${result.destinationMasked}.`, "success");
     } catch (error) {
       setModalStatus(error.message, "error");
     } finally {
@@ -1068,6 +1154,7 @@
     event.preventDefault();
 
     const phone = phoneInput?.value || "";
+    const email = emailInput?.value || "";
     const code = codeInput?.value || "";
 
     if (confirmButton) {
@@ -1084,7 +1171,15 @@
         response = await fetch("/.netlify/functions/submit-votes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, code, selections }),
+          body: JSON.stringify({
+            phone,
+            email,
+            deviceId,
+            deviceSignature,
+            challenge: emailChallenge,
+            code,
+            selections,
+          }),
         });
         result = await response.json().catch(() => null);
 
