@@ -361,23 +361,31 @@ const setCellValue = async (rowNumber, columnIndex, value) => {
   });
 };
 
-const markAcceptanceEmailSent = async (applicationId, timestamp = new Date().toISOString()) => {
-  const row = await getApplicationById(applicationId);
-  if (!row) {
+const markAcceptanceEmailSent = async (
+  applicationId,
+  timestamp = new Date().toISOString(),
+  rowNumber = null,
+) => {
+  const resolvedRowNumber = rowNumber || (await getApplicationById(applicationId))?.rowNumber;
+  if (!resolvedRowNumber) {
     return false;
   }
 
-  await setCellValue(row.rowNumber, COL.acceptanceEmailSent, timestamp);
+  await setCellValue(resolvedRowNumber, COL.acceptanceEmailSent, timestamp);
   return true;
 };
 
-const markEventInfoEmailSent = async (applicationId, timestamp = new Date().toISOString()) => {
-  const row = await getApplicationById(applicationId);
-  if (!row) {
+const markEventInfoEmailSent = async (
+  applicationId,
+  timestamp = new Date().toISOString(),
+  rowNumber = null,
+) => {
+  const resolvedRowNumber = rowNumber || (await getApplicationById(applicationId))?.rowNumber;
+  if (!resolvedRowNumber) {
     return false;
   }
 
-  await setCellValue(row.rowNumber, COL.eventInfoEmailSent, timestamp);
+  await setCellValue(resolvedRowNumber, COL.eventInfoEmailSent, timestamp);
   return true;
 };
 

@@ -6,6 +6,17 @@ const {
 } = require("./lib/applications-sheet");
 const { sendEventInfoEmail } = require("./lib/email");
 
+const SEND_GAP_MS = 1200;
+const QUOTA_RETRY_WAIT_MS = 65000;
+const MAX_QUOTA_RETRIES = 2;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isSheetsQuotaError = (error) => {
+  const message = String(error?.message || error || "");
+  return /quota exceeded|rate limit|429/i.test(message);
+};
+
 const loadEventInfoFlyer = () => {
   const candidates = [
     path.join(process.cwd(), "assets", "event_info.png"),
@@ -24,6 +35,34 @@ const loadEventInfoFlyer = () => {
   );
 };
 
+const sendOneEventInfoEmail = async ({ application, flyerBuffer }) => {
+  let attempt = 0;
+
+  while (true) {
+    try {
+      await sendEventInfoEmail({ application, flyerBuffer });
+      await markEventInfoEmailSent(
+        application.applicationId,
+        new Date().toISOString(),
+        application.rowNumber,
+      );
+      return;
+    } catch (error) {
+      if (!isSheetsQuotaError(error) || attempt >= MAX_QUOTA_RETRIES) {
+        throw error;
+      }
+
+      attempt += 1;
+      console.warn("Sheets quota hit; waiting before retry", {
+        applicationId: application.applicationId,
+        attempt,
+        message: error.message,
+      });
+      await sleep(QUOTA_RETRY_WAIT_MS);
+    }
+  }
+};
+
 const processEventInfoEmails = async () => {
   const applications = await getApprovedUnsentEventInfoApplications();
   const flyerBuffer = loadEventInfoFlyer();
@@ -33,9 +72,11 @@ const processEventInfoEmails = async () => {
     sent: 0,
     failed: 0,
     skipped: 0,
+    remaining: 0,
   };
 
-  for (const application of applications) {
+  for (let index = 0; index < applications.length; index += 1) {
+    const application = applications[index];
     results.processed += 1;
 
     if (!String(application.email || "").trim()) {
@@ -44,8 +85,7 @@ const processEventInfoEmails = async () => {
     }
 
     try {
-      await sendEventInfoEmail({ application, flyerBuffer });
-      await markEventInfoEmailSent(application.applicationId);
+      await sendOneEventInfoEmail({ application, flyerBuffer });
       results.sent += 1;
     } catch (error) {
       results.failed += 1;
@@ -55,8 +95,14 @@ const processEventInfoEmails = async () => {
         message: error.message,
       });
     }
+
+    // Stay under Sheets write/read per-minute quotas across the blast.
+    if (index < applications.length - 1) {
+      await sleep(SEND_GAP_MS);
+    }
   }
 
+  results.remaining = Math.max(applications.length - results.sent - results.skipped, 0);
   return results;
 };
 

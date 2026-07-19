@@ -31,7 +31,11 @@ const processApprovals = async () => {
       }
 
       await sendAcceptanceEmail({ application });
-      await markAcceptanceEmailSent(application.applicationId);
+      await markAcceptanceEmailSent(
+        application.applicationId,
+        new Date().toISOString(),
+        application.rowNumber,
+      );
       await syncApplicationRowColor(application);
       results.sent += 1;
     } catch (error) {

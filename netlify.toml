@@ -16,3 +16,4 @@
 [functions."process-event-info"]
   schedule = "@yearly"
   included_files = ["assets/event_info.png"]
+  timeout = 60
