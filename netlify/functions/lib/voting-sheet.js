@@ -39,7 +39,7 @@ const COL = {
 };
 
 const LAST_COLUMN_LETTER = String.fromCharCode(64 + VOTE_COLUMNS.length);
-const RESULTS_MARKER = "nova-voting-results-v2";
+const RESULTS_MARKER = "nova-voting-results-v3";
 const TALLY_BLOCK_HEIGHT = 40;
 const TALLY_START_ROW = 12;
 
@@ -166,16 +166,30 @@ const buildResultsGrid = () => {
   const lastTallyRow = TALLY_START_ROW
     + (VOTING_CATEGORIES.length * TALLY_BLOCK_HEIGHT)
     - 1;
-  const grid = Array.from({ length: lastTallyRow }, () => ["", "", ""]);
+  const grid = Array.from({ length: lastTallyRow }, () => (
+    ["", "", "", "", "", "", ""]
+  ));
 
-  grid[0] = ["Nova Block Party — Live Results", "", ""];
+  grid[0] = ["Nova Block Party — Live Results", "", "", "", "", "", ""];
   grid[1] = [
     "Current leaders and full standings update automatically from the Votes tab.",
     "",
     "",
+    "",
+    "",
+    "",
+    "",
   ];
-  grid[2] = ["", "", ""];
-  grid[3] = ["CATEGORY", "CURRENT LEADER", "VOTES"];
+  grid[2] = ["", "", "", "", "", "", ""];
+  grid[3] = [
+    "CATEGORY",
+    "1ST PLACE",
+    "VOTES",
+    "2ND PLACE",
+    "VOTES",
+    "3RD PLACE",
+    "VOTES",
+  ];
 
   VOTING_CATEGORIES.forEach((category, index) => {
     const tallyTitleRow = TALLY_START_ROW + (index * TALLY_BLOCK_HEIGHT);
@@ -190,12 +204,28 @@ const buildResultsGrid = () => {
       // Row 1 of QUERY output is headers ("Car" / "Votes"); row 2 is the leader.
       `=IFERROR(INDEX(A${tallyFormulaRow}:A${tallyEndRow},2),"Waiting for votes")`,
       `=IFERROR(INDEX(B${tallyFormulaRow}:B${tallyEndRow},2),"")`,
+      `=IFERROR(INDEX(A${tallyFormulaRow}:A${tallyEndRow},3),"")`,
+      `=IFERROR(INDEX(B${tallyFormulaRow}:B${tallyEndRow},3),"")`,
+      `=IFERROR(INDEX(A${tallyFormulaRow}:A${tallyEndRow},4),"")`,
+      `=IFERROR(INDEX(B${tallyFormulaRow}:B${tallyEndRow},4),"")`,
     ];
 
-    grid[tallyTitleRow - 1] = [`${category.label} — full standings`, "", ""];
-    grid[tallyHeaderRow - 1] = ["", "", ""];
+    grid[tallyTitleRow - 1] = [
+      `${category.label} — full standings`,
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+    ];
+    grid[tallyHeaderRow - 1] = ["", "", "", "", "", "", ""];
     grid[tallyFormulaRow - 1] = [
       `=IFERROR(QUERY('${votesTab}'!${carColumn}2:${carColumn},"select Col1, count(Col1) where Col1 is not null and Col1 <> '' group by Col1 order by count(Col1) desc label Col1 'Car', count(Col1) 'Votes'",0),"No votes yet")`,
+      "",
+      "",
+      "",
+      "",
       "",
       "",
     ];
@@ -224,12 +254,12 @@ const ensureResultsSheet = async () => {
 
   await withSheetsRetry("results clear", () => sheets.spreadsheets.values.clear({
     spreadsheetId,
-    range: resultsRange(`A1:C${Math.max(endRow, 200)}`),
+    range: resultsRange(`A1:G${Math.max(endRow, 200)}`),
   }));
 
   await withSheetsRetry("results write", () => sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: resultsRange(`A1:C${endRow}`),
+    range: resultsRange(`A1:G${endRow}`),
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: grid,
