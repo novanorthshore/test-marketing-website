@@ -24,7 +24,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260728-carousel-mobile-safe-zone" />
   </head>
   <body>
     <header class="site-header" data-header>
@@ -50,7 +50,7 @@
             <path d="M17.5 6.5h.01"></path>
           </svg>
         </a>
-        <a href="https://www.facebook.com/NovaNorthShore/" aria-label="Nova North Shore on Facebook" rel="noreferrer">
+        <a href="https://www.facebook.com/people/Nova-North-Shore/61559642177736/" aria-label="Nova North Shore on Facebook" rel="noreferrer">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M14 8h3V4h-3c-3 0-5 2-5 5v3H6v4h3v4h4v-4h3l1-4h-4V9c0-.6.4-1 1-1Z"></path>
           </svg>
@@ -122,8 +122,16 @@
           <p class="eyebrow dark">Upcoming</p>
           <h2>Events And Updates</h2>
         </div>
-        <div class="card-grid three">
-          <article class="reveal">
+        <div class="events-showcase reveal">
+          <div class="events-showcase-media">
+        <div class="event-carousel" data-event-carousel tabindex="0" aria-label="Events carousel. Use the arrow keys or carousel buttons to browse.">
+          <div class="event-carousel-track" data-event-carousel-track>
+          <article
+            class="event-carousel-card"
+            data-event-title="Block Party Car Show"
+            data-event-meta="July 19, 2026 &middot; 3&ndash;7 PM"
+            data-event-description="Nova North Shore's community block party brings display cars, local sponsors, enthusiasts, and automotive culture together for an afternoon car show. Display registration is now open."
+          >
             <a
               class="poster-button"
               href="block-party-event.html"
@@ -140,7 +148,12 @@
               />
             </a>
           </article>
-          <article class="reveal">
+          <article
+            class="event-carousel-card"
+            data-event-title="Motors &amp; Matcha"
+            data-event-meta="May 10, 2026 &middot; 11 AM&ndash;2 PM"
+            data-event-description="Join Nova North Shore at Mike Auto for Motors &amp; Matcha&mdash;an easygoing open house featuring standout cars, good company, and a shared passion for automotive culture."
+          >
             <a
               class="poster-button"
               href="current-event.html"
@@ -157,7 +170,12 @@
               />
             </a>
           </article>
-          <article class="reveal">
+          <article
+            class="event-carousel-card"
+            data-event-title="Isetta Cafe Open House"
+            data-event-meta="March 21, 2025 &middot; 3&ndash;5 PM"
+            data-event-description="A relaxed open house at Isetta Cafe bringing the Nova community together for cars, conversation, and an afternoon at one of North Vancouver's distinctive local venues."
+          >
             <button
               class="poster-button"
               type="button"
@@ -177,6 +195,13 @@
               />
             </button>
           </article>
+          </div>
+          <button class="event-carousel-arrow event-carousel-arrow--prev" type="button" data-event-carousel-prev aria-label="Previous event">
+            <span aria-hidden="true">&#8249;</span>
+          </button>
+          <button class="event-carousel-arrow event-carousel-arrow--next" type="button" data-event-carousel-next aria-label="Next event">
+            <span aria-hidden="true">&#8250;</span>
+          </button>
         </div>
         <div class="events-cta reveal">
           <a class="button button-dark" href="https://www.instagram.com/novanorthshore/" rel="noreferrer">
@@ -185,6 +210,14 @@
           <a class="button button-map" href="block-party-event.html">
             Current Event
           </a>
+        </div>
+          </div>
+          <aside class="event-description" aria-live="polite">
+            <p class="eyebrow dark">Featured Event</p>
+            <h3 data-event-description-title>Block Party Car Show</h3>
+            <p class="event-description-meta" data-event-description-meta>July 19, 2026 &middot; 3&ndash;7 PM</p>
+            <p data-event-description-copy>Nova North Shore's community block party brings display cars, local sponsors, enthusiasts, and automotive culture together for an afternoon car show. Display registration is now open.</p>
+          </aside>
         </div>
       </section>
 
@@ -329,125 +362,132 @@
           <p class="eyebrow dark">Event Highlights</p>
           <h2>Past Collaborations</h2>
         </div>
-        <div class="highlight-grid">
+        <div class="highlight-grid featured-collab-grid">
+          <article class="highlight-card featured-collab reveal">
+            <div class="collab-logos">
+              <img src="assets/BCLions.png" alt="BC Lions logo" loading="lazy" decoding="async" />
+            </div>
+            <div class="collab-copy">
+              <h3>BC Lions</h3>
+              <p>In 2025, Nova collaborated with the BC Lions to plan and market their official Show &amp; Shine event, bringing fans, car enthusiasts, and local businesses together.</p>
+              <a class="collab-learn-more" href="https://www.bclions.com/" target="_blank" rel="noopener noreferrer">Learn More</a>
+            </div>
+          </article>
+          <article class="highlight-card featured-collab reveal">
+            <div class="collab-logos">
+              <img src="assets/UBCSCCLogo.png?v=20260728" alt="UBC Sports Car Club logo" loading="lazy" decoding="async" />
+            </div>
+            <div class="collab-copy">
+              <h3>UBC Sports Car Club</h3>
+              <p>Nova partnered with the UBC Sports Car Club to unite student and local car communities, showcase diverse builds, and foster new connections.</p>
+              <a class="collab-learn-more" href="https://www.instagram.com/ubcsportscarclub/" target="_blank" rel="noopener noreferrer">Learn More</a>
+            </div>
+          </article>
+          <article class="highlight-card featured-collab reveal">
+            <div class="collab-logos">
+              <img src="assets/ThinkwareLogo_home.png" alt="Thinkware logo" loading="lazy" decoding="async" />
+            </div>
+            <div class="collab-copy">
+              <h3>Thinkware</h3>
+              <p>Nova partnered with Thinkware to connect the community with practical automotive technology and support a stronger event experience.</p>
+              <a class="collab-learn-more" href="https://thinkwarestore.ca/" target="_blank" rel="noopener noreferrer">Learn More</a>
+            </div>
+          </article>
+          <article class="highlight-card featured-collab reveal">
+            <div class="collab-logos">
+              <img src="assets/Leahs_home.png" alt="Leah's Automotive logo" loading="lazy" decoding="async" />
+            </div>
+            <div class="collab-copy">
+              <h3>Leah's Automotive</h3>
+              <p>Nova partnered with Leah's Automotive to support local car culture, connect drivers with trusted automotive expertise, and help bring the community together.</p>
+              <a class="collab-learn-more" href="https://autoservicevancouver.ca/" target="_blank" rel="noopener noreferrer">Learn More</a>
+            </div>
+          </article>
+          </div>
+        <div class="highlight-grid compact-collab-grid">
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/BCLions.webp" alt="BC Lions logo" loading="lazy" decoding="async" />
+              <img src="assets/MidasLogo.PNG" alt="Midas logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X BC Lions</h3>
-            <p>In 2025, Nova collaborated with the BC Lions to plan and market their official Show &amp; Shine event, bringing fans, car enthusiasts, and local businesses together.</p>
+            <h3>Midas North Vancouver</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/MidasLogo.webp" alt="Midas logo" loading="lazy" decoding="async" />
+              <img src="assets/BenzoCafeLogo.PNG" alt="Benzo Cafe logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X Midas North Vancouver</h3>
-            <p>Nova teamed up with Midas North Vancouver to host a Euro vs. JDM event with a diverse lineup, packed crowd, and a showcase of style and performance.</p>
+            <h3>Benzo Cafe</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/BenzoCafeLogo.webp" alt="Benzo Cafe logo" loading="lazy" decoding="async" />
+              <img src="assets/2dj2.png" alt="2JD Diecast logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X Benzo Cafe</h3>
-            <p>Nova joined forces with Benzo Cafe for a Cars &amp; Coffee event that blended community vibes, diverse builds, shared passion, and great coffee.</p>
+            <h3>2JD Diecast</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/2dj.webp" alt="2JD Diecast logo" loading="lazy" decoding="async" />
+              <img src="assets/goodcobar.jpg" alt="Good Co Bars logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X 2JD Diecast</h3>
-            <p>Nova partnered with 2JD Diecast, a local diecast distributor, to bring unique collectibles and giveaways that added extra excitement for enthusiasts of all ages.</p>
+            <h3>GoodCo Bars</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/goodcobar.webp" alt="Good Co Bars logo" loading="lazy" decoding="async" />
+              <img src="assets/goodicecream.jpg" alt="That's Good Ice Cream logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X GoodCo Bars</h3>
-            <p>Nova teamed up with GoodCo Bars to promote their F1 watch party, driving turnout and creating an unforgettable motorsport experience off the track.</p>
+            <h3>That's Good Ice Cream</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/goodicecream.webp" alt="That's Good Ice Cream logo" loading="lazy" decoding="async" />
+              <img src="assets/vancouverhondaclub.png" alt="Vancouver Honda Club logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X That's Good Ice Cream</h3>
-            <p>Nova partnered with That's Good Ice Cream to bring sweet treats to car events, adding a fun and tasty element that made meets more memorable.</p>
+            <h3>Vancouver Honda Club</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/vancouverhondaclub.webp" alt="Vancouver Honda Club logo" loading="lazy" decoding="async" />
+              <img src="assets/LowerMainlandEuros.png" alt="Lower Mainland Euros logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X Vancouver Honda Club</h3>
-            <p>Nova teamed up with the Vancouver Honda Club to celebrate Honda builds, bring enthusiasts together, and strengthen local car culture in Vancouver.</p>
+            <h3>Lower Mainland Euros</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/UBCSCCLogo.webp" alt="UBC Sports Car Club logo" loading="lazy" decoding="async" />
+              <img src="assets/bcbeamers.jpg" alt="BC Beamers logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X UBC Sports Car Club</h3>
-            <p>Nova partnered with the UBC Sports Car Club to unite student and local car communities, showcase diverse builds, and foster new connections.</p>
+            <h3>BC Beamers</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/LowerMainlandEuros.webp" alt="Lower Mainland Euros logo" loading="lazy" decoding="async" />
+              <img src="assets/hazdriven.jpg" alt="Hanz Driven logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X Lower Mainland Euros</h3>
-            <p>Nova partnered with Lower Mainland Euros to celebrate Euro builds, bring communities together, and create unforgettable experiences across the Lower Mainland.</p>
+            <h3>HanzDriven</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/bcbeamers.webp" alt="BC Beamers logo" loading="lazy" decoding="async" />
+              <img src="assets/drivemotorsports.jpg" alt="Drive Motorsports logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X BC Beamers</h3>
-            <p>Nova teamed up with BC Beamers to celebrate BMW builds, bring together the local Euro car community, and highlight standout vehicles.</p>
+            <h3>Drive Motorsports</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/hazdriven.webp" alt="Hanz Driven logo" loading="lazy" decoding="async" />
+              <img src="assets/DiamondAuto.jpg" alt="Diamond Auto logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X HanzDriven</h3>
-            <p>Nova connected with HanzDriven to support local automotive culture through community presence, event energy, and enthusiast-focused coverage.</p>
+            <h3>Diamond Auto</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/drivemotorsports.webp" alt="Drive Motorsports logo" loading="lazy" decoding="async" />
+              <img src="assets/CRU.png" alt="CRU logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X Drive Motorsports</h3>
-            <p>Nova worked with Drive Motorsports as an automotive partner supporting performance-minded enthusiasts, clean builds, and local event culture.</p>
+            <h3>Cru App</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/ThinkwareLogo.webp" alt="Thinkware logo" loading="lazy" decoding="async" />
+              <img src="assets/spots garahe.png" alt="Spots Garahe logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X Thinkware</h3>
-            <p>Nova partnered with Thinkware to connect the community with practical automotive technology and support a stronger event experience.</p>
+            <h3>Spots Garahe</h3>
           </article>
           <article class="highlight-card reveal">
             <div class="collab-logos">
-              <img src="assets/optimized/DiamondAuto.webp" alt="Diamond Auto logo" loading="lazy" decoding="async" />
+              <img src="assets/DUnicorns.png" alt="Driving Unicorns logo" loading="lazy" decoding="async" />
             </div>
-            <h3>Nova X Diamond Auto</h3>
-            <p>Partnering with Diamond Auto Repair, Nova hosted a JDM-themed meet with clean builds, live DJ sets, local sponsor support, and a strong North Shore turnout.</p>
-          </article>
-          <article class="highlight-card reveal">
-            <div class="collab-logos">
-              <img src="assets/optimized/CRU.webp" alt="CRU logo" loading="lazy" decoding="async" />
-            </div>
-            <h3>Nova X Cru App</h3>
-            <p>Nova partnered with the Cru app to help enthusiasts discover local meets, showcase builds, follow events, and connect with like-minded car lovers.</p>
-          </article>
-          <article class="highlight-card reveal">
-            <div class="collab-logos">
-              <img src="assets/optimized/spots-garahe.webp" alt="Spots Garahe logo" loading="lazy" decoding="async" />
-            </div>
-            <h3>Nova X Spots Garahe</h3>
-            <p>Nova teamed up with Spots Garahe, a local automotive apparel brand, to bring merchandise, event support, and authentic car-culture style to the community.</p>
-          </article>
-          <article class="highlight-card reveal">
-            <div class="collab-logos">
-              <img src="assets/optimized/DUnicorns.webp" alt="Driving Unicorns logo" loading="lazy" decoding="async" />
-            </div>
-            <h3>Nova X Driving Unicorns</h3>
-            <p>Nova collaborated with Driving Unicorns, creators of automotive-inspired artwork and apparel, to bring unique designs and creative energy to events.</p>
+            <h3>Driving Unicorns</h3>
           </article>
         </div>
       </section>
@@ -498,7 +538,7 @@
       </nav>
       <div class="socials" aria-label="Social links">
         <a href="https://www.instagram.com/novanorthshore/" rel="noreferrer">Instagram</a>
-        <a href="https://www.facebook.com/NovaNorthShore/" rel="noreferrer">Facebook</a>
+        <a href="https://www.facebook.com/people/Nova-North-Shore/61559642177736/" rel="noreferrer">Facebook</a>
         <a href="mailto:info@novanorthshore.com">Email</a>
       </div>
       <p class="copyright">© 2026 Nova North Shore. All rights reserved.</p>
@@ -509,6 +549,6 @@
       <img alt="" data-lightbox-image />
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20260727-carousel-description"></script>
   </body>
 </html>

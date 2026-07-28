@@ -46,6 +46,91 @@ document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe
 
 // The form is submitted normally so Netlify can capture it.
 
+const eventCarousel = document.querySelector("[data-event-carousel]");
+
+if (eventCarousel) {
+  const cards = [...eventCarousel.querySelectorAll(".event-carousel-card")];
+  const previousButton = eventCarousel.querySelector("[data-event-carousel-prev]");
+  const nextButton = eventCarousel.querySelector("[data-event-carousel-next]");
+  const descriptionTitle = document.querySelector("[data-event-description-title]");
+  const descriptionMeta = document.querySelector("[data-event-description-meta]");
+  const descriptionCopy = document.querySelector("[data-event-description-copy]");
+  let activeIndex = 0;
+
+  const wrapIndex = (index) => (index + cards.length) % cards.length;
+
+  const renderEventCarousel = () => {
+    const spacing = Math.min(eventCarousel.clientWidth * 0.3, 205);
+
+    cards.forEach((card, index) => {
+      let offset = index - activeIndex;
+      if (offset > cards.length / 2) offset -= cards.length;
+      if (offset < -cards.length / 2) offset += cards.length;
+
+      const distance = Math.abs(offset);
+      const action = card.querySelector("a, button");
+      const isActive = offset === 0;
+      card.classList.toggle("is-active", isActive);
+      card.setAttribute("aria-hidden", isActive ? "false" : "true");
+      card.title = isActive ? "" : "Click to view this event";
+      if (action) action.tabIndex = isActive ? 0 : -1;
+      card.style.opacity = distance > 1 ? "0" : "1";
+      card.style.pointerEvents = distance > 1 ? "none" : "auto";
+      card.style.zIndex = String(5 - distance);
+      card.style.transform = [
+        "translate(-50%, -50%)",
+        `translateX(${offset * spacing}px)`,
+        `translateZ(${-distance * 150}px)`,
+        `rotateY(${offset * -26}deg)`,
+        `scale(${offset === 0 ? 1.08 : 0.8})`,
+      ].join(" ");
+    });
+
+    const activeCard = cards[activeIndex];
+    if (descriptionTitle) descriptionTitle.textContent = activeCard.dataset.eventTitle;
+    if (descriptionMeta) descriptionMeta.textContent = activeCard.dataset.eventMeta;
+    if (descriptionCopy) descriptionCopy.textContent = activeCard.dataset.eventDescription;
+  };
+
+  const goToEvent = (index) => {
+    activeIndex = wrapIndex(index);
+    renderEventCarousel();
+  };
+
+  previousButton?.addEventListener("click", () => goToEvent(activeIndex - 1));
+  nextButton?.addEventListener("click", () => goToEvent(activeIndex + 1));
+
+  eventCarousel.addEventListener("click", (event) => {
+    if (event.target.closest(".event-carousel-arrow")) return;
+
+    const activeCard = cards[activeIndex];
+    const clickedCard = event.target.closest(".event-carousel-card");
+    const activeBounds = activeCard.getBoundingClientRect();
+    let nextIndex = clickedCard && !clickedCard.classList.contains("is-active")
+      ? cards.indexOf(clickedCard)
+      : null;
+
+    // Transformed carousel cards can visually overlap. Treat clicks in the
+    // visible areas beside the active poster as clicks on the adjacent poster.
+    if (event.clientX < activeBounds.left) nextIndex = wrapIndex(activeIndex - 1);
+    if (event.clientX > activeBounds.right) nextIndex = wrapIndex(activeIndex + 1);
+
+    if (nextIndex !== null) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      goToEvent(nextIndex);
+    }
+  }, true);
+
+  eventCarousel.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") goToEvent(activeIndex - 1);
+    if (event.key === "ArrowRight") goToEvent(activeIndex + 1);
+  });
+  window.addEventListener("resize", renderEventCarousel);
+  eventCarousel.classList.add("is-ready");
+  renderEventCarousel();
+}
+
 if (lightbox && lightboxImage && lightboxClose) {
   const closeLightbox = () => {
     lightbox.classList.remove("is-open");
