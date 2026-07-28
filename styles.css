@@ -2420,6 +2420,7 @@ a.poster-button {
   .event-carousel {
     height: 480px;
     margin-inline: 0;
+    touch-action: pan-y;
   }
 
   .event-carousel-card {

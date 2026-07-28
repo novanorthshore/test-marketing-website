@@ -55,7 +55,12 @@ if (eventCarousel) {
   const descriptionTitle = document.querySelector("[data-event-description-title]");
   const descriptionMeta = document.querySelector("[data-event-description-meta]");
   const descriptionCopy = document.querySelector("[data-event-description-copy]");
+  const mobileCarousel = window.matchMedia("(max-width: 680px)");
   let activeIndex = 0;
+  let touchStartX = 0;
+  let touchDistance = 0;
+  let touchPointerId = null;
+  let ignoreClicksUntil = 0;
 
   const wrapIndex = (index) => (index + cards.length) % cards.length;
 
@@ -103,6 +108,12 @@ if (eventCarousel) {
   eventCarousel.addEventListener("click", (event) => {
     if (event.target.closest(".event-carousel-arrow")) return;
 
+    if (performance.now() < ignoreClicksUntil) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+
     const activeCard = cards[activeIndex];
     const clickedCard = event.target.closest(".event-carousel-card");
     const activeBounds = activeCard.getBoundingClientRect();
@@ -121,6 +132,39 @@ if (eventCarousel) {
       goToEvent(nextIndex);
     }
   }, true);
+
+  eventCarousel.addEventListener("pointerdown", (event) => {
+    if (!mobileCarousel.matches || event.pointerType !== "touch") return;
+    if (event.target.closest(".event-carousel-arrow")) return;
+
+    touchStartX = event.clientX;
+    touchDistance = 0;
+    touchPointerId = event.pointerId;
+    eventCarousel.setPointerCapture?.(event.pointerId);
+  });
+
+  eventCarousel.addEventListener("pointermove", (event) => {
+    if (event.pointerId !== touchPointerId) return;
+    touchDistance = event.clientX - touchStartX;
+  });
+
+  const finishTouchSwipe = (event) => {
+    if (event.pointerId !== touchPointerId) return;
+
+    if (Math.abs(touchDistance) > 45) {
+      ignoreClicksUntil = performance.now() + 400;
+      goToEvent(activeIndex + (touchDistance < 0 ? 1 : -1));
+    }
+
+    touchPointerId = null;
+    touchDistance = 0;
+  };
+
+  eventCarousel.addEventListener("pointerup", finishTouchSwipe);
+  eventCarousel.addEventListener("pointercancel", () => {
+    touchPointerId = null;
+    touchDistance = 0;
+  });
 
   eventCarousel.addEventListener("keydown", (event) => {
     if (event.key === "ArrowLeft") goToEvent(activeIndex - 1);
