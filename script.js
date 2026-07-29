@@ -65,7 +65,9 @@ if (eventCarousel) {
   const wrapIndex = (index) => (index + cards.length) % cards.length;
 
   const renderEventCarousel = () => {
-    const spacing = Math.min(eventCarousel.clientWidth * 0.3, 205);
+    const spacing = mobileCarousel.matches
+      ? Math.min(eventCarousel.clientWidth * 0.38, 145)
+      : Math.min(eventCarousel.clientWidth * 0.4, 260);
 
     cards.forEach((card, index) => {
       let offset = index - activeIndex;
