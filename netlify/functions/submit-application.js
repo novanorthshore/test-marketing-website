@@ -65,6 +65,7 @@ exports.handler = async (event) => {
     await appendApplication({
       applicationId,
       application: {
+        registrationType: data.registrationType,
         name: data.name,
         email: data.email,
         phone: data.phone,
@@ -74,6 +75,12 @@ exports.handler = async (event) => {
         licensePlate: data.licensePlate,
         instagram: data.instagram,
         description: data.description,
+        askingPrice: data.askingPrice,
+        mileage: data.mileage,
+        transmission: data.transmission,
+        drivetrain: data.drivetrain,
+        majorModifications: data.majorModifications,
+        listingDescription: data.listingDescription,
       },
       photo,
       photoUploadFailed: Boolean(data.photo && !photo),

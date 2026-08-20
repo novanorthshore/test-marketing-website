@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register | NOVA FINALE: 001</title>
+    <meta
+      name="description"
+      content="Choose a NOVA FINALE: 001 registration type and submit your application. Payment is only collected after approval."
+    />
+    <meta property="og:title" content="Register | NOVA FINALE: 001" />
+    <meta
+      property="og:description"
+      content="Featured show car $25, Nova Marketplace $45, VIP parking $10. Apply first, pay after acceptance."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/finale/poster.png" />
+    <meta name="theme-color" content="#050505" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="finale-page finale-register-page">
+    <header class="site-header is-scrolled" data-header data-solid-header>
+      <a class="brand" href="index.html#home" aria-label="Nova North Shore home">
+        <img class="brand-logo" src="assets/optimized/NovaLogowhite.webp" alt="Nova North Shore" />
+      </a>
+
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="index.html#home">Home</a>
+        <a href="index.html#story">Story</a>
+        <a href="index.html#events">Events</a>
+        <a href="finale-event.html" aria-current="page">Current Event</a>
+        <a href="index.html#gallery">Gallery</a>
+        <a href="index.html#partners">Partners</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions" aria-label="Social links">
+        <a href="https://www.instagram.com/novanorthshore/" aria-label="Nova North Shore on Instagram" rel="noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="5"></rect>
+            <circle cx="12" cy="12" r="3.5"></circle>
+            <path d="M17.5 6.5h.01"></path>
+          </svg>
+        </a>
+        <a href="https://www.facebook.com/people/Nova-North-Shore/61559642177736/" aria-label="Nova North Shore on Facebook" rel="noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M14 8h3V4h-3c-3 0-5 2-5 5v3H6v4h3v4h4v-4h3l1-4h-4V9c0-.6.4-1 1-1Z"></path>
+          </svg>
+        </a>
+        <a href="mailto:info@novanorthshore.com" aria-label="Email Nova North Shore">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16v12H4Z"></path>
+            <path d="m4 7 8 6 8-6"></path>
+          </svg>
+        </a>
+      </div>
+
+      <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" data-menu-toggle>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="mobile-nav" aria-label="Mobile navigation" data-mobile-nav>
+        <a href="index.html#home">Home</a>
+        <a href="index.html#story">Story</a>
+        <a href="index.html#events">Events</a>
+        <a href="finale-event.html" aria-current="page">Current Event</a>
+        <a href="index.html#gallery">Gallery</a>
+        <a href="index.html#partners">Partners</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main class="finale-main">
+      <div class="finale-wrap">
+        <div class="finale-register-wrap">
+          <p class="finale-kicker">Nova Finale: 001</p>
+          <h1 data-finale-heading>Your application</h1>
+
+          <form class="finale-form rsvp-form" name="finale-application" data-finale-application-form>
+          <div class="finale-type-block" data-finale-type-bar hidden>
+            <div class="finale-type-bar">
+              <p data-finale-type-label></p>
+              <button type="button" data-finale-change-type>Change</button>
+            </div>
+            <p class="finale-charge-warning">
+              You will not be charged until you have been accepted. This is just an application. We will send a payment link if you are accepted.
+            </p>
+          </div>
+
+          <fieldset class="finale-type-options" data-finale-type-picker hidden>
+            <legend class="sr-only">Pick a registration type</legend>
+            <label class="finale-type-option">
+              <input type="radio" name="registrationType" value="showCar" required />
+              <strong>Show Car</strong>
+              <small>$25</small>
+            </label>
+            <label class="finale-type-option">
+              <input type="radio" name="registrationType" value="marketplace" />
+              <strong>Marketplace</strong>
+              <small>$45</small>
+            </label>
+            <label class="finale-type-option">
+              <input type="radio" name="registrationType" value="vipParking" />
+              <strong>VIP Parking</strong>
+              <small>$10</small>
+            </label>
+          </fieldset>
+
+          <div data-finale-fields hidden>
+            <div class="rsvp-grid">
+              <div>
+                <label for="application-name">Name <span>(required)</span></label>
+                <input id="application-name" type="text" name="name" autocomplete="name" required />
+              </div>
+              <div>
+                <label for="application-email">Email <span>(required)</span></label>
+                <input id="application-email" type="email" name="email" autocomplete="email" required />
+              </div>
+            </div>
+
+            <label for="application-phone">Phone <span>(required)</span></label>
+            <input
+              id="application-phone"
+              type="tel"
+              name="phone"
+              autocomplete="tel"
+              inputmode="tel"
+              placeholder="(604) 555-1234"
+              required
+            />
+
+            <div class="rsvp-grid">
+              <div>
+                <label for="application-vehicle-year">Vehicle year <span>(required)</span></label>
+                <input id="application-vehicle-year" type="text" name="vehicleYear" inputmode="numeric" maxlength="4" required />
+              </div>
+              <div>
+                <label for="application-vehicle-make">Vehicle make <span>(required)</span></label>
+                <input id="application-vehicle-make" type="text" name="vehicleMake" required />
+              </div>
+            </div>
+
+            <div class="rsvp-grid">
+              <div>
+                <label for="application-vehicle-model">Vehicle model <span>(required)</span></label>
+                <input id="application-vehicle-model" type="text" name="vehicleModel" required />
+              </div>
+              <div>
+                <label for="application-license-plate">License plate <span>(required)</span></label>
+                <input id="application-license-plate" type="text" name="licensePlate" autocomplete="off" required />
+              </div>
+            </div>
+
+            <div data-finale-show-fields>
+              <label for="application-description">Build details / mods (optional)</label>
+              <textarea
+                id="application-description"
+                name="description"
+                rows="4"
+                placeholder="Tell us what makes your build stand out"
+              ></textarea>
+
+              <label for="application-photo">Car photo <span>(required)</span></label>
+              <div class="rsvp-photo-field">
+                <input
+                  id="application-photo"
+                  class="rsvp-file-input"
+                  type="file"
+                  name="photo"
+                  accept="image/jpeg,image/png,image/webp"
+                  data-show-application-photo
+                />
+                <label class="rsvp-file-button" for="application-photo">Choose Photo</label>
+                <p class="rsvp-file-hint" data-show-application-photo-hint>
+                  Required. JPG, PNG, or WebP up to 12 MB. Send a better photo later if approved.
+                </p>
+                <p class="rsvp-photo-status-text" data-show-application-photo-wrap hidden>
+                  Image Upload!
+                </p>
+              </div>
+            </div>
+
+            <div data-finale-marketplace-fields hidden>
+              <div class="rsvp-grid">
+                <div>
+                  <label for="application-asking-price">Asking price <span>(required)</span></label>
+                  <input id="application-asking-price" type="text" name="askingPrice" inputmode="decimal" required />
+                </div>
+                <div>
+                  <label for="application-mileage">Mileage <span>(required)</span></label>
+                  <input id="application-mileage" type="text" name="mileage" inputmode="numeric" required />
+                </div>
+              </div>
+
+              <div class="rsvp-grid">
+                <div>
+                  <label for="application-transmission">Transmission <span>(required)</span></label>
+                  <select id="application-transmission" name="transmission" required>
+                    <option value="">Select</option>
+                    <option value="manual">Manual</option>
+                    <option value="auto">Auto</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="application-drivetrain">Drivetrain <span>(required)</span></label>
+                  <select id="application-drivetrain" name="drivetrain" required>
+                    <option value="">Select</option>
+                    <option value="FWD">FWD</option>
+                    <option value="RWD">RWD</option>
+                    <option value="AWD">AWD</option>
+                    <option value="4WD">4WD</option>
+                  </select>
+                </div>
+              </div>
+
+              <label for="application-major-mods">Major modifications (optional)</label>
+              <textarea id="application-major-mods" name="majorModifications" rows="3"></textarea>
+
+              <label for="application-listing-description">Listing description <span>(required)</span></label>
+              <textarea id="application-listing-description" name="listingDescription" rows="4" required></textarea>
+            </div>
+
+            <p class="finale-price" data-finale-price></p>
+            <p class="rsvp-status" data-show-application-status aria-live="polite"></p>
+            <button type="submit" data-show-application-submit>Submit Application</button>
+          </div>
+        </form>
+        <noscript>
+          <p class="rsvp-status is-error">JavaScript is required to submit this application.</p>
+        </noscript>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <a class="brand" href="index.html#home" aria-label="Nova North Shore home">
+          <img class="brand-logo" src="assets/optimized/NovaLogowhite.webp" alt="Nova North Shore" />
+        </a>
+        <p>Together We Drive the Passion Forward.</p>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="index.html#home">Home</a>
+        <a href="index.html#story">Story</a>
+        <a href="index.html#events">Events</a>
+        <a href="finale-event.html">Current Event</a>
+        <a href="index.html#gallery">Gallery</a>
+        <a href="index.html#partners">Partners</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+      <div class="socials" aria-label="Social links">
+        <a href="https://www.instagram.com/novanorthshore/" rel="noreferrer">Instagram</a>
+        <a href="https://www.facebook.com/people/Nova-North-Shore/61559642177736/" rel="noreferrer">Facebook</a>
+        <a href="mailto:info@novanorthshore.com">Email</a>
+      </div>
+      <p class="copyright">© 2026 Nova North Shore. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="finale-register.js"></script>
+  </body>
+</html>

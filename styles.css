@@ -3443,3 +3443,599 @@ body.voting-modal-open {
   }
 }
 
+/* NOVA FINALE: 001 — scoped to Finale pages only */
+body.finale-page {
+  background: var(--cream-light);
+  color: var(--charcoal);
+  font-family: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+.finale-page .desktop-nav a,
+.finale-page .mobile-nav a,
+.finale-page .header-actions a,
+.finale-page .site-footer nav a {
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+}
+
+.finale-page h1,
+.finale-page h2,
+.finale-page h3 {
+  color: var(--black);
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.finale-page h1 {
+  font-size: clamp(36px, 5.4vw, 72px);
+  max-width: 100%;
+}
+
+.finale-page h2 {
+  font-size: clamp(32px, 4.4vw, 56px);
+}
+
+.finale-page h3 {
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.finale-main {
+  padding-top: var(--header-height);
+}
+
+.finale-wrap {
+  margin: 0 auto;
+  max-width: 1320px;
+  padding: clamp(72px, 8vw, 120px) clamp(22px, 6vw, 86px) clamp(80px, 10vw, 140px);
+}
+
+.finale-kicker {
+  color: var(--olive);
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  margin: 0 0 14px;
+  text-transform: uppercase;
+}
+
+.finale-meta {
+  color: var(--muted);
+  font-size: clamp(15px, 1.2vw, 17px);
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.finale-copy {
+  color: var(--muted);
+  font-size: clamp(18px, 1.4vw, 20px);
+  letter-spacing: 0;
+  line-height: 1.65;
+  margin: 0 0 20px;
+  max-width: 62ch;
+}
+
+.finale-hero,
+.finale-split,
+.finale-entry,
+.finale-center,
+.finale-faq {
+  margin-bottom: clamp(48px, 6vw, 72px);
+  scroll-margin-top: calc(var(--header-height) + 24px);
+}
+
+.finale-hero {
+  align-items: start;
+  display: grid;
+  gap: clamp(52px, 6.5vw, 96px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+}
+
+.finale-hero > div,
+.finale-split > div,
+.finale-entry > div {
+  min-width: 0;
+}
+
+.finale-hero > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.finale-hero .finale-cta {
+  align-self: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.finale-poster {
+  display: flex;
+  margin: 200px 0 0;
+  min-height: 0;
+  width: 100%;
+}
+
+.finale-poster img {
+  border-radius: 16px;
+  display: block;
+  height: auto;
+  margin: 0 auto;
+  max-height: 640px;
+  object-fit: contain;
+  object-position: top center;
+  width: 100%;
+}
+
+.finale-split {
+  align-items: center;
+  display: grid;
+  gap: clamp(52px, 6.5vw, 96px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.finale-split img,
+.finale-entry img,
+.finale-hero > img {
+  aspect-ratio: 4 / 5;
+  background: var(--beige);
+  border-radius: 16px;
+  height: auto;
+  object-fit: cover;
+  width: 100%;
+}
+
+.finale-cta {
+  align-items: center;
+  background: var(--black);
+  border: 1px solid var(--black);
+  border-radius: 10px;
+  color: var(--white);
+  display: inline-flex;
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  justify-content: center;
+  letter-spacing: 0.12em;
+  margin-top: 12px;
+  min-height: 52px;
+  min-width: 168px;
+  padding: 15px 22px;
+  text-transform: uppercase;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.finale-cta:hover,
+.finale-cta:focus-visible {
+  background: var(--olive);
+  border-color: var(--olive);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.finale-cta-jump {
+  font-size: 16px;
+  gap: 10px;
+  min-height: 64px;
+  min-width: 240px;
+  padding: 18px 32px;
+}
+
+.finale-cta-jump svg {
+  display: block;
+  flex-shrink: 0;
+  height: 22px;
+  width: 22px;
+}
+
+.finale-faq {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 760px;
+}
+
+.finale-faq h2 {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.finale-faq-item {
+  margin: 0 0 24px;
+}
+
+.finale-faq-item h3 {
+  color: var(--olive);
+  font-size: clamp(15px, 1.5vw, 17px);
+  letter-spacing: 0.1em;
+  margin: 0 0 12px;
+}
+
+.finale-center {
+  text-align: center;
+}
+
+.finale-center h2 {
+  margin-bottom: 24px;
+}
+
+.finale-steps {
+  display: grid;
+  gap: 24px;
+  margin: 0 auto 32px;
+  max-width: 720px;
+  text-align: left;
+}
+
+.finale-steps p {
+  color: var(--muted);
+  font-size: clamp(18px, 1.4vw, 20px);
+  letter-spacing: 0;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.finale-entry {
+  align-items: start;
+  display: grid;
+  gap: clamp(52px, 6.5vw, 96px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+
+.finale-entry ul {
+  list-style: none;
+  margin: 20px 0;
+  padding: 0;
+}
+
+.finale-entry li {
+  color: var(--muted);
+  font-size: clamp(18px, 1.4vw, 20px);
+  letter-spacing: 0;
+  line-height: 1.6;
+  margin: 0 0 10px;
+  padding-left: 18px;
+  position: relative;
+}
+
+.finale-entry li::before {
+  background: var(--olive);
+  content: "";
+  height: 6px;
+  left: 0;
+  position: absolute;
+  top: 0.55em;
+  width: 6px;
+}
+
+.finale-note {
+  color: var(--charcoal);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.finale-apply {
+  margin-bottom: clamp(48px, 6vw, 72px);
+  scroll-margin-top: calc(var(--header-height) + 24px);
+}
+
+.finale-apply h2 {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+body.finale-register-page {
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+}
+
+.finale-register-wrap {
+  margin: 0 auto;
+  max-width: 720px;
+}
+
+.finale-register-wrap h1 {
+  font-size: clamp(32px, 5vw, 52px);
+  margin-bottom: 28px;
+}
+
+.finale-form {
+  background: var(--white);
+  border-radius: 18px;
+  color: var(--black);
+  padding: clamp(28px, 3.4vw, 42px);
+}
+
+.finale-charge-note,
+.finale-charge-warning {
+  font-family: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-transform: none;
+}
+
+.finale-charge-note {
+  color: #b42318;
+  margin: 20px auto 0;
+  max-width: 46ch;
+  text-align: center;
+}
+
+.finale-charge-warning {
+  color: #b42318;
+  margin: 10px 0 0;
+}
+
+.finale-type-block {
+  border-bottom: 1px solid var(--divider);
+  margin: 0 0 24px;
+  padding: 0 0 16px;
+}
+
+.finale-type-block[hidden] {
+  display: none;
+}
+
+.finale-type-bar {
+  align-items: baseline;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+}
+
+.finale-type-bar p {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.finale-type-bar button {
+  background: none;
+  border: 0;
+  color: var(--olive);
+  cursor: pointer;
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+.finale-type-bar button:hover,
+.finale-type-bar button:focus-visible {
+  color: var(--black);
+  outline: none;
+  text-decoration: underline;
+}
+
+.finale-type-options {
+  border: 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+}
+
+.finale-type-options[hidden],
+.finale-register-page .finale-type-options {
+  display: none;
+}
+
+.finale-type-options legend {
+  color: var(--olive);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.finale-type-option {
+  align-items: center;
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+  margin: 0;
+  min-height: 92px;
+  padding: 18px 12px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+}
+
+a.finale-type-option:visited {
+  color: inherit;
+}
+
+.finale-type-option:hover,
+.finale-type-option:focus-visible,
+.finale-type-option:has(input:focus-visible) {
+  border-color: var(--olive);
+  outline: none;
+}
+
+.finale-type-option:has(input:checked) {
+  border-color: var(--olive);
+  box-shadow: 0 0 0 3px rgba(111, 127, 70, 0.2);
+}
+
+.finale-type-option input {
+  height: 1px;
+  margin: 0;
+  min-height: 0;
+  opacity: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.finale-type-option strong {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.finale-type-option small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.finale-form label {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.finale-form label span {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.finale-form input,
+.finale-form textarea,
+.finale-form select {
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  color: var(--black);
+  display: block;
+  font: inherit;
+  margin-bottom: 20px;
+  min-height: 56px;
+  padding: 12px 14px;
+  width: 100%;
+}
+
+.finale-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.finale-form input:focus,
+.finale-form textarea:focus,
+.finale-form select:focus {
+  border-color: var(--olive);
+  outline: 3px solid rgba(111, 127, 70, 0.25);
+}
+
+.finale-form .rsvp-grid {
+  gap: 16px;
+}
+
+.finale-form .rsvp-file-button {
+  background: var(--cream-light);
+  border: 2px solid var(--black);
+  border-radius: 12px;
+  color: var(--black);
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  min-height: 48px;
+}
+
+.finale-form .rsvp-file-button:hover,
+.finale-form .rsvp-file-button:focus-visible {
+  background: var(--black);
+  color: var(--white);
+}
+
+.finale-form .rsvp-file-hint,
+.finale-form .rsvp-photo-status-text {
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  text-transform: none;
+}
+
+.finale-form .rsvp-photo-status-text {
+  color: var(--olive);
+}
+
+.finale-price {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 8px 0 12px;
+  text-transform: uppercase;
+}
+
+.finale-form button[type="submit"] {
+  background: var(--black);
+  border: 1px solid var(--black);
+  border-radius: 12px;
+  color: var(--white);
+  cursor: pointer;
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  min-height: 58px;
+  padding: 16px 28px;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+.finale-form button[type="submit"]:hover,
+.finale-form button[type="submit"]:focus-visible {
+  background: var(--olive);
+  border-color: var(--olive);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 780px) {
+  .finale-hero,
+  .finale-split,
+  .finale-entry {
+    gap: 32px;
+    grid-template-columns: 1fr;
+  }
+
+  .finale-hero img,
+  .finale-poster,
+  .finale-split img,
+  .finale-entry img {
+    order: -1;
+  }
+
+  .finale-poster {
+    margin-top: 0;
+  }
+
+  .finale-poster img {
+    height: auto;
+    max-height: none;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .finale-form .rsvp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .finale-type-options {
+    grid-template-columns: 1fr;
+  }
+}
+

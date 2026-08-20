@@ -1,5 +1,5 @@
 const { Resend } = require("resend");
-const { BLOCK_PARTY_CONFIG } = require("./event-config");
+const { BLOCK_PARTY_CONFIG, FINALE_CONFIG, getFinaleRegistrationType } = require("./event-config");
 
 const requiredEnv = (name) => {
   const value = process.env[name];
@@ -79,7 +79,117 @@ const buildCarDetailsText = (application) => {
   return lines.join("\n");
 };
 
-const buildAcceptanceEmail = ({ application }) => {
+const payButtonHtml = (paymentUrl, amountDisplay) => {
+  if (!paymentUrl) {
+    return "";
+  }
+
+  return `
+                <p style="margin:0 0 24px;text-align:center;">
+                  <a href="${escapeHtml(paymentUrl)}" style="display:inline-block;background:#111;color:#fff;padding:14px 28px;text-decoration:none;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+                    Pay ${escapeHtml(amountDisplay)} to confirm
+                  </a>
+                </p>
+                <p style="margin:0 0 24px;font-size:13px;line-height:1.5;color:#555;">
+                  If the button does not work, copy this link:<br />
+                  <a href="${escapeHtml(paymentUrl)}" style="color:#111;">${escapeHtml(paymentUrl)}</a>
+                </p>`;
+};
+
+const buildFinaleAcceptanceEmail = ({ application, paymentUrl, registrationOption }) => {
+  const firstName = String(application.name || "").trim().split(/\s+/)[0] || "there";
+  const vehicleLabel = buildVehicleLabel(application) || "your vehicle";
+  const amountDisplay = registrationOption.amountDisplay;
+  const typeLabel = registrationOption.label;
+
+  const subject = "You're In - NOVA FINALE: 001";
+
+  const detailRow = (label, value) => `
+    <tr>
+      <td style="padding:4px 0;color:#555;font-size:14px;">${escapeHtml(label)}</td>
+      <td style="padding:4px 0;color:#111;font-size:14px;font-weight:700;text-align:right;">${value}</td>
+    </tr>`;
+
+  const html = `<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#111;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="background:#0a0a0a;padding:28px 32px;text-align:center;">
+                <h1 style="margin:0;color:#ffffff;font-size:22px;letter-spacing:0.06em;text-transform:uppercase;">Nova North Shore</h1>
+                <p style="margin:6px 0 0;color:#c7d0a8;font-size:15px;letter-spacing:0.14em;text-transform:uppercase;">NOVA FINALE: 001</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px;">
+                <p style="margin:0 0 16px;font-size:16px;">Hi ${escapeHtml(firstName)},</p>
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.5;">
+                  Your <strong>${escapeHtml(typeLabel)}</strong> application for NOVA FINALE: 001 has been approved.
+                </p>
+                <p style="margin:0 0 24px;font-size:16px;line-height:1.5;">
+                  We want your <strong>${escapeHtml(vehicleLabel)}</strong> at Plaza of Nations on September 13. Pay ${escapeHtml(amountDisplay)} to lock the spot. The stall is not held until payment lands.
+                </p>
+                ${payButtonHtml(paymentUrl, amountDisplay)}
+                <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Event Details</h2>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:24px;">
+                  ${detailRow("Event", escapeHtml(FINALE_CONFIG.name))}
+                  ${detailRow("Date", escapeHtml(FINALE_CONFIG.dateDisplay))}
+                  ${detailRow("Location", escapeHtml(FINALE_CONFIG.location))}
+                  ${detailRow("Registration type", escapeHtml(typeLabel))}
+                  ${detailRow("Amount due", escapeHtml(amountDisplay))}
+                </table>
+                ${buildCarDetailsSection(application)}
+                <p style="margin:0 0 4px;font-size:15px;">See you there.</p>
+                <p style="margin:24px 0 0;font-size:15px;font-weight:700;">Giant Tsai</p>
+                <p style="margin:2px 0 0;font-size:14px;color:#555;">Founder, Nova North Shore</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#0a0a0a;padding:18px 32px;text-align:center;">
+                <p style="margin:0;color:#888;font-size:12px;">Nova North Shore &bull; Vancouver, BC</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+  const text = [
+    `Hi ${firstName},`,
+    "",
+    `Your ${typeLabel} application for NOVA FINALE: 001 has been approved.`,
+    "",
+    `We want your ${vehicleLabel} at Plaza of Nations on September 13. Pay ${amountDisplay} to lock the spot.`,
+    paymentUrl ? `Pay here: ${paymentUrl}` : "",
+    "",
+    "EVENT DETAILS",
+    `Event: ${FINALE_CONFIG.name}`,
+    `Date: ${FINALE_CONFIG.dateDisplay}`,
+    `Location: ${FINALE_CONFIG.location}`,
+    `Registration type: ${typeLabel}`,
+    `Amount due: ${amountDisplay}`,
+    "",
+    buildCarDetailsText(application),
+    "",
+    "See you there.",
+    "Giant Tsai",
+    "Founder, Nova North Shore",
+  ].filter((line) => line !== "").join("\n");
+
+  return { subject, html, text };
+};
+
+const buildAcceptanceEmail = ({ application, paymentUrl }) => {
+  const registrationOption = getFinaleRegistrationType(application.registrationType);
+  if (registrationOption) {
+    return buildFinaleAcceptanceEmail({ application, paymentUrl, registrationOption });
+  }
+
   const firstName = String(application.name || "").trim().split(/\s+/)[0] || "there";
   const vehicleLabel = buildVehicleLabel(application) || "your vehicle";
 
@@ -190,9 +300,9 @@ const buildAcceptanceEmail = ({ application }) => {
   return { subject, html, text };
 };
 
-const sendAcceptanceEmail = async ({ application }) => {
+const sendAcceptanceEmail = async ({ application, paymentUrl }) => {
   const resend = new Resend(requiredEnv("RESEND_API_KEY"));
-  const { subject, html, text } = buildAcceptanceEmail({ application });
+  const { subject, html, text } = buildAcceptanceEmail({ application, paymentUrl });
 
   const { data, error } = await resend.emails.send({
     from: getFromAddress(),
@@ -212,10 +322,22 @@ const sendAcceptanceEmail = async ({ application }) => {
 const buildPaymentConfirmationEmail = ({ application, sessionId, amountPaid }) => {
   const firstName = String(application.name || "").trim().split(/\s+/)[0] || "there";
   const vehicleLabel = buildVehicleLabel(application) || "your vehicle";
-  const amountDisplay = amountPaid || BLOCK_PARTY_CONFIG.price.amountDisplay;
+  const registrationOption = getFinaleRegistrationType(application.registrationType);
+  const isFinale = Boolean(registrationOption);
+  const event = isFinale ? FINALE_CONFIG : BLOCK_PARTY_CONFIG;
+  const eventSubtitle = isFinale ? "NOVA FINALE: 001" : "Block Party Car Show";
+  const amountDisplay = amountPaid || registrationOption?.amountDisplay || BLOCK_PARTY_CONFIG.price.amountDisplay;
   const receiptRef = String(sessionId || "").trim();
+  const introCopy = isFinale
+    ? `We are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> at Plaza of Nations on September 13. Please save this email as your receipt.`
+    : `We are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> on Lloyd Avenue on July 19th. Please save this email as your receipt.`;
+  const introText = isFinale
+    ? `We are excited to have your ${vehicleLabel} at Plaza of Nations on September 13. Please save this email as your receipt.`
+    : `We are excited to have your ${vehicleLabel} on Lloyd Avenue on July 19th. Please save this email as your receipt.`;
 
-  const subject = "Payment Confirmed - Nova North Shore Block Party Car Show";
+  const subject = isFinale
+    ? "Payment Confirmed - NOVA FINALE: 001"
+    : "Payment Confirmed - Nova North Shore Block Party Car Show";
 
   const detailRow = (label, value) => `
     <tr>
@@ -233,34 +355,35 @@ const buildPaymentConfirmationEmail = ({ application, sessionId, amountPaid }) =
             <tr>
               <td style="background:#0a0a0a;padding:28px 32px;text-align:center;">
                 <h1 style="margin:0;color:#ffffff;font-size:22px;letter-spacing:0.06em;text-transform:uppercase;">Nova North Shore</h1>
-                <p style="margin:6px 0 0;color:#c7d0a8;font-size:15px;letter-spacing:0.14em;text-transform:uppercase;">Block Party Car Show</p>
+                <p style="margin:6px 0 0;color:#c7d0a8;font-size:15px;letter-spacing:0.14em;text-transform:uppercase;">${escapeHtml(eventSubtitle)}</p>
               </td>
             </tr>
             <tr>
               <td style="padding:32px;">
                 <p style="margin:0 0 16px;font-size:16px;">Hi ${escapeHtml(firstName)},</p>
                 <p style="margin:0 0 16px;font-size:16px;line-height:1.5;">
-                  Thank you — your registration payment has been received and your spot at the Nova North Shore Block Party Car Show is <strong>confirmed.</strong>
+                  Thank you. Your registration payment has been received and your spot at ${escapeHtml(event.name)} is <strong>confirmed.</strong>
                 </p>
                 <p style="margin:0 0 24px;font-size:16px;line-height:1.5;">
-                  We are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> on Lloyd Avenue on July 19th. Please save this email as your receipt.
+                  ${introCopy}
                 </p>
 
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Payment Receipt</h2>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:24px;">
                   ${detailRow("Name", escapeHtml(application.name))}
                   ${detailRow("Vehicle", escapeHtml(vehicleLabel))}
+                  ${registrationOption ? detailRow("Registration type", escapeHtml(registrationOption.label)) : ""}
                   ${detailRow("Amount paid", escapeHtml(amountDisplay))}
                   ${receiptRef ? detailRow("Confirmation", escapeHtml(receiptRef)) : ""}
                 </table>
 
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Event Details</h2>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:24px;">
-                  ${detailRow("Event", escapeHtml(BLOCK_PARTY_CONFIG.name))}
-                  ${detailRow("Date", escapeHtml(BLOCK_PARTY_CONFIG.dateDisplay))}
-                  ${detailRow("Location", escapeHtml(BLOCK_PARTY_CONFIG.location))}
-                  ${detailRow("Show hours", escapeHtml(BLOCK_PARTY_CONFIG.showHours))}
-                  ${detailRow("Car check-in", escapeHtml(BLOCK_PARTY_CONFIG.checkIn))}
+                  ${detailRow("Event", escapeHtml(event.name))}
+                  ${detailRow("Date", escapeHtml(event.dateDisplay))}
+                  ${detailRow("Location", escapeHtml(event.location))}
+                  ${event.showHours ? detailRow("Show hours", escapeHtml(event.showHours)) : ""}
+                  ${event.checkIn ? detailRow("Car check-in", escapeHtml(event.checkIn)) : ""}
                 </table>
 
                 ${buildCarDetailsSection(application)}
@@ -293,22 +416,23 @@ const buildPaymentConfirmationEmail = ({ application, sessionId, amountPaid }) =
   const text = [
     `Hi ${firstName},`,
     "",
-    "Thank you — your registration payment has been received and your spot at the Nova North Shore Block Party Car Show is confirmed.",
+    `Thank you. Your registration payment has been received and your spot at ${event.name} is confirmed.`,
     "",
-    `We are excited to have your ${vehicleLabel} on Lloyd Avenue on July 19th. Please save this email as your receipt.`,
+    introText,
     "",
     "PAYMENT RECEIPT",
     `Name: ${application.name}`,
     `Vehicle: ${vehicleLabel}`,
+    registrationOption ? `Registration type: ${registrationOption.label}` : "",
     `Amount paid: ${amountDisplay}`,
     receiptRef ? `Confirmation: ${receiptRef}` : "",
     "",
     "EVENT DETAILS",
-    `Event: ${BLOCK_PARTY_CONFIG.name}`,
-    `Date: ${BLOCK_PARTY_CONFIG.dateDisplay}`,
-    `Location: ${BLOCK_PARTY_CONFIG.location}`,
-    `Show hours: ${BLOCK_PARTY_CONFIG.showHours}`,
-    `Car check-in: ${BLOCK_PARTY_CONFIG.checkIn}`,
+    `Event: ${event.name}`,
+    `Date: ${event.dateDisplay}`,
+    `Location: ${event.location}`,
+    event.showHours ? `Show hours: ${event.showHours}` : "",
+    event.checkIn ? `Car check-in: ${event.checkIn}` : "",
     "",
     buildCarDetailsText(application),
     "",

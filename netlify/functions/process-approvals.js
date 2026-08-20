@@ -6,6 +6,8 @@ const {
   syncAllApplicationRowColors,
 } = require("./lib/applications-sheet");
 const { sendAcceptanceEmail } = require("./lib/email");
+const { getFinaleRegistrationType } = require("./lib/event-config");
+const { signToken } = require("./lib/tokens");
 
 const processApprovals = async () => {
   const applications = await getApprovedUnsentApplications();
@@ -21,16 +23,23 @@ const processApprovals = async () => {
 
     try {
       const paymentStatus = String(application.paymentStatus || "").trim().toLowerCase();
+      const registrationOption = getFinaleRegistrationType(application.registrationType);
+      let paymentUrl;
 
-      // Advance applications are free. Mark unpaid approved rows as Free so the
-      // sheet turns green and no payment link is required. Leave Paid alone so
-      // already-paid applicants can be refunded manually in Stripe.
-      if (paymentStatus !== "paid" && paymentStatus !== "free") {
+      if (registrationOption) {
+        const siteUrl = String(process.env.SITE_URL || "").replace(/\/$/, "");
+        if (!siteUrl) {
+          throw new Error("SITE_URL is required to send Finale payment links.");
+        }
+
+        const token = signToken({ applicationId: application.applicationId });
+        paymentUrl = `${siteUrl}/show-payment.html?token=${encodeURIComponent(token)}`;
+      } else if (paymentStatus !== "paid" && paymentStatus !== "free") {
         await markPaymentStatus(application.applicationId, "Free");
         application.paymentStatus = "Free";
       }
 
-      await sendAcceptanceEmail({ application });
+      await sendAcceptanceEmail({ application, paymentUrl });
       await markAcceptanceEmailSent(
         application.applicationId,
         new Date().toISOString(),

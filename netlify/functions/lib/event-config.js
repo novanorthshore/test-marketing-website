@@ -52,8 +52,44 @@ const BLOCK_PARTY_CONFIG = {
   },
 };
 
+const FINALE_CONFIG = {
+  id: "nova-finale-001",
+  name: "NOVA FINALE: 001",
+  dateDisplay: "Saturday, September 13, 2026",
+  location: "Plaza of Nations, Vancouver, BC",
+  registrationTypes: {
+    showCar: {
+      id: "showCar",
+      label: "Featured Show Car",
+      priceEnv: "SHOW_STRIPE_SHOW_CAR_PRICE_ID",
+      amountCents: 2500,
+      amountDisplay: "$25.00 CAD",
+    },
+    marketplace: {
+      id: "marketplace",
+      label: "Nova Marketplace",
+      priceEnv: "SHOW_STRIPE_MARKETPLACE_PRICE_ID",
+      amountCents: 4500,
+      amountDisplay: "$45.00 CAD",
+    },
+    vipParking: {
+      id: "vipParking",
+      label: "VIP Parking",
+      priceEnv: "SHOW_STRIPE_VIP_PRICE_ID",
+      amountCents: 1000,
+      amountDisplay: "$10.00 CAD",
+    },
+  },
+};
+
+const getFinaleRegistrationType = (registrationType) => (
+  FINALE_CONFIG.registrationTypes[registrationType] || null
+);
+
 module.exports = {
   EVENT_CONFIG,
   BLOCK_PARTY_CONFIG,
+  FINALE_CONFIG,
   getRsvpOption,
+  getFinaleRegistrationType,
 };

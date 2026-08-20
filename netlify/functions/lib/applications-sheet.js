@@ -26,6 +26,13 @@ const APPLICATION_COLUMNS = [
   "Voting Category",
   "Modified",
   "Event Info Email Sent",
+  "Registration Type",
+  "Asking Price",
+  "Mileage",
+  "Transmission",
+  "Drivetrain",
+  "Major Modifications",
+  "Listing Description",
 ];
 
 const COL = {
@@ -53,9 +60,18 @@ const COL = {
   votingCategory: 21,
   modified: 22,
   eventInfoEmailSent: 23,
+  registrationType: 24,
+  askingPrice: 25,
+  mileage: 26,
+  transmission: 27,
+  drivetrain: 28,
+  majorModifications: 29,
+  listingDescription: 30,
 };
 
-const LAST_COLUMN_LETTER = "X";
+const LAST_COLUMN_LETTER = "AE";
+const FINALE_REGISTRATION_TYPES = new Set(["showCar", "marketplace", "vipParking"]);
+const FINALE_TAB_DEFAULT = "Finale Applications";
 
 const columnLetter = (columnIndex) => {
   let column = "";
@@ -69,31 +85,52 @@ const columnLetter = (columnIndex) => {
   return column;
 };
 
-const getApplicationsTab = () => process.env.GOOGLE_APPLICATIONS_SHEET_TAB || "Applications";
+const getTabName = (kind = "default") => {
+  if (kind === "finale") {
+    return process.env.GOOGLE_FINALE_APPLICATIONS_SHEET_TAB || FINALE_TAB_DEFAULT;
+  }
 
-const applicationsRange = (a1Range) => {
-  const escapedTab = getApplicationsTab().replace(/'/g, "''");
+  return process.env.GOOGLE_APPLICATIONS_SHEET_TAB || "Applications";
+};
+
+const getApplicationsTab = () => getTabName("default");
+
+const sheetKindForApplication = (application = {}) => (
+  FINALE_REGISTRATION_TYPES.has(String(application.registrationType || "").trim())
+    ? "finale"
+    : "default"
+);
+
+const applicationsRange = (a1Range, kind = "default") => {
+  const escapedTab = getTabName(kind).replace(/'/g, "''");
   return `'${escapedTab}'!${a1Range}`;
 };
 
-const ensureApplicationsTabExists = async () => {
+const getSpreadsheetSheets = async () => {
   const sheets = await getSheetsClient();
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
-  const tabName = getApplicationsTab();
   const metadata = await sheets.spreadsheets.get({
     spreadsheetId,
-    fields: "sheets.properties.title",
+    fields: "spreadsheetId,sheets.properties(sheetId,title,gridProperties)",
   });
 
-  const exists = (metadata.data.sheets || []).some(
-    (sheet) => sheet.properties?.title === tabName
-  );
+  return {
+    sheetsClient: sheets,
+    spreadsheetId,
+    tabs: metadata.data.sheets || [],
+  };
+};
+
+const ensureApplicationsTabExists = async (kind = "default") => {
+  const { sheetsClient, spreadsheetId, tabs } = await getSpreadsheetSheets();
+  const tabName = getTabName(kind);
+  const exists = tabs.some((sheet) => sheet.properties?.title === tabName);
 
   if (exists) {
     return;
   }
 
-  await sheets.spreadsheets.batchUpdate({
+  await sheetsClient.spreadsheets.batchUpdate({
     spreadsheetId,
     requestBody: {
       requests: [
@@ -109,14 +146,14 @@ const ensureApplicationsTabExists = async () => {
   });
 };
 
-const ensureApplicationHeaders = async () => {
-  await ensureApplicationsTabExists();
+const ensureApplicationHeaders = async (kind = "default") => {
+  await ensureApplicationsTabExists(kind);
 
   const sheets = await getSheetsClient();
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
   const current = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: applicationsRange("1:1"),
+    range: applicationsRange("1:1", kind),
   });
 
   const existing = (current.data.values && current.data.values[0]) || [];
@@ -124,7 +161,7 @@ const ensureApplicationHeaders = async () => {
   if (existing.length === 0) {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: applicationsRange(`A1:${LAST_COLUMN_LETTER}1`),
+      range: applicationsRange(`A1:${LAST_COLUMN_LETTER}1`, kind),
       valueInputOption: "RAW",
       requestBody: {
         values: [APPLICATION_COLUMNS],
@@ -145,7 +182,7 @@ const ensureApplicationHeaders = async () => {
   if (needsUpdate) {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: applicationsRange(`A1:${LAST_COLUMN_LETTER}1`),
+      range: applicationsRange(`A1:${LAST_COLUMN_LETTER}1`, kind),
       valueInputOption: "RAW",
       requestBody: {
         values: [nextHeaders],
@@ -154,21 +191,26 @@ const ensureApplicationHeaders = async () => {
   }
 };
 
-const getApplicationRows = async () => {
-  await ensureApplicationsTabExists();
+const getApplicationRows = async (kind = "default") => {
+  const { sheetsClient, spreadsheetId, tabs } = await getSpreadsheetSheets();
+  const tabName = getTabName(kind);
+  const exists = tabs.some((sheet) => sheet.properties?.title === tabName);
 
-  const sheets = await getSheetsClient();
-  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
-  const response = await sheets.spreadsheets.values.get({
+  if (!exists) {
+    return [];
+  }
+
+  const response = await sheetsClient.spreadsheets.values.get({
     spreadsheetId,
-    range: applicationsRange(`A:${LAST_COLUMN_LETTER}`),
+    range: applicationsRange(`A:${LAST_COLUMN_LETTER}`, kind),
   });
 
   return response.data.values || [];
 };
 
-const parseApplicationRow = (values, rowNumber) => ({
+const parseApplicationRow = (values, rowNumber, kind = "default") => ({
   rowNumber,
+  sheetKind: kind,
   timestamp: values[COL.timestamp] || "",
   applicationId: String(values[COL.applicationId] || "").trim(),
   status: String(values[COL.status] || "").trim(),
@@ -193,6 +235,13 @@ const parseApplicationRow = (values, rowNumber) => ({
   votingCategory: String(values[COL.votingCategory] || values[COL.category] || "").trim(),
   modifiedFlag: String(values[COL.modified] || "").trim(),
   eventInfoEmailSent: String(values[COL.eventInfoEmailSent] || "").trim(),
+  registrationType: String(values[COL.registrationType] || "").trim(),
+  askingPrice: String(values[COL.askingPrice] || "").trim(),
+  mileage: String(values[COL.mileage] || "").trim(),
+  transmission: String(values[COL.transmission] || "").trim(),
+  drivetrain: String(values[COL.drivetrain] || "").trim(),
+  majorModifications: String(values[COL.majorModifications] || "").trim(),
+  listingDescription: String(values[COL.listingDescription] || "").trim(),
 });
 
 const buildApplicationRow = ({ applicationId, application, photo, photoUploadFailed = false }) => {
@@ -212,6 +261,13 @@ const buildApplicationRow = ({ applicationId, application, photo, photoUploadFai
   row[COL.description] = application.description || "";
   row[COL.photoUrl] = photo?.photoUrl || "";
   row[COL.driveFileId] = photo?.fileId || "";
+  row[COL.registrationType] = application.registrationType || "";
+  row[COL.askingPrice] = application.askingPrice || "";
+  row[COL.mileage] = application.mileage || "";
+  row[COL.transmission] = application.transmission || "";
+  row[COL.drivetrain] = application.drivetrain || "";
+  row[COL.majorModifications] = application.majorModifications || "";
+  row[COL.listingDescription] = application.listingDescription || "";
   row[COL.notes] = photoUploadFailed
     ? "Submitted via show application form (photo upload failed — ask applicant for photo)"
     : "Submitted via show application form";
@@ -220,16 +276,17 @@ const buildApplicationRow = ({ applicationId, application, photo, photoUploadFai
 };
 
 const appendApplication = async ({ applicationId, application, photo, photoUploadFailed = false }) => {
-  await ensureApplicationHeaders();
+  const kind = sheetKindForApplication(application);
+  await ensureApplicationHeaders(kind);
 
   const sheets = await getSheetsClient();
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
-  const rows = await getApplicationRows();
+  const rows = await getApplicationRows(kind);
   const nextRowNumber = Math.max(rows.length + 1, 2);
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: applicationsRange(`A${nextRowNumber}:${LAST_COLUMN_LETTER}${nextRowNumber}`),
+    range: applicationsRange(`A${nextRowNumber}:${LAST_COLUMN_LETTER}${nextRowNumber}`, kind),
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [buildApplicationRow({ applicationId, application, photo, photoUploadFailed })],
@@ -237,35 +294,38 @@ const appendApplication = async ({ applicationId, application, photo, photoUploa
   });
 };
 
-const getApprovedUnsentApplications = async () => {
-  await ensureApplicationHeaders();
+const listApplications = async (kind) => {
+  if (kind === "default") {
+    await ensureApplicationHeaders(kind);
+  }
 
-  const rows = await getApplicationRows();
+  const rows = await getApplicationRows(kind);
 
   return rows
-    .map((values, index) => parseApplicationRow(values, index + 1))
-    .filter((row, index) => (
-      index > 0 &&
-      row.applicationId &&
-      row.status.toLowerCase() === "approved" &&
-      !row.acceptanceEmailSent
-    ));
+    .map((values, index) => parseApplicationRow(values, index + 1, kind))
+    .filter((row, index) => index > 0 && row.applicationId);
+};
+
+const getApprovedUnsentApplications = async () => {
+  const [finaleRows, defaultRows] = await Promise.all([
+    listApplications("finale"),
+    listApplications("default"),
+  ]);
+
+  return [...finaleRows, ...defaultRows].filter((row) => (
+    row.status.toLowerCase() === "approved" &&
+    !row.acceptanceEmailSent
+  ));
 };
 
 const getApprovedUnsentEventInfoApplications = async () => {
-  await ensureApplicationHeaders();
+  const rows = await listApplications("default");
 
-  const rows = await getApplicationRows();
-
-  return rows
-    .map((values, index) => parseApplicationRow(values, index + 1))
-    .filter((row, index) => (
-      index > 0 &&
-      row.applicationId &&
-      row.status.toLowerCase() === "approved" &&
-      row.email &&
-      !row.eventInfoEmailSent
-    ));
+  return rows.filter((row) => (
+    row.status.toLowerCase() === "approved" &&
+    row.email &&
+    !row.eventInfoEmailSent
+  ));
 };
 
 const buildVehicleLabel = (application) => [
@@ -335,25 +395,27 @@ const getApplicationById = async (applicationId) => {
     return null;
   }
 
-  const rows = await getApplicationRows();
-  const index = rows.findIndex((values, rowIndex) => (
-    rowIndex > 0 && String(values[COL.applicationId] || "").trim() === normalizedId
-  ));
+  for (const kind of ["finale", "default"]) {
+    const rows = await getApplicationRows(kind);
+    const index = rows.findIndex((values, rowIndex) => (
+      rowIndex > 0 && String(values[COL.applicationId] || "").trim() === normalizedId
+    ));
 
-  if (index === -1) {
-    return null;
+    if (index !== -1) {
+      return parseApplicationRow(rows[index], index + 1, kind);
+    }
   }
 
-  return parseApplicationRow(rows[index], index + 1);
+  return null;
 };
 
-const setCellValue = async (rowNumber, columnIndex, value) => {
+const setCellValue = async (rowNumber, columnIndex, value, kind = "default") => {
   const sheets = await getSheetsClient();
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: applicationsRange(`${columnLetter(columnIndex)}${rowNumber}`),
+    range: applicationsRange(`${columnLetter(columnIndex)}${rowNumber}`, kind),
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [[value]],
@@ -364,28 +426,26 @@ const setCellValue = async (rowNumber, columnIndex, value) => {
 const markAcceptanceEmailSent = async (
   applicationId,
   timestamp = new Date().toISOString(),
-  rowNumber = null,
 ) => {
-  const resolvedRowNumber = rowNumber || (await getApplicationById(applicationId))?.rowNumber;
-  if (!resolvedRowNumber) {
+  const row = await getApplicationById(applicationId);
+  if (!row) {
     return false;
   }
 
-  await setCellValue(resolvedRowNumber, COL.acceptanceEmailSent, timestamp);
+  await setCellValue(row.rowNumber, COL.acceptanceEmailSent, timestamp, row.sheetKind);
   return true;
 };
 
 const markEventInfoEmailSent = async (
   applicationId,
   timestamp = new Date().toISOString(),
-  rowNumber = null,
 ) => {
-  const resolvedRowNumber = rowNumber || (await getApplicationById(applicationId))?.rowNumber;
-  if (!resolvedRowNumber) {
+  const row = await getApplicationById(applicationId);
+  if (!row) {
     return false;
   }
 
-  await setCellValue(resolvedRowNumber, COL.eventInfoEmailSent, timestamp);
+  await setCellValue(row.rowNumber, COL.eventInfoEmailSent, timestamp, row.sheetKind);
   return true;
 };
 
@@ -395,10 +455,10 @@ const markPaymentStatus = async (applicationId, status, sessionId) => {
     return false;
   }
 
-  await setCellValue(row.rowNumber, COL.paymentStatus, status);
+  await setCellValue(row.rowNumber, COL.paymentStatus, status, row.sheetKind);
 
   if (sessionId) {
-    await setCellValue(row.rowNumber, COL.stripeSessionId, sessionId);
+    await setCellValue(row.rowNumber, COL.stripeSessionId, sessionId, row.sheetKind);
   }
 
   return true;
@@ -410,41 +470,33 @@ const ROW_COLORS = {
   white: { red: 1, green: 1, blue: 1 },
 };
 
-let cachedApplicationsSheetId = null;
+const cachedSheetIds = {};
 
-const getApplicationsSheetId = async () => {
-  if (cachedApplicationsSheetId !== null) {
-    return cachedApplicationsSheetId;
+const getApplicationsSheetId = async (kind = "default") => {
+  if (cachedSheetIds[kind] !== undefined) {
+    return cachedSheetIds[kind];
   }
 
-  const sheets = await getSheetsClient();
-  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
-  const tabName = getApplicationsTab();
-  const metadata = await sheets.spreadsheets.get({
-    spreadsheetId,
-    fields: "sheets.properties(sheetId,title)",
-  });
-
-  const sheet = (metadata.data.sheets || []).find(
-    (entry) => entry.properties?.title === tabName
-  );
+  const tabName = getTabName(kind);
+  const { tabs } = await getSpreadsheetSheets();
+  const sheet = tabs.find((entry) => entry.properties?.title === tabName);
 
   if (!sheet?.properties?.sheetId && sheet?.properties?.sheetId !== 0) {
     throw new Error(`Applications tab "${tabName}" not found.`);
   }
 
-  cachedApplicationsSheetId = sheet.properties.sheetId;
-  return cachedApplicationsSheetId;
+  cachedSheetIds[kind] = sheet.properties.sheetId;
+  return cachedSheetIds[kind];
 };
 
-const setRowBackgroundColor = async (rowNumber, color) => {
+const setRowBackgroundColor = async (rowNumber, color, kind = "default") => {
   if (rowNumber < 2) {
     return;
   }
 
   const sheets = await getSheetsClient();
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
-  const sheetId = await getApplicationsSheetId();
+  const sheetId = await getApplicationsSheetId(kind);
 
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId,
@@ -480,37 +532,234 @@ const syncApplicationRowColor = async (application) => {
   const status = String(application.status || "").trim().toLowerCase();
   const paymentStatus = String(application.paymentStatus || "").trim().toLowerCase();
 
+  const kind = application.sheetKind || "default";
+
   if (status === "approved" && (paymentStatus === "paid" || paymentStatus === "free")) {
-    await setRowBackgroundColor(application.rowNumber, ROW_COLORS.green);
+    await setRowBackgroundColor(application.rowNumber, ROW_COLORS.green, kind);
     return;
   }
 
   if (status === "approved") {
-    await setRowBackgroundColor(application.rowNumber, ROW_COLORS.red);
+    await setRowBackgroundColor(application.rowNumber, ROW_COLORS.red, kind);
     return;
   }
 
-  await setRowBackgroundColor(application.rowNumber, ROW_COLORS.white);
+  await setRowBackgroundColor(application.rowNumber, ROW_COLORS.white, kind);
 };
 
 const syncAllApplicationRowColors = async () => {
-  await ensureApplicationHeaders();
+  const applications = [
+    ...(await listApplications("finale")),
+    ...(await listApplications("default")),
+  ];
 
-  const rows = await getApplicationRows();
-
-  for (let index = 1; index < rows.length; index += 1) {
-    const application = parseApplicationRow(rows[index], index + 1);
-    if (!application.applicationId) {
-      continue;
-    }
-
+  for (const application of applications) {
     await syncApplicationRowColor(application);
   }
+};
+
+const listValidation = (values) => ({
+  condition: {
+    type: "ONE_OF_LIST",
+    values: values.map((value) => ({ userEnteredValue: value })),
+  },
+  showCustomUi: true,
+  strict: true,
+});
+
+const applyFinaleSheetDesign = async (targetSheetId, sourceSheetId, sourceColumnCount) => {
+  const sheets = await getSheetsClient();
+  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
+  const requests = [];
+
+  if (sourceSheetId || sourceSheetId === 0) {
+    const copyThrough = Math.max(1, Math.min(sourceColumnCount || COL.registrationType, COL.registrationType));
+    requests.push({
+      copyPaste: {
+        source: {
+          sheetId: sourceSheetId,
+          startRowIndex: 0,
+          endRowIndex: 1,
+          startColumnIndex: 0,
+          endColumnIndex: copyThrough,
+        },
+        destination: {
+          sheetId: targetSheetId,
+          startRowIndex: 0,
+          endRowIndex: 1,
+          startColumnIndex: 0,
+          endColumnIndex: copyThrough,
+        },
+        pasteType: "PASTE_FORMAT",
+      },
+    });
+  }
+
+  requests.push(
+    {
+      copyPaste: {
+        source: {
+          sheetId: targetSheetId,
+          startRowIndex: 0,
+          endRowIndex: 1,
+          startColumnIndex: 0,
+          endColumnIndex: 1,
+        },
+        destination: {
+          sheetId: targetSheetId,
+          startRowIndex: 0,
+          endRowIndex: 1,
+          startColumnIndex: COL.registrationType,
+          endColumnIndex: APPLICATION_COLUMNS.length,
+        },
+        pasteType: "PASTE_FORMAT",
+      },
+    },
+    {
+      updateSheetProperties: {
+        properties: {
+          sheetId: targetSheetId,
+          gridProperties: {
+            frozenRowCount: 1,
+          },
+        },
+        fields: "gridProperties.frozenRowCount",
+      },
+    },
+    {
+      setBasicFilter: {
+        filter: {
+          range: {
+            sheetId: targetSheetId,
+            startRowIndex: 0,
+            startColumnIndex: 0,
+            endColumnIndex: APPLICATION_COLUMNS.length,
+          },
+        },
+      },
+    },
+    {
+      setDataValidation: {
+        range: {
+          sheetId: targetSheetId,
+          startRowIndex: 1,
+          startColumnIndex: COL.status,
+          endColumnIndex: COL.status + 1,
+        },
+        rule: listValidation(["Pending", "Approved", "Rejected", "Waitlist"]),
+      },
+    },
+    {
+      setDataValidation: {
+        range: {
+          sheetId: targetSheetId,
+          startRowIndex: 1,
+          startColumnIndex: COL.paymentStatus,
+          endColumnIndex: COL.paymentStatus + 1,
+        },
+        rule: listValidation(["Paid", "Free"]),
+      },
+    },
+    {
+      setDataValidation: {
+        range: {
+          sheetId: targetSheetId,
+          startRowIndex: 1,
+          startColumnIndex: COL.registrationType,
+          endColumnIndex: COL.registrationType + 1,
+        },
+        rule: listValidation(["showCar", "marketplace", "vipParking"]),
+      },
+    },
+  );
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: { requests },
+  });
+};
+
+const createFinaleApplicationsSheet = async () => {
+  const targetName = getTabName("finale");
+  const sourceName = getTabName("default");
+  let { sheetsClient, spreadsheetId, tabs } = await getSpreadsheetSheets();
+  const source = tabs.find((sheet) => sheet.properties?.title === sourceName);
+  let target = tabs.find((sheet) => sheet.properties?.title === targetName);
+  const existingRows = target ? await getApplicationRows("finale") : [];
+  const hasData = existingRows.slice(1).some((row) => String(row[COL.applicationId] || "").trim());
+  let duplicatedFrom = null;
+
+  if (target && !hasData && source) {
+    await sheetsClient.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{ deleteSheet: { sheetId: target.properties.sheetId } }],
+      },
+    });
+    target = null;
+    cachedSheetIds.finale = undefined;
+  }
+
+  if (!target && source) {
+    const duplicated = await sheetsClient.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            duplicateSheet: {
+              sourceSheetId: source.properties.sheetId,
+              newSheetName: targetName,
+            },
+          },
+        ],
+      },
+    });
+
+    target = {
+      properties: duplicated.data.replies?.[0]?.duplicateSheet?.properties,
+    };
+    duplicatedFrom = sourceName;
+    cachedSheetIds.finale = target.properties.sheetId;
+
+    await sheetsClient.spreadsheets.values.clear({
+      spreadsheetId,
+      range: applicationsRange(`A2:${LAST_COLUMN_LETTER}`, "finale"),
+    });
+  }
+
+  if (!target) {
+    await ensureApplicationsTabExists("finale");
+  }
+
+  await sheetsClient.spreadsheets.values.update({
+    spreadsheetId,
+    range: applicationsRange(`A1:${LAST_COLUMN_LETTER}1`, "finale"),
+    valueInputOption: "RAW",
+    requestBody: {
+      values: [APPLICATION_COLUMNS],
+    },
+  });
+
+  const sheetId = await getApplicationsSheetId("finale");
+  await applyFinaleSheetDesign(
+    sheetId,
+    source?.properties?.sheetId,
+    source?.properties?.gridProperties?.columnCount,
+  );
+
+  return {
+    spreadsheetId,
+    tabName: targetName,
+    sheetId,
+    duplicatedFrom,
+    url: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${sheetId}`,
+  };
 };
 
 module.exports = {
   APPLICATION_COLUMNS,
   appendApplication,
+  createFinaleApplicationsSheet,
   getApplicationById,
   getApprovedUnsentApplications,
   getApprovedUnsentEventInfoApplications,

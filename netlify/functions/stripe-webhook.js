@@ -1,5 +1,5 @@
 const stripeFactory = require("stripe");
-const { EVENT_CONFIG, BLOCK_PARTY_CONFIG, getRsvpOption } = require("./lib/event-config");
+const { EVENT_CONFIG, BLOCK_PARTY_CONFIG, FINALE_CONFIG, getRsvpOption } = require("./lib/event-config");
 const { rsvpFromMetadata } = require("./lib/validate-rsvp");
 const { appendConfirmedRsvp, getSessionRow, markSessionNotes } = require("./lib/google-sheets");
 const { markPaymentStatus, getApplicationById, syncApplicationRowColor } = require("./lib/applications-sheet");
@@ -93,7 +93,7 @@ const verifySessionPayment = async ({ stripe, session }) => {
   };
 };
 
-const handleBlockPartyCheckoutCompleted = async ({ stripe, session }) => {
+const handleShowCheckoutCompleted = async ({ stripe, session }) => {
   const expandedSession = await stripe.checkout.sessions.retrieve(session.id, {
     expand: ["payment_intent"],
   });
@@ -136,8 +136,11 @@ const handleBlockPartyCheckoutCompleted = async ({ stripe, session }) => {
 };
 
 const handleCheckoutSessionCompleted = async ({ stripe, session }) => {
-  if (session.metadata?.eventId === BLOCK_PARTY_CONFIG.id) {
-    await handleBlockPartyCheckoutCompleted({ stripe, session });
+  if (
+    session.metadata?.eventId === FINALE_CONFIG.id ||
+    session.metadata?.eventId === BLOCK_PARTY_CONFIG.id
+  ) {
+    await handleShowCheckoutCompleted({ stripe, session });
     return;
   }
 
