@@ -3470,17 +3470,20 @@ body.finale-page {
 
 .finale-page h1 {
   font-size: clamp(36px, 5.4vw, 72px);
+  margin: 0 0 32px;
   max-width: 100%;
 }
 
 .finale-page h2 {
   font-size: clamp(32px, 4.4vw, 56px);
+  margin: 0 0 36px;
 }
 
 .finale-page h3 {
   font-size: clamp(18px, 2vw, 24px);
   font-weight: 800;
   letter-spacing: 0.06em;
+  margin: 0 0 18px;
 }
 
 .finale-main {
@@ -3595,6 +3598,7 @@ body.finale-page {
   background: var(--black);
   border: 1px solid var(--black);
   border-radius: 10px;
+  box-shadow: 0 8px 22px rgba(5, 5, 5, 0.22);
   color: var(--white);
   display: inline-flex;
   font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
@@ -3607,30 +3611,43 @@ body.finale-page {
   min-width: 168px;
   padding: 15px 22px;
   text-transform: uppercase;
-  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
 .finale-cta:hover,
 .finale-cta:focus-visible {
   background: var(--olive);
   border-color: var(--olive);
+  box-shadow: 0 12px 28px rgba(5, 5, 5, 0.28);
   outline: none;
   transform: translateY(-2px);
 }
 
 .finale-cta-jump {
-  font-size: 16px;
-  gap: 10px;
-  min-height: 64px;
-  min-width: 240px;
-  padding: 18px 32px;
+  font-size: 18px;
+  gap: 12px;
+  min-height: 72px;
+  min-width: 280px;
+  padding: 20px 36px;
 }
 
 .finale-cta-jump svg {
+  animation: finale-arrow-bounce 1.15s ease-in-out infinite;
   display: block;
   flex-shrink: 0;
-  height: 22px;
-  width: 22px;
+  height: 24px;
+  width: 24px;
+}
+
+@keyframes finale-arrow-bounce {
+  0%,
+  100% {
+    transform: translateY(-4px);
+  }
+
+  50% {
+    transform: translateY(5px);
+  }
 }
 
 .finale-faq {
@@ -3640,7 +3657,7 @@ body.finale-page {
 }
 
 .finale-faq h2 {
-  margin-bottom: 28px;
+  margin-bottom: 36px;
   text-align: center;
 }
 
@@ -3652,7 +3669,17 @@ body.finale-page {
   color: var(--olive);
   font-size: clamp(15px, 1.5vw, 17px);
   letter-spacing: 0.1em;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
+}
+
+.finale-faq-item .finale-copy {
+  text-transform: uppercase;
+}
+
+.finale-center-note {
+  margin: 0 auto 20px;
+  max-width: 720px;
+  text-align: left;
 }
 
 .finale-center {
@@ -3660,7 +3687,7 @@ body.finale-page {
 }
 
 .finale-center h2 {
-  margin-bottom: 24px;
+  margin-bottom: 36px;
 }
 
 .finale-steps {
@@ -3752,11 +3779,11 @@ body.finale-register-page {
 
 .finale-charge-note,
 .finale-charge-warning {
-  font-family: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.45;
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
   text-transform: none;
 }
 
@@ -3783,7 +3810,7 @@ body.finale-register-page {
 }
 
 .finale-type-bar {
-  align-items: baseline;
+  align-items: center;
   display: flex;
   gap: 16px;
   justify-content: space-between;
@@ -3800,23 +3827,32 @@ body.finale-register-page {
 }
 
 .finale-type-bar button {
-  background: none;
-  border: 0;
-  color: var(--olive);
+  background: var(--olive);
+  border: 1px solid var(--olive);
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(5, 5, 5, 0.16);
+  color: var(--white);
   cursor: pointer;
+  flex-shrink: 0;
   font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.1em;
-  padding: 0;
+  min-height: 44px;
+  padding: 10px 18px;
   text-transform: uppercase;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .finale-type-bar button:hover,
 .finale-type-bar button:focus-visible {
-  color: var(--black);
+  background: var(--black);
+  border-color: var(--black);
+  box-shadow: 0 10px 22px rgba(5, 5, 5, 0.22);
+  color: var(--white);
   outline: none;
-  text-decoration: underline;
+  text-decoration: none;
+  transform: translateY(-1px);
 }
 
 .finale-type-options {
@@ -3846,18 +3882,21 @@ body.finale-register-page {
   align-items: center;
   border: 2px solid var(--black);
   border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(5, 5, 5, 0.16);
   color: inherit;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  gap: 8px;
   justify-content: center;
   margin: 0;
-  min-height: 92px;
-  padding: 18px 12px;
+  min-height: 112px;
+  padding: 22px 14px;
   position: relative;
   text-align: center;
   text-decoration: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 a.finale-type-option:visited {
@@ -3868,12 +3907,14 @@ a.finale-type-option:visited {
 .finale-type-option:focus-visible,
 .finale-type-option:has(input:focus-visible) {
   border-color: var(--olive);
+  box-shadow: 0 12px 26px rgba(5, 5, 5, 0.22);
   outline: none;
+  transform: translateY(-2px);
 }
 
 .finale-type-option:has(input:checked) {
   border-color: var(--olive);
-  box-shadow: 0 0 0 3px rgba(111, 127, 70, 0.2);
+  box-shadow: 0 8px 20px rgba(5, 5, 5, 0.16), 0 0 0 3px rgba(111, 127, 70, 0.2);
 }
 
 .finale-type-option input {
@@ -3886,7 +3927,7 @@ a.finale-type-option:visited {
 }
 
 .finale-type-option strong {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -3894,8 +3935,8 @@ a.finale-type-option:visited {
 
 .finale-type-option small {
   color: var(--muted);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   letter-spacing: 0.04em;
 }
 
@@ -3983,6 +4024,7 @@ a.finale-type-option:visited {
   background: var(--black);
   border: 1px solid var(--black);
   border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(5, 5, 5, 0.22);
   color: var(--white);
   cursor: pointer;
   font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
@@ -3992,6 +4034,7 @@ a.finale-type-option:visited {
   min-height: 58px;
   padding: 16px 28px;
   text-transform: uppercase;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
   width: 100%;
 }
 
@@ -3999,6 +4042,7 @@ a.finale-type-option:visited {
 .finale-form button[type="submit"]:focus-visible {
   background: var(--olive);
   border-color: var(--olive);
+  box-shadow: 0 12px 28px rgba(5, 5, 5, 0.28);
   outline: none;
   transform: translateY(-2px);
 }
