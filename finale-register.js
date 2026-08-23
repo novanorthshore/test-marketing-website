@@ -22,9 +22,9 @@ if (applicationForm) {
   const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
   const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
   const TYPE_META = {
-    showCar: { label: "Featured Show Car", price: "$25" },
-    marketplace: { label: "Nova Marketplace", price: "$45" },
-    vipParking: { label: "VIP Parking", price: "$10" },
+    showCar: { label: "Featured Show Car", price: "$15" },
+    marketplace: { label: "Nova Marketplace", price: "$40" },
+    vipParking: { label: "VIP Parking", price: "$5" },
   };
   const APPLY_URL = "finale-submissions.html#apply";
   const requestedType = new URLSearchParams(window.location.search).get("type");
