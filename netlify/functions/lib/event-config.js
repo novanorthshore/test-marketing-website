@@ -55,7 +55,7 @@ const BLOCK_PARTY_CONFIG = {
 const FINALE_CONFIG = {
   id: "nova-finale-001",
   name: "NOVA FINALE: 001",
-  dateDisplay: "Saturday, September 13, 2026",
+  dateDisplay: "Sunday, September 13, 2026",
   location: "Plaza of Nations, Vancouver, BC",
   registrationTypes: {
     showCar: {

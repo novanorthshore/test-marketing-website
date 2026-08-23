@@ -3492,7 +3492,7 @@ body.finale-page {
 
 .finale-wrap {
   margin: 0 auto;
-  max-width: 1320px;
+  max-width: 1420px;
   padding: clamp(72px, 8vw, 120px) clamp(22px, 6vw, 86px) clamp(80px, 10vw, 140px);
 }
 
@@ -3526,6 +3526,7 @@ body.finale-page {
 
 .finale-hero,
 .finale-split,
+.finale-venue,
 .finale-entry,
 .finale-center,
 .finale-faq {
@@ -3542,6 +3543,7 @@ body.finale-page {
 
 .finale-hero > div,
 .finale-split > div,
+.finale-venue > div,
 .finale-entry > div {
   min-width: 0;
 }
@@ -3594,11 +3596,54 @@ body.finale-page {
   width: 100%;
 }
 
+.finale-hero-photo .finale-hero-poster {
+  height: auto;
+  max-height: 800px;
+  object-fit: contain;
+}
+
+@media (min-width: 781px) {
+  .finale-hero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.35fr);
+  }
+
+  .finale-poster img {
+    max-height: 800px;
+  }
+
+  .finale-poster,
+  .finale-hero-photo .finale-hero-poster {
+    transform: translateX(25%);
+  }
+}
+
 .finale-split {
   align-items: center;
   display: grid;
   gap: clamp(52px, 6.5vw, 96px);
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@media (min-width: 781px) {
+  .finale-split {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 3fr);
+  }
+}
+
+.finale-venue {
+  align-items: center;
+  display: grid;
+  gap: clamp(52px, 6.5vw, 96px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+}
+
+.finale-venue img {
+  aspect-ratio: 0.76;
+  border-radius: 16px;
+  display: block;
+  height: auto;
+  object-fit: cover;
+  width: 100%;
 }
 
 .finale-split img,
@@ -3610,6 +3655,10 @@ body.finale-page {
   height: auto;
   object-fit: cover;
   width: 100%;
+}
+
+.finale-split .finale-submissions-photo {
+  aspect-ratio: 1 / 1;
 }
 
 .finale-cta {
@@ -3672,7 +3721,7 @@ body.finale-page {
 .finale-faq {
   margin-left: auto;
   margin-right: auto;
-  max-width: 760px;
+  max-width: none;
 }
 
 .finale-faq h2 {
@@ -3692,6 +3741,7 @@ body.finale-page {
 }
 
 .finale-faq-item .finale-copy {
+  max-width: none;
   text-transform: uppercase;
 }
 
@@ -4069,6 +4119,7 @@ a.finale-type-option:visited {
 @media (max-width: 780px) {
   .finale-hero,
   .finale-split,
+  .finale-venue,
   .finale-entry {
     gap: 32px;
     grid-template-columns: 1fr;
@@ -4078,6 +4129,7 @@ a.finale-type-option:visited {
   .finale-poster,
   .finale-hero-photo,
   .finale-split img,
+  .finale-venue img,
   .finale-entry img {
     order: -1;
   }
@@ -4109,4 +4161,3 @@ a.finale-type-option:visited {
     grid-template-columns: 1fr;
   }
 }
-
