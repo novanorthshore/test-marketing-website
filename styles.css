@@ -3888,6 +3888,34 @@ body.finale-register-page {
   text-align: center;
 }
 
+.finale-sponsor-note {
+  align-items: center;
+  border-top: 1px solid var(--divider);
+  display: flex;
+  gap: 24px;
+  margin: 34px auto 0;
+  max-width: 780px;
+  padding-top: 24px;
+  text-align: left;
+}
+
+.finale-sponsor-note img {
+  background: var(--black);
+  border-radius: 8px;
+  flex: 0 0 140px;
+  height: auto;
+  max-width: 140px;
+  padding: 8px;
+}
+
+.finale-sponsor-note p {
+  color: var(--muted);
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0;
+}
+
 .finale-charge-warning {
   color: #b42318;
   margin: 10px 0 0;
@@ -4683,5 +4711,10 @@ html {
 
   .finale-type-options {
     grid-template-columns: 1fr;
+  }
+
+  .finale-sponsor-note {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
