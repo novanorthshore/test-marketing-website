@@ -36,6 +36,7 @@
         <a href="index.html#story">Story</a>
         <a href="index.html#events">Events</a>
         <a href="finale-event.html" aria-current="page">Current Event</a>
+        <a href="finale-marketplace.html">Marketplace</a>
         <a href="index.html#gallery">Gallery</a>
         <a href="index.html#partners">Partners</a>
         <a href="index.html#contact">Contact</a>
@@ -72,6 +73,7 @@
         <a href="index.html#story">Story</a>
         <a href="index.html#events">Events</a>
         <a href="finale-event.html" aria-current="page">Current Event</a>
+        <a href="finale-marketplace.html">Marketplace</a>
         <a href="index.html#gallery">Gallery</a>
         <a href="index.html#partners">Partners</a>
         <a href="index.html#contact">Contact</a>
@@ -80,7 +82,7 @@
 
     <main class="finale-main">
       <div class="finale-wrap">
-        <div class="finale-register-wrap">
+        <div class="finale-register-wrap reveal">
           <p class="finale-kicker">Nova Finale: 001</p>
           <h1 data-finale-heading>Your application</h1>
 
@@ -192,11 +194,11 @@
               <div class="rsvp-grid">
                 <div>
                   <label for="application-asking-price">Asking price <span>(required)</span></label>
-                  <input id="application-asking-price" type="text" name="askingPrice" inputmode="decimal" required />
+                  <input id="application-asking-price" type="text" name="askingPrice" inputmode="numeric" placeholder="16000" required />
                 </div>
                 <div>
-                  <label for="application-mileage">Mileage <span>(required)</span></label>
-                  <input id="application-mileage" type="text" name="mileage" inputmode="numeric" required />
+                  <label for="application-mileage">Mileage in kilometres <span>(required)</span></label>
+                  <input id="application-mileage" type="text" name="mileage" inputmode="numeric" placeholder="188000" required />
                 </div>
               </div>
 
@@ -224,8 +226,58 @@
               <label for="application-major-mods">Major modifications (optional)</label>
               <textarea id="application-major-mods" name="majorModifications" rows="3"></textarea>
 
-              <label for="application-listing-description">Listing description <span>(required)</span></label>
-              <textarea id="application-listing-description" name="listingDescription" rows="4" required></textarea>
+              <label for="application-known-issues">Known issues <span>(required)</span></label>
+              <textarea id="application-known-issues" name="knownIssues" rows="3" placeholder="Enter None known if there are no known issues." required></textarea>
+
+              <label for="application-listing-description">Story / additional information <span>(required)</span></label>
+              <textarea id="application-listing-description" name="listingDescription" rows="4" placeholder="Tell prospective buyers about the vehicle." required></textarea>
+
+              <div class="rsvp-grid">
+                <div>
+                  <label for="application-marketplace-display-name">Public seller name <span>(required)</span></label>
+                  <input id="application-marketplace-display-name" type="text" name="marketplaceDisplayName" placeholder="First name or business name" required />
+                </div>
+                <div>
+                  <label for="application-instagram">Instagram username <span>(optional)</span></label>
+                  <input id="application-instagram" type="text" name="instagram" autocomplete="off" placeholder="@novanorthshore" />
+                </div>
+              </div>
+
+              <fieldset class="marketplace-contact-options">
+                <legend>Public contact details <span>(choose at least one)</span></legend>
+                <p>Only the details you select will appear on your public Marketplace listing.</p>
+                <label><input type="checkbox" name="publicContactMethods" value="phone" /> Phone</label>
+                <label><input type="checkbox" name="publicContactMethods" value="email" /> Email</label>
+                <label><input type="checkbox" name="publicContactMethods" value="instagram" /> Instagram</label>
+              </fieldset>
+
+              <div class="marketplace-gallery-field">
+                <p class="marketplace-gallery-title">Marketplace gallery <span>Cover photo plus up to four additional photos</span></p>
+                <p class="rsvp-file-hint">The first photo above is your cover image. Add gallery photos below to show more of the vehicle.</p>
+                <div class="marketplace-photo-previews" data-marketplace-photo-previews aria-live="polite"></div>
+                <div class="marketplace-gallery-inputs">
+                  <div>
+                    <input id="application-marketplace-photo-2" class="rsvp-file-input" type="file" accept="image/jpeg,image/png,image/webp" data-marketplace-photo="1" />
+                    <label class="rsvp-file-button" for="application-marketplace-photo-2">Add Photo 2</label>
+                    <p class="rsvp-photo-status-text" data-marketplace-photo-status="1" hidden></p>
+                  </div>
+                  <div>
+                    <input id="application-marketplace-photo-3" class="rsvp-file-input" type="file" accept="image/jpeg,image/png,image/webp" data-marketplace-photo="2" />
+                    <label class="rsvp-file-button" for="application-marketplace-photo-3">Add Photo 3</label>
+                    <p class="rsvp-photo-status-text" data-marketplace-photo-status="2" hidden></p>
+                  </div>
+                  <div>
+                    <input id="application-marketplace-photo-4" class="rsvp-file-input" type="file" accept="image/jpeg,image/png,image/webp" data-marketplace-photo="3" />
+                    <label class="rsvp-file-button" for="application-marketplace-photo-4">Add Photo 4</label>
+                    <p class="rsvp-photo-status-text" data-marketplace-photo-status="3" hidden></p>
+                  </div>
+                  <div>
+                    <input id="application-marketplace-photo-5" class="rsvp-file-input" type="file" accept="image/jpeg,image/png,image/webp" data-marketplace-photo="4" />
+                    <label class="rsvp-file-button" for="application-marketplace-photo-5">Add Photo 5</label>
+                    <p class="rsvp-photo-status-text" data-marketplace-photo-status="4" hidden></p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <p class="finale-price" data-finale-price></p>
@@ -252,6 +304,7 @@
         <a href="index.html#story">Story</a>
         <a href="index.html#events">Events</a>
         <a href="finale-event.html">Current Event</a>
+        <a href="finale-marketplace.html">Marketplace</a>
         <a href="index.html#gallery">Gallery</a>
         <a href="index.html#partners">Partners</a>
         <a href="index.html#contact">Contact</a>

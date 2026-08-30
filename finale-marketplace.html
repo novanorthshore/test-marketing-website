@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NOVA Marketplace | NOVA FINALE: 001</title>
+    <meta name="description" content="Browse approved and paid enthusiast vehicles for sale at the NOVA Marketplace." />
+    <meta property="og:title" content="NOVA Marketplace | NOVA FINALE: 001" />
+    <meta property="og:description" content="Browse enthusiast-owned vehicles currently available through NOVA Marketplace." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/finale/nova-finale-001-poster.png" />
+    <meta name="theme-color" content="#050505" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="finale-page finale-marketplace-page">
+    <header class="site-header is-scrolled" data-header data-solid-header>
+      <a class="brand" href="index.html#home" aria-label="Nova North Shore home"><img class="brand-logo" src="assets/optimized/NovaLogowhite.webp" alt="Nova North Shore" /></a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="index.html#home">Home</a><a href="index.html#story">Story</a><a href="index.html#events">Events</a><a href="finale-event.html">Current Event</a><a href="finale-marketplace.html" aria-current="page">Marketplace</a><a href="index.html#gallery">Gallery</a><a href="index.html#partners">Partners</a><a href="index.html#contact">Contact</a>
+      </nav>
+      <div class="header-actions" aria-label="Social links">
+        <a href="https://www.instagram.com/novanorthshore/" aria-label="Nova North Shore on Instagram" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5"></rect><circle cx="12" cy="12" r="3.5"></circle><path d="M17.5 6.5h.01"></path></svg></a>
+        <a href="mailto:info@novanorthshore.com" aria-label="Email Nova North Shore"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4Z"></path><path d="m4 7 8 6 8-6"></path></svg></a>
+      </div>
+      <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" data-menu-toggle><span></span><span></span></button>
+      <nav class="mobile-nav" aria-label="Mobile navigation" data-mobile-nav>
+        <a href="index.html#home">Home</a><a href="index.html#story">Story</a><a href="index.html#events">Events</a><a href="finale-event.html">Current Event</a><a href="finale-marketplace.html" aria-current="page">Marketplace</a><a href="index.html#gallery">Gallery</a><a href="index.html#partners">Partners</a><a href="index.html#contact">Contact</a>
+      </nav>
+    </header>
+    <main class="finale-main">
+      <div class="finale-wrap">
+        <section class="marketplace-hero reveal">
+          <p class="finale-kicker">NOVA Finale: 001</p>
+          <h1>NOVA Marketplace</h1>
+          <p>Enthusiast-owned vehicles currently available for sale. Every listing belongs to an approved, registered NOVA Marketplace participant.</p>
+        </section>
+        <section class="marketplace-controls reveal" aria-label="Marketplace controls">
+          <label for="marketplace-search">Search vehicles</label>
+          <input id="marketplace-search" type="search" placeholder="Year, make, or model" data-marketplace-search />
+          <label for="marketplace-sort">Sort listings</label>
+          <select id="marketplace-sort" data-marketplace-sort><option value="newest">Newest</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option></select>
+        </section>
+        <p class="marketplace-status" data-marketplace-status aria-live="polite">Loading listings...</p>
+        <section class="marketplace-grid" data-marketplace-grid aria-live="polite"></section>
+      </div>
+    </main>
+    <div class="marketplace-modal" data-marketplace-modal hidden>
+      <div class="marketplace-modal-backdrop" data-marketplace-close></div>
+      <section class="marketplace-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="marketplace-modal-title" tabindex="-1" data-marketplace-dialog>
+        <button class="marketplace-modal-close" type="button" aria-label="Close listing" data-marketplace-close>&times;</button>
+        <div data-marketplace-modal-content></div>
+      </section>
+    </div>
+    <footer class="site-footer">
+      <div class="footer-brand"><a class="brand" href="index.html#home" aria-label="Nova North Shore home"><img class="brand-logo" src="assets/optimized/NovaLogowhite.webp" alt="Nova North Shore" /></a><p>Together We Drive the Passion Forward.</p></div>
+      <nav aria-label="Footer navigation"><a href="index.html#home">Home</a><a href="index.html#story">Story</a><a href="index.html#events">Events</a><a href="finale-event.html">Current Event</a><a href="finale-marketplace.html">Marketplace</a><a href="index.html#gallery">Gallery</a><a href="index.html#partners">Partners</a><a href="index.html#contact">Contact</a></nav>
+      <div class="socials" aria-label="Social links"><a href="https://www.instagram.com/novanorthshore/" rel="noreferrer">Instagram</a><a href="mailto:info@novanorthshore.com">Email</a></div>
+      <p class="copyright">© 2026 Nova North Shore. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+    <script src="finale-marketplace.js"></script>
+  </body>
+</html>

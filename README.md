@@ -76,6 +76,18 @@ GOOGLE_SHEET_TAB=Confirmed RSVPs
 
 Use `.env.example` as the local development template. Do not commit a real `.env` file.
 
+## NOVA Marketplace
+
+Marketplace applications collect up to five vehicle photos and upload them directly to Cloudinary using a short-lived server signature. No additional environment variables are needed beyond the existing Cloudinary configuration.
+
+After deploying this change, run the following once to add the Marketplace columns and sheet dropdowns to the Finale Applications tab:
+
+```bash
+npm run create:finale-sheet
+```
+
+A Marketplace listing becomes public only when its row has `Registration Type` set to `marketplace`, `Status` set to `Approved`, `Payment Status` set to `Paid`, and `Marketplace Listing Status` set to `Published`. Set the listing status to `Hidden` or `Sold` to remove it from the public page.
+
 Stripe setup:
 
 - Create one-time CAD prices for `$10` standard RSVP and `$30` RSVP with professional photography.

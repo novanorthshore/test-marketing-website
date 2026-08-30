@@ -5,6 +5,7 @@ const ALLOWED_PHOTO_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp
 const REGISTRATION_TYPES = new Set(["showCar", "marketplace", "vipParking"]);
 const TRANSMISSION_TYPES = new Set(["manual", "auto"]);
 const DRIVETRAIN_TYPES = new Set(["FWD", "RWD", "AWD", "4WD"]);
+const MARKETPLACE_CONTACT_METHODS = new Set(["phone", "email", "instagram"]);
 
 const cleanText = (value, maxLength = MAX_FIELD_LENGTH) => {
   if (typeof value !== "string") {
@@ -24,6 +25,8 @@ const validateVehicleYear = (value) => {
   const year = Number(value);
   return year >= 1886 && year <= 2100;
 };
+
+const isWholeNumber = (value) => /^\d+$/.test(String(value || "").replace(/[,$\s]/g, ""));
 
 const normalizePhone = (value) => {
   const trimmed = cleanText(value, 24);
@@ -100,6 +103,25 @@ const validatePhoto = (payloadPhoto, errors) => {
   };
 };
 
+const validateMarketplacePhotos = (photos, errors) => {
+  if (!Array.isArray(photos) || photos.length < 1 || photos.length > 5) {
+    errors.photos = "Upload between one and five vehicle photos.";
+    return [];
+  }
+
+  const cleanPhotos = photos.map((photo) => ({
+    photoUrl: cleanText(photo?.photoUrl || "", 600),
+    fileId: cleanText(photo?.fileId || "", 240),
+  }));
+
+  if (cleanPhotos.some((photo) => !/^https:\/\/res\.cloudinary\.com\//.test(photo.photoUrl) || !photo.fileId)) {
+    errors.photos = "One or more Marketplace photos could not be verified.";
+    return [];
+  }
+
+  return cleanPhotos;
+};
+
 const validateApplication = (payload = {}) => {
   const registrationType = cleanText(payload.registrationType || "", 24);
   const data = {
@@ -119,6 +141,12 @@ const validateApplication = (payload = {}) => {
     drivetrain: cleanText(payload.drivetrain || "", 8).toUpperCase(),
     majorModifications: cleanText(payload.majorModifications || "", MAX_DESCRIPTION_LENGTH),
     listingDescription: cleanText(payload.listingDescription || "", MAX_DESCRIPTION_LENGTH),
+    knownIssues: cleanText(payload.knownIssues || "", MAX_DESCRIPTION_LENGTH),
+    marketplaceDisplayName: cleanText(payload.marketplaceDisplayName || "", 120),
+    publicContactMethods: Array.isArray(payload.publicContactMethods)
+      ? payload.publicContactMethods.map((value) => cleanText(value, 20).toLowerCase())
+      : [],
+    marketplacePhotos: [],
     photo: null,
   };
 
@@ -157,12 +185,16 @@ const validateApplication = (payload = {}) => {
   }
 
   if (data.registrationType === "marketplace") {
-    if (!data.askingPrice) {
-      errors.askingPrice = "Asking price is required.";
+    if (!isWholeNumber(data.askingPrice) || Number(data.askingPrice.replace(/[,\s$]/g, "")) < 1) {
+      errors.askingPrice = "Enter a whole-dollar asking price.";
+    } else {
+      data.askingPrice = String(Number(data.askingPrice.replace(/[,\s$]/g, "")));
     }
 
-    if (!data.mileage) {
-      errors.mileage = "Mileage is required.";
+    if (!isWholeNumber(data.mileage)) {
+      errors.mileage = "Enter mileage in kilometres.";
+    } else {
+      data.mileage = String(Number(data.mileage.replace(/[,$\s]/g, "")));
     }
 
     if (!TRANSMISSION_TYPES.has(data.transmission)) {
@@ -176,6 +208,25 @@ const validateApplication = (payload = {}) => {
     if (!data.listingDescription) {
       errors.listingDescription = "Listing description is required.";
     }
+
+    if (!data.knownIssues) {
+      errors.knownIssues = "Describe known issues or enter None known.";
+    }
+
+    if (!data.marketplaceDisplayName) {
+      errors.marketplaceDisplayName = "A public seller name is required.";
+    }
+
+    data.publicContactMethods = [...new Set(data.publicContactMethods)];
+    if (!data.publicContactMethods.length || data.publicContactMethods.some((value) => !MARKETPLACE_CONTACT_METHODS.has(value))) {
+      errors.publicContactMethods = "Choose at least one public contact method.";
+    }
+
+    if (data.publicContactMethods.includes("instagram") && !data.instagram) {
+      errors.instagram = "Add an Instagram username or choose another contact method.";
+    }
+
+    data.marketplacePhotos = validateMarketplacePhotos(payload.marketplacePhotos, errors);
   } else {
     data.askingPrice = "";
     data.mileage = "";
@@ -183,9 +234,15 @@ const validateApplication = (payload = {}) => {
     data.drivetrain = "";
     data.majorModifications = "";
     data.listingDescription = "";
+    data.knownIssues = "";
+    data.marketplaceDisplayName = "";
+    data.publicContactMethods = [];
+    data.marketplacePhotos = [];
   }
 
-  if (data.registrationType === "vipParking") {
+  if (data.registrationType === "marketplace") {
+    data.photo = null;
+  } else if (data.registrationType === "vipParking") {
     data.description = "";
     data.photo = null;
   } else {

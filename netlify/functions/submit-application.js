@@ -81,8 +81,12 @@ exports.handler = async (event) => {
         drivetrain: data.drivetrain,
         majorModifications: data.majorModifications,
         listingDescription: data.listingDescription,
+        knownIssues: data.knownIssues,
+        marketplaceDisplayName: data.marketplaceDisplayName,
+        publicContactMethods: data.publicContactMethods,
+        marketplacePhotoUrls: data.marketplacePhotos,
       },
-      photo,
+      photo: data.registrationType === "marketplace" ? data.marketplacePhotos[0] : photo,
       photoUploadFailed: Boolean(data.photo && !photo),
     });
 

@@ -1,5 +1,6 @@
 const { getSheetsClient, requiredEnv } = require("./google-auth");
 const { getEligibleVotingCategoryIds } = require("./vote-config");
+const { createHash } = require("crypto");
 
 const APPLICATION_COLUMNS = [
   "Timestamp",
@@ -33,6 +34,14 @@ const APPLICATION_COLUMNS = [
   "Drivetrain",
   "Major Modifications",
   "Listing Description",
+  "Known Issues",
+  "Marketplace Display Name",
+  "Public Contact Methods",
+  "Marketplace Listing Status",
+  "Marketplace Photo 2 URL",
+  "Marketplace Photo 3 URL",
+  "Marketplace Photo 4 URL",
+  "Marketplace Photo 5 URL",
 ];
 
 const COL = {
@@ -67,9 +76,17 @@ const COL = {
   drivetrain: 28,
   majorModifications: 29,
   listingDescription: 30,
+  knownIssues: 31,
+  marketplaceDisplayName: 32,
+  publicContactMethods: 33,
+  marketplaceListingStatus: 34,
+  marketplacePhoto2Url: 35,
+  marketplacePhoto3Url: 36,
+  marketplacePhoto4Url: 37,
+  marketplacePhoto5Url: 38,
 };
 
-const LAST_COLUMN_LETTER = "AE";
+const LAST_COLUMN_LETTER = "AM";
 const FINALE_REGISTRATION_TYPES = new Set(["showCar", "marketplace", "vipParking"]);
 const FINALE_TAB_DEFAULT = "Finale Applications";
 
@@ -242,6 +259,17 @@ const parseApplicationRow = (values, rowNumber, kind = "default") => ({
   drivetrain: String(values[COL.drivetrain] || "").trim(),
   majorModifications: String(values[COL.majorModifications] || "").trim(),
   listingDescription: String(values[COL.listingDescription] || "").trim(),
+  knownIssues: String(values[COL.knownIssues] || "").trim(),
+  marketplaceDisplayName: String(values[COL.marketplaceDisplayName] || "").trim(),
+  publicContactMethods: String(values[COL.publicContactMethods] || "").trim(),
+  marketplaceListingStatus: String(values[COL.marketplaceListingStatus] || "").trim(),
+  marketplacePhotoUrls: [
+    values[COL.photoUrl],
+    values[COL.marketplacePhoto2Url],
+    values[COL.marketplacePhoto3Url],
+    values[COL.marketplacePhoto4Url],
+    values[COL.marketplacePhoto5Url],
+  ].map((value) => String(value || "").trim()).filter(Boolean),
 });
 
 const buildApplicationRow = ({ applicationId, application, photo, photoUploadFailed = false }) => {
@@ -268,6 +296,14 @@ const buildApplicationRow = ({ applicationId, application, photo, photoUploadFai
   row[COL.drivetrain] = application.drivetrain || "";
   row[COL.majorModifications] = application.majorModifications || "";
   row[COL.listingDescription] = application.listingDescription || "";
+  row[COL.knownIssues] = application.knownIssues || "";
+  row[COL.marketplaceDisplayName] = application.marketplaceDisplayName || "";
+  row[COL.publicContactMethods] = (application.publicContactMethods || []).join(",");
+  row[COL.marketplaceListingStatus] = application.registrationType === "marketplace" ? "Draft" : "";
+  row[COL.marketplacePhoto2Url] = application.marketplacePhotoUrls?.[1]?.photoUrl || "";
+  row[COL.marketplacePhoto3Url] = application.marketplacePhotoUrls?.[2]?.photoUrl || "";
+  row[COL.marketplacePhoto4Url] = application.marketplacePhotoUrls?.[3]?.photoUrl || "";
+  row[COL.marketplacePhoto5Url] = application.marketplacePhotoUrls?.[4]?.photoUrl || "";
   row[COL.notes] = photoUploadFailed
     ? "Submitted via show application form (photo upload failed — ask applicant for photo)"
     : "Submitted via show application form";
@@ -387,6 +423,59 @@ const listApprovedVotingCars = async () => {
 
       return a.vehicleLabel.localeCompare(b.vehicleLabel);
     });
+};
+
+const publicMarketplaceContact = (application) => {
+  const allowed = new Set(String(application.publicContactMethods || "")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean));
+  const contact = {};
+
+  if (allowed.has("phone") && application.phone) contact.phone = application.phone;
+  if (allowed.has("email") && application.email) contact.email = application.email;
+  if (allowed.has("instagram") && application.instagram) contact.instagram = application.instagram;
+
+  return contact;
+};
+
+const isPublishedMarketplaceListing = (row) => (
+  row.registrationType.toLowerCase() === "marketplace" &&
+  row.status.toLowerCase() === "approved" &&
+  row.paymentStatus.toLowerCase() === "paid" &&
+  row.marketplaceListingStatus.toLowerCase() === "published" &&
+  row.marketplacePhotoUrls.length > 0
+);
+
+const toPublicMarketplaceListing = (row) => ({
+  id: createHash("sha256").update(row.applicationId).digest("hex").slice(0, 16),
+  vehicle: {
+    year: String(row.vehicleYear || "").trim(),
+    make: String(row.vehicleMake || "").trim(),
+    model: String(row.vehicleModel || "").trim(),
+  },
+  askingPrice: row.askingPrice,
+  mileage: row.mileage,
+  transmission: row.transmission,
+  drivetrain: row.drivetrain,
+  modifications: row.majorModifications,
+  knownIssues: row.knownIssues,
+  story: row.listingDescription,
+  seller: {
+    name: row.marketplaceDisplayName,
+    contact: publicMarketplaceContact(row),
+  },
+  photos: row.marketplacePhotoUrls,
+  submittedAt: row.timestamp,
+});
+
+const listPublishedMarketplaceListings = async () => {
+  const rows = await listApplications("finale");
+
+  return rows
+    .filter(isPublishedMarketplaceListing)
+    .map(toPublicMarketplaceListing)
+    .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 };
 
 const getApplicationById = async (applicationId) => {
@@ -654,6 +743,17 @@ const applyFinaleSheetDesign = async (targetSheetId, sourceSheetId, sourceColumn
         range: {
           sheetId: targetSheetId,
           startRowIndex: 1,
+          startColumnIndex: COL.marketplaceListingStatus,
+          endColumnIndex: COL.marketplaceListingStatus + 1,
+        },
+        rule: listValidation(["Draft", "Published", "Hidden", "Sold"]),
+      },
+    },
+    {
+      setDataValidation: {
+        range: {
+          sheetId: targetSheetId,
+          startRowIndex: 1,
           startColumnIndex: COL.paymentStatus,
           endColumnIndex: COL.paymentStatus + 1,
         },
@@ -764,6 +864,9 @@ module.exports = {
   getApprovedUnsentApplications,
   getApprovedUnsentEventInfoApplications,
   listApprovedVotingCars,
+  listPublishedMarketplaceListings,
+  isPublishedMarketplaceListing,
+  toPublicMarketplaceListing,
   markAcceptanceEmailSent,
   markEventInfoEmailSent,
   markPaymentStatus,

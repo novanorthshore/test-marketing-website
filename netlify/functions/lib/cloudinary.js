@@ -42,7 +42,31 @@ const uploadApplicationPhoto = async ({ buffer, mimeType, filename, applicationI
   };
 };
 
+const createMarketplaceUploadSignature = ({ slot }) => {
+  configureCloudinary();
+
+  const index = Number(slot);
+  if (!Number.isInteger(index) || index < 0 || index > 4) {
+    throw new Error("Invalid Marketplace photo slot.");
+  }
+
+  const folder = `${(process.env.CLOUDINARY_FOLDER || "nova-shore/applications").replace(/\/+$/, "")}/marketplace`;
+  const timestamp = Math.floor(Date.now() / 1000);
+  const publicId = `marketplace-${timestamp}-${index}-${Math.random().toString(36).slice(2, 10)}`;
+  const signature = cloudinary.utils.api_sign_request({ folder, public_id: publicId, timestamp }, requiredEnv("CLOUDINARY_API_SECRET"));
+
+  return {
+    apiKey: requiredEnv("CLOUDINARY_API_KEY"),
+    cloudName: requiredEnv("CLOUDINARY_CLOUD_NAME"),
+    folder,
+    publicId,
+    signature,
+    timestamp,
+  };
+};
+
 module.exports = {
   buildPhotoFilename,
+  createMarketplaceUploadSignature,
   uploadApplicationPhoto,
 };
