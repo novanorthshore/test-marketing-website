@@ -3900,12 +3900,9 @@ body.finale-register-page {
 }
 
 .finale-sponsor-note img {
-  background: var(--black);
-  border-radius: 8px;
   flex: 0 0 140px;
   height: auto;
   max-width: 140px;
-  padding: 8px;
 }
 
 .finale-sponsor-note p {
