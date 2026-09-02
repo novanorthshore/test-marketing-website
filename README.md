@@ -88,6 +88,8 @@ npm run create:finale-sheet
 
 A Marketplace listing becomes public only when its row has `Registration Type` set to `marketplace`, `Status` set to `Approved`, `Payment Status` set to `Paid`, and `Marketplace Listing Status` set to `Published`. Set the listing status to `Hidden` or `Sold` to remove it from the public page.
 
+VIP Parking does not use the application or approval flow. The VIP button creates a Stripe Checkout Session immediately. Stripe collects the buyer's email, vehicle description, and license plate. The webhook records the purchase in the confirmed RSVP sheet and sends the VIP Parking confirmation email.
+
 Stripe setup:
 
 - Create one-time CAD prices for `$10` standard RSVP and `$30` RSVP with professional photography.

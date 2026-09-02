@@ -6,12 +6,12 @@
     <title>Car Submissions | NOVA FINALE: 001</title>
     <meta
       name="description"
-      content="Apply for NOVA FINALE: 001 as a featured show car, Nova Marketplace listing, or VIP parking. Applications are reviewed before payment."
+      content="Apply for a NOVA FINALE: 001 featured show car or Marketplace listing, or purchase VIP Parking directly."
     />
     <meta property="og:title" content="Car Submissions | NOVA FINALE: 001" />
     <meta
       property="og:description"
-      content="Featured show car, Nova Marketplace, and VIP parking entries for Nova Finale at Plaza of Nations."
+      content="Featured show car and Marketplace applications plus direct VIP Parking purchase for Nova Finale at Plaza of Nations."
     />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="assets/finale/nova-finale-001-poster.png" />
@@ -191,6 +191,7 @@
             <p class="finale-copy">
               Think of it as NOVA’s dedicated enthusiast paddock, offering elevated placement, strong visibility, and convenient event access while remaining separate from the curated show lineup.
             </p>
+            <p class="finale-copy"><strong>No application is required.</strong> Purchase VIP Parking directly and complete payment through Stripe.</p>
             <p class="finale-copy">Entry includes:</p>
             <ul>
               <li>One (1) VIP Parking vehicle entry</li>
@@ -216,14 +217,15 @@
               <strong>Nova Marketplace</strong>
               <small>$40</small>
             </a>
-            <a class="finale-type-option" href="finale-register.html?type=vipParking">
+            <button class="finale-type-option" type="button" data-vip-parking-checkout>
               <strong>VIP Parking</strong>
-              <small>$5</small>
-            </a>
+              <small>$5 · Buy now</small>
+            </button>
           </div>
           <p class="finale-charge-note">
-            You will not be charged until you have been accepted. This is just an application. We will send a payment link if you are accepted.
+            Featured Show Car and NOVA Marketplace entries require approval before payment. VIP Parking can be purchased immediately without applying.
           </p>
+          <p class="rsvp-status is-error" data-vip-parking-status aria-live="polite"></p>
           <aside class="finale-sponsor-note" aria-label="Coolwhips Garage sponsor thank-you">
             <img src="assets/finale/coolwhips-garage.png" alt="Coolwhips Garage" width="186" height="106" />
             <p>Big thank you to Coolwhips Garage for supporting NOVA FINALE:001. They’ll be bringing out some of their built cars, merch, and plenty of great energy to the Plaza. We’re excited to have them as a major part of the show and really appreciate their support in helping make this event happen.</p>
@@ -258,5 +260,6 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="finale-submissions.js"></script>
   </body>
 </html>

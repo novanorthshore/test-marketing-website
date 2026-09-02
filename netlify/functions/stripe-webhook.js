@@ -3,7 +3,7 @@ const { EVENT_CONFIG, BLOCK_PARTY_CONFIG, FINALE_CONFIG, getRsvpOption } = requi
 const { rsvpFromMetadata } = require("./lib/validate-rsvp");
 const { appendConfirmedRsvp, getSessionRow, markSessionNotes } = require("./lib/google-sheets");
 const { markPaymentStatus, getApplicationById, syncApplicationRowColor } = require("./lib/applications-sheet");
-const { sendPaymentConfirmationEmail } = require("./lib/email");
+const { sendPaymentConfirmationEmail, sendVipParkingConfirmationEmail } = require("./lib/email");
 
 const jsonResponse = (statusCode, body) => ({
   statusCode,
@@ -135,7 +135,78 @@ const handleShowCheckoutCompleted = async ({ stripe, session }) => {
   });
 };
 
+const getCustomFieldValue = (session, key) => (
+  session.custom_fields?.find((field) => field.key === key)?.text?.value || ""
+);
+
+const handleDirectVipParkingCompleted = async ({ stripe, session }) => {
+  const expandedSession = await stripe.checkout.sessions.retrieve(session.id, {
+    expand: ["line_items.data.price", "payment_intent"],
+  });
+  const option = FINALE_CONFIG.registrationTypes.vipParking;
+
+  if (expandedSession.payment_status !== "paid") {
+    throw new Error(`Checkout Session ${session.id} is not paid.`);
+  }
+  if (expandedSession.metadata?.registrationType !== option.id || expandedSession.metadata?.directPurchase !== "true") {
+    throw new Error(`Checkout Session ${session.id} is not a direct VIP Parking purchase.`);
+  }
+
+  const lineItem = expandedSession.line_items?.data?.[0];
+  const configuredPriceId = process.env[option.priceEnv]?.trim();
+  if (configuredPriceId && lineItem?.price?.id !== configuredPriceId) {
+    throw new Error(`Checkout Session ${session.id} has an unexpected VIP Parking price.`);
+  }
+  if (expandedSession.amount_total !== option.amountCents || expandedSession.currency !== "cad") {
+    throw new Error(`Checkout Session ${session.id} has an unexpected VIP Parking amount or currency.`);
+  }
+
+  const existingRow = await getSessionRow(expandedSession.id);
+  if ((existingRow?.layout?.notes || "").includes("Processed direct VIP Parking webhook")) return;
+
+  const email = expandedSession.customer_details?.email || expandedSession.customer_email || "";
+  const name = expandedSession.customer_details?.name || "VIP Parking guest";
+  const vehicle = getCustomFieldValue(expandedSession, "vehicle");
+  const licensePlate = getCustomFieldValue(expandedSession, "license_plate").toUpperCase();
+  const amountPaid = formatAmount(expandedSession.amount_total, expandedSession.currency);
+  const paymentIntentId = typeof expandedSession.payment_intent === "string"
+    ? expandedSession.payment_intent
+    : expandedSession.payment_intent?.id || "";
+
+  if (!existingRow) {
+    await appendConfirmedRsvp([
+      new Date().toISOString(),
+      expandedSession.payment_status,
+      expandedSession.id,
+      paymentIntentId,
+      option.label,
+      amountPaid,
+      name,
+      email,
+      "",
+      "",
+      vehicle,
+      licensePlate,
+      "",
+      "No",
+      FINALE_CONFIG.name,
+      "Not checked in",
+      "Direct VIP Parking purchase",
+    ]);
+  }
+
+  if (email) {
+    await sendVipParkingConfirmationEmail({ email, name, vehicle, licensePlate, sessionId: expandedSession.id, amountPaid });
+  }
+  await markSessionNotes(expandedSession.id, `Processed direct VIP Parking webhook: ${new Date().toISOString()}`);
+};
+
 const handleCheckoutSessionCompleted = async ({ stripe, session }) => {
+  if (session.metadata?.eventId === FINALE_CONFIG.id && session.metadata?.directPurchase === "true") {
+    await handleDirectVipParkingCompleted({ stripe, session });
+    return;
+  }
+
   if (
     session.metadata?.eventId === FINALE_CONFIG.id ||
     session.metadata?.eventId === BLOCK_PARTY_CONFIG.id

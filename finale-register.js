@@ -26,7 +26,6 @@ if (applicationForm) {
   const TYPE_META = {
     showCar: { label: "Featured Show Car", price: "$15" },
     marketplace: { label: "Nova Marketplace", price: "$40" },
-    vipParking: { label: "VIP Parking", price: "$5" },
   };
   const APPLY_URL = "finale-submissions.html#apply";
   const requestedType = new URLSearchParams(window.location.search).get("type");

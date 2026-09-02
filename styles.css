@@ -3999,6 +3999,8 @@ body.finale-register-page {
 
 .finale-type-option {
   align-items: center;
+  appearance: none;
+  background: transparent;
   border: 2px solid var(--black);
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(5, 5, 5, 0.16);
@@ -4016,6 +4018,11 @@ body.finale-register-page {
   text-align: center;
   text-decoration: none;
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.finale-type-option:disabled {
+  cursor: wait;
+  opacity: 0.68;
 }
 
 a.finale-type-option:visited {

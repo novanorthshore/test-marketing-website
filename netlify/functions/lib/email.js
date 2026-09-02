@@ -463,6 +463,55 @@ const sendPaymentConfirmationEmail = async ({ application, sessionId, amountPaid
   return data;
 };
 
+const sendVipParkingConfirmationEmail = async ({ email, name, vehicle, licensePlate, sessionId, amountPaid }) => {
+  const firstName = String(name || "").trim().split(/\s+/)[0] || "there";
+  const subject = "VIP Parking Confirmed - NOVA FINALE: 001";
+  const html = `<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#111;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
+      <tr><td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:12px;overflow:hidden;">
+          <tr><td style="background:#0a0a0a;padding:28px 32px;text-align:center;"><h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:.06em;text-transform:uppercase;">Nova North Shore</h1><p style="margin:6px 0 0;color:#c7d0a8;font-size:15px;letter-spacing:.14em;text-transform:uppercase;">NOVA FINALE: 001</p></td></tr>
+          <tr><td style="padding:32px;">
+            <p style="margin:0 0 16px;font-size:16px;">Hi ${escapeHtml(firstName)},</p>
+            <p style="margin:0 0 20px;font-size:16px;line-height:1.5;">Your VIP Parking purchase is confirmed. Save this email as your receipt and bring it with you on event day.</p>
+            <p style="margin:0 0 8px;font-size:15px;"><strong>Vehicle:</strong> ${escapeHtml(vehicle)}</p>
+            <p style="margin:0 0 8px;font-size:15px;"><strong>License plate:</strong> ${escapeHtml(licensePlate)}</p>
+            <p style="margin:0 0 8px;font-size:15px;"><strong>Amount paid:</strong> ${escapeHtml(amountPaid)}</p>
+            <p style="margin:0 0 24px;font-size:15px;"><strong>Confirmation:</strong> ${escapeHtml(sessionId)}</p>
+            <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:#6f7f46;">Event details</h2>
+            <p style="margin:0 0 8px;font-size:15px;">Sunday, September 13, 2026</p>
+            <p style="margin:0 0 8px;font-size:15px;">Vehicle roll-in: 2:00 PM</p>
+            <p style="margin:0 0 22px;font-size:15px;">Plaza of Nations, Vancouver, BC</p>
+            <p style="margin:0 0 8px;font-size:17px;font-weight:800;">RAIN DATE: SUNDAY, SEPTEMBER 20, 2026</p>
+            <p style="margin:0;font-size:14px;line-height:1.5;color:#555;">If severe weather postpones the event, your VIP Parking purchase will automatically transfer to the rain date.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+  const text = [
+    `Hi ${firstName},`,
+    "",
+    "Your VIP Parking purchase for NOVA FINALE: 001 is confirmed.",
+    `Vehicle: ${vehicle}`,
+    `License plate: ${licensePlate}`,
+    `Amount paid: ${amountPaid}`,
+    `Confirmation: ${sessionId}`,
+    "",
+    "Sunday, September 13, 2026",
+    "Vehicle roll-in: 2:00 PM",
+    "Plaza of Nations, Vancouver, BC",
+    "Rain date: Sunday, September 20, 2026",
+  ].join("\n");
+  const resend = new Resend(requiredEnv("RESEND_API_KEY"));
+  const { data, error } = await resend.emails.send({ from: getFromAddress(), to: [email], subject, html, text });
+  if (error) throw new Error(`Resend failed: ${error.message || JSON.stringify(error)}`);
+  return data;
+};
+
 const EVENT_INFO_FLYER_CID = "nova-event-info-flyer";
 
 const buildEventInfoEmail = ({ application }) => {
@@ -656,6 +705,7 @@ module.exports = {
   sendAcceptanceEmail,
   buildPaymentConfirmationEmail,
   sendPaymentConfirmationEmail,
+  sendVipParkingConfirmationEmail,
   buildEventInfoEmail,
   sendEventInfoEmail,
   buildVotingOtpEmail,
