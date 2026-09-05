@@ -57,6 +57,7 @@ const FINALE_CONFIG = {
   name: "NOVA FINALE: 001",
   dateDisplay: "Sunday, September 13, 2026",
   location: "Plaza of Nations, Vancouver, BC",
+  checkIn: "2:00 PM",
   registrationTypes: {
     showCar: {
       id: "showCar",

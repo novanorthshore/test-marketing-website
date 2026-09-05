@@ -2,8 +2,11 @@ const stripeFactory = require("stripe");
 const { EVENT_CONFIG, BLOCK_PARTY_CONFIG, FINALE_CONFIG, getRsvpOption } = require("./lib/event-config");
 const { rsvpFromMetadata } = require("./lib/validate-rsvp");
 const { appendConfirmedRsvp, getSessionRow, markSessionNotes } = require("./lib/google-sheets");
-const { markPaymentStatus, getApplicationById, syncApplicationRowColor } = require("./lib/applications-sheet");
-const { sendPaymentConfirmationEmail, sendVipParkingConfirmationEmail } = require("./lib/email");
+const {
+  markPaymentStatus, getApplicationById, syncApplicationRowColor,
+  preparePaymentConfirmation, markPaymentConfirmationSent,
+} = require("./lib/applications-sheet");
+const { buildPaymentConfirmationPayload, sendPaymentConfirmationEmail, sendVipParkingConfirmationEmail } = require("./lib/email");
 
 const jsonResponse = (statusCode, body) => ({
   statusCode,
@@ -112,11 +115,14 @@ const handleShowCheckoutCompleted = async ({ stripe, session }) => {
     throw new Error(`Application ${applicationId} was not found.`);
   }
 
-  if (application.paymentStatus.toLowerCase() === "paid") {
-    return;
+  if (application.stripeSessionId && application.stripeSessionId !== expandedSession.id) {
+    throw new Error(`Application ${applicationId} is linked to another Stripe session.`);
   }
 
-  await markPaymentStatus(applicationId, "Paid", expandedSession.id);
+  if (application.paymentStatus.toLowerCase() !== "paid" || !application.stripeSessionId) {
+    const marked = await markPaymentStatus(applicationId, "Paid", expandedSession.id);
+    if (!marked) throw new Error(`Application ${applicationId} disappeared before payment was recorded.`);
+  }
 
   const updatedApplication = {
     ...application,
@@ -124,15 +130,23 @@ const handleShowCheckoutCompleted = async ({ stripe, session }) => {
     stripeSessionId: expandedSession.id,
   };
 
-  await syncApplicationRowColor(updatedApplication);
-
   const amountPaid = formatAmount(expandedSession.amount_total, expandedSession.currency);
-
-  await sendPaymentConfirmationEmail({
+  const payload = buildPaymentConfirmationPayload({
     application: updatedApplication,
     sessionId: expandedSession.id,
     amountPaid,
   });
+  const receipt = await preparePaymentConfirmation(applicationId, expandedSession.id, payload);
+  if (!receipt.sent) {
+    await sendPaymentConfirmationEmail({ payload: receipt.payload, sessionId: expandedSession.id });
+    await markPaymentConfirmationSent(applicationId, expandedSession.id);
+  }
+
+  try {
+    await syncApplicationRowColor(updatedApplication);
+  } catch (error) {
+    console.warn("Payment recorded; application color update failed", { applicationId, message: error.message });
+  }
 };
 
 const getCustomFieldValue = (session, key) => (

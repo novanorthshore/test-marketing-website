@@ -42,6 +42,9 @@ const APPLICATION_COLUMNS = [
   "Marketplace Photo 3 URL",
   "Marketplace Photo 4 URL",
   "Marketplace Photo 5 URL",
+  "Payment Confirmation Session ID",
+  "Payment Confirmation Payload",
+  "Payment Confirmation Email Sent",
 ];
 
 const COL = {
@@ -84,9 +87,12 @@ const COL = {
   marketplacePhoto3Url: 36,
   marketplacePhoto4Url: 37,
   marketplacePhoto5Url: 38,
+  paymentConfirmationSessionId: 39,
+  paymentConfirmationPayload: 40,
+  paymentConfirmationEmailSent: 41,
 };
 
-const LAST_COLUMN_LETTER = "AM";
+const LAST_COLUMN_LETTER = "AP";
 const FINALE_REGISTRATION_TYPES = new Set(["showCar", "marketplace", "vipParking"]);
 const FINALE_TAB_DEFAULT = "Finale Applications";
 
@@ -141,9 +147,25 @@ const getSpreadsheetSheets = async () => {
 const ensureApplicationsTabExists = async (kind = "default") => {
   const { sheetsClient, spreadsheetId, tabs } = await getSpreadsheetSheets();
   const tabName = getTabName(kind);
-  const exists = tabs.some((sheet) => sheet.properties?.title === tabName);
+  const existing = tabs.find((sheet) => sheet.properties?.title === tabName);
 
-  if (exists) {
+  if (existing) {
+    if (existing.properties.gridProperties.columnCount < APPLICATION_COLUMNS.length) {
+      await sheetsClient.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [{
+            updateSheetProperties: {
+              properties: {
+                sheetId: existing.properties.sheetId,
+                gridProperties: { columnCount: APPLICATION_COLUMNS.length },
+              },
+              fields: "gridProperties.columnCount",
+            },
+          }],
+        },
+      });
+    }
     return;
   }
 
@@ -155,6 +177,7 @@ const ensureApplicationsTabExists = async (kind = "default") => {
           addSheet: {
             properties: {
               title: tabName,
+              gridProperties: { columnCount: APPLICATION_COLUMNS.length },
             },
           },
         },
@@ -175,6 +198,14 @@ const ensureApplicationHeaders = async (kind = "default") => {
 
   const existing = (current.data.values && current.data.values[0]) || [];
 
+  // Never repurpose a user's custom column for receipt state.
+  for (let index = COL.paymentConfirmationSessionId; index < APPLICATION_COLUMNS.length; index += 1) {
+    const header = String(existing[index] || "").trim();
+    if (header && header !== APPLICATION_COLUMNS[index]) {
+      throw new Error(`Receipt column ${columnLetter(index)} in ${getTabName(kind)} is already in use.`);
+    }
+  }
+
   if (existing.length === 0) {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
@@ -190,10 +221,10 @@ const ensureApplicationHeaders = async (kind = "default") => {
   // Fill blank trailing header cells (e.g. Voting Category / Event Info) without
   // overwriting any header the sheet already has.
   const nextHeaders = APPLICATION_COLUMNS.map((label, index) => (
-    String(existing[index] || "").trim() || label
+    String(existing[index] || "").trim() ? existing[index] : label
   ));
   const needsUpdate = nextHeaders.some((label, index) => (
-    String(existing[index] || "").trim() !== label
+    (existing[index] || "") !== label
   ));
 
   if (needsUpdate) {
@@ -211,15 +242,17 @@ const ensureApplicationHeaders = async (kind = "default") => {
 const getApplicationRows = async (kind = "default") => {
   const { sheetsClient, spreadsheetId, tabs } = await getSpreadsheetSheets();
   const tabName = getTabName(kind);
-  const exists = tabs.some((sheet) => sheet.properties?.title === tabName);
+  const tab = tabs.find((sheet) => sheet.properties?.title === tabName);
 
-  if (!exists) {
+  if (!tab) {
     return [];
   }
 
   const response = await sheetsClient.spreadsheets.values.get({
     spreadsheetId,
-    range: applicationsRange(`A:${LAST_COLUMN_LETTER}`, kind),
+    range: applicationsRange(`A:${columnLetter(Math.min(
+      tab.properties.gridProperties.columnCount, APPLICATION_COLUMNS.length,
+    ) - 1)}`, kind),
   });
 
   return response.data.values || [];
@@ -248,6 +281,9 @@ const parseApplicationRow = (values, rowNumber, kind = "default") => ({
   acceptanceEmailSent: String(values[COL.acceptanceEmailSent] || "").trim(),
   paymentStatus: String(values[COL.paymentStatus] || "").trim(),
   stripeSessionId: String(values[COL.stripeSessionId] || "").trim(),
+  paymentConfirmationSessionId: String(values[COL.paymentConfirmationSessionId] || "").trim(),
+  paymentConfirmationPayload: String(values[COL.paymentConfirmationPayload] || ""),
+  paymentConfirmationEmailSent: String(values[COL.paymentConfirmationEmailSent] || "").trim(),
   notes: values[COL.notes] || "",
   votingCategory: String(values[COL.votingCategory] || values[COL.category] || "").trim(),
   modifiedFlag: String(values[COL.modified] || "").trim(),
@@ -376,7 +412,7 @@ const listApprovedVotingCars = async () => {
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: applicationsRange(`A:${LAST_COLUMN_LETTER}`),
+    range: applicationsRange(`A:${columnLetter(COL.marketplacePhoto5Url)}`),
   });
   const rows = response.data.values || [];
 
@@ -544,13 +580,59 @@ const markPaymentStatus = async (applicationId, status, sessionId) => {
     return false;
   }
 
-  await setCellValue(row.rowNumber, COL.paymentStatus, status, row.sheetKind);
-
   if (sessionId) {
-    await setCellValue(row.rowNumber, COL.stripeSessionId, sessionId, row.sheetKind);
+    const sheets = await getSheetsClient();
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: requiredEnv("GOOGLE_SHEET_ID"),
+      range: applicationsRange(`S${row.rowNumber}:T${row.rowNumber}`, row.sheetKind),
+      valueInputOption: "RAW",
+      requestBody: { values: [[status, sessionId]] },
+    });
+  } else {
+    await setCellValue(row.rowNumber, COL.paymentStatus, status, row.sheetKind);
   }
 
   return true;
+};
+
+const preparePaymentConfirmation = async (applicationId, sessionId, payload) => {
+  const initialRow = await getApplicationById(applicationId);
+  if (!initialRow) throw new Error(`Application ${applicationId} was not found.`);
+  await ensureApplicationHeaders(initialRow.sheetKind);
+  const row = await getApplicationById(applicationId);
+  if (!row) throw new Error(`Application ${applicationId} was not found.`);
+
+  if (row.paymentConfirmationSessionId && row.paymentConfirmationSessionId !== sessionId) {
+    throw new Error(`Application ${applicationId} already has a receipt for another Stripe session.`);
+  }
+  if (row.paymentConfirmationSessionId === sessionId && row.paymentConfirmationPayload) {
+    return {
+      payload: JSON.parse(row.paymentConfirmationPayload),
+      sent: Boolean(row.paymentConfirmationEmailSent),
+    };
+  }
+  if (row.paymentConfirmationEmailSent || row.paymentConfirmationPayload) {
+    throw new Error(`Application ${applicationId} has incomplete receipt tracking data.`);
+  }
+
+  const sheets = await getSheetsClient();
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: requiredEnv("GOOGLE_SHEET_ID"),
+    // A concurrent webhook may already have marked the receipt sent. Never clear it.
+    range: applicationsRange(`AN${row.rowNumber}:AO${row.rowNumber}`, row.sheetKind),
+    valueInputOption: "RAW",
+    requestBody: { values: [[sessionId, JSON.stringify(payload)]] },
+  });
+
+  return { payload, sent: false };
+};
+
+const markPaymentConfirmationSent = async (applicationId, sessionId) => {
+  const row = await getApplicationById(applicationId);
+  if (!row || row.paymentConfirmationSessionId !== sessionId || !row.paymentConfirmationPayload) {
+    throw new Error(`Receipt state changed for application ${applicationId}.`);
+  }
+  await setCellValue(row.rowNumber, COL.paymentConfirmationEmailSent, new Date().toISOString(), row.sheetKind);
 };
 
 const ROW_COLORS = {
@@ -827,9 +909,7 @@ const createFinaleApplicationsSheet = async () => {
     });
   }
 
-  if (!target) {
-    await ensureApplicationsTabExists("finale");
-  }
+  await ensureApplicationsTabExists("finale");
 
   await sheetsClient.spreadsheets.values.update({
     spreadsheetId,
@@ -870,6 +950,8 @@ module.exports = {
   markAcceptanceEmailSent,
   markEventInfoEmailSent,
   markPaymentStatus,
+  preparePaymentConfirmation,
+  markPaymentConfirmationSent,
   syncApplicationRowColor,
   syncAllApplicationRowColors,
 };

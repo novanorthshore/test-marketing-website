@@ -26,7 +26,7 @@ const buildVehicleLabel = (application) => [
   application.vehicleModel,
 ].map((part) => String(part || "").trim()).filter(Boolean).join(" ");
 
-const buildCarDetailsSection = (application) => {
+const buildCarDetailsSection = (application, event = BLOCK_PARTY_CONFIG) => {
   const carNumber = String(application.carNumber || "").trim();
   const category = String(application.category || "").trim();
   const displayZone = String(application.displayZone || "").trim();
@@ -37,7 +37,7 @@ const buildCarDetailsSection = (application) => {
   if (!hasAssignments) {
     return `${heading}
                 <p style="margin:0 0 24px;font-size:15px;line-height:1.5;">
-                  Your car number, show category, and display zone will be assigned to you at check-in when you arrive on Lloyd Avenue.
+                  Your car number, show category, and display zone will be assigned to you at check-in when you arrive at ${escapeHtml(event.location)}.
                 </p>`;
   }
 
@@ -54,11 +54,11 @@ const buildCarDetailsSection = (application) => {
                   ${displayZone ? detailRow("Display zone", displayZone) : ""}
                 </table>
                 <p style="margin:-12px 0 24px;font-size:14px;line-height:1.5;color:#555;">
-                  Any remaining show details will be assigned to you at check-in when you arrive on Lloyd Avenue.
+                  Any remaining show details will be assigned to you at check-in when you arrive at ${escapeHtml(event.location)}.
                 </p>`;
 };
 
-const buildCarDetailsText = (application) => {
+const buildCarDetailsText = (application, event = BLOCK_PARTY_CONFIG) => {
   const carNumber = String(application.carNumber || "").trim();
   const category = String(application.category || "").trim();
   const displayZone = String(application.displayZone || "").trim();
@@ -67,7 +67,7 @@ const buildCarDetailsText = (application) => {
   if (!hasAssignments) {
     return [
       "YOUR CAR DETAILS",
-      "Your car number, show category, and display zone will be assigned to you at check-in when you arrive on Lloyd Avenue.",
+      `Your car number, show category, and display zone will be assigned to you at check-in when you arrive at ${event.location}.`,
     ].join("\n");
   }
 
@@ -75,7 +75,7 @@ const buildCarDetailsText = (application) => {
   if (carNumber) lines.push(`Car number: ${carNumber}`);
   if (category) lines.push(`Category: ${category}`);
   if (displayZone) lines.push(`Display zone: ${displayZone}`);
-  lines.push("Any remaining show details will be assigned to you at check-in when you arrive on Lloyd Avenue.");
+  lines.push(`Any remaining show details will be assigned to you at check-in when you arrive at ${event.location}.`);
   return lines.join("\n");
 };
 
@@ -101,6 +101,13 @@ const buildFinaleAcceptanceEmail = ({ application, paymentUrl, registrationOptio
   const vehicleLabel = buildVehicleLabel(application) || "your vehicle";
   const amountDisplay = registrationOption.amountDisplay;
   const typeLabel = registrationOption.label;
+  const paymentStatus = String(application.paymentStatus || "").trim().toLowerCase();
+  const settled = paymentStatus === "paid" || paymentStatus === "free";
+  const paymentCopy = paymentStatus === "paid"
+    ? "Your payment has been received and your spot is confirmed. No further payment is required."
+    : paymentStatus === "free"
+      ? "Your registration is free and your spot is confirmed. No payment is required."
+      : `Pay ${amountDisplay} to lock the spot. The stall is not held until payment lands.`;
 
   const subject = "You're In - NOVA FINALE: 001";
 
@@ -130,18 +137,19 @@ const buildFinaleAcceptanceEmail = ({ application, paymentUrl, registrationOptio
                   Your <strong>${escapeHtml(typeLabel)}</strong> application for NOVA FINALE: 001 has been approved.
                 </p>
                 <p style="margin:0 0 24px;font-size:16px;line-height:1.5;">
-                  We want your <strong>${escapeHtml(vehicleLabel)}</strong> at Plaza of Nations on September 13. Pay ${escapeHtml(amountDisplay)} to lock the spot. The stall is not held until payment lands.
+                  We want your <strong>${escapeHtml(vehicleLabel)}</strong> at ${escapeHtml(FINALE_CONFIG.location)} on ${escapeHtml(FINALE_CONFIG.dateDisplay)}. ${escapeHtml(paymentCopy)}
                 </p>
-                ${payButtonHtml(paymentUrl, amountDisplay)}
+                ${settled ? "" : payButtonHtml(paymentUrl, amountDisplay)}
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">Event Details</h2>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:24px;">
                   ${detailRow("Event", escapeHtml(FINALE_CONFIG.name))}
                   ${detailRow("Date", escapeHtml(FINALE_CONFIG.dateDisplay))}
                   ${detailRow("Location", escapeHtml(FINALE_CONFIG.location))}
                   ${detailRow("Registration type", escapeHtml(typeLabel))}
-                  ${detailRow("Amount due", escapeHtml(amountDisplay))}
+                  ${settled ? "" : detailRow("Amount due", escapeHtml(amountDisplay))}
+                  ${detailRow("Car check-in", escapeHtml(FINALE_CONFIG.checkIn))}
                 </table>
-                ${buildCarDetailsSection(application)}
+                ${buildCarDetailsSection(application, FINALE_CONFIG)}
                 <p style="margin:0 0 4px;font-size:15px;">See you there.</p>
                 <p style="margin:24px 0 0;font-size:15px;font-weight:700;">Giant Tsai</p>
                 <p style="margin:2px 0 0;font-size:14px;color:#555;">Founder, Nova North Shore</p>
@@ -164,17 +172,18 @@ const buildFinaleAcceptanceEmail = ({ application, paymentUrl, registrationOptio
     "",
     `Your ${typeLabel} application for NOVA FINALE: 001 has been approved.`,
     "",
-    `We want your ${vehicleLabel} at Plaza of Nations on September 13. Pay ${amountDisplay} to lock the spot.`,
-    paymentUrl ? `Pay here: ${paymentUrl}` : "",
+    `We want your ${vehicleLabel} at ${FINALE_CONFIG.location} on ${FINALE_CONFIG.dateDisplay}. ${paymentCopy}`,
+    !settled && paymentUrl ? `Pay here: ${paymentUrl}` : "",
     "",
     "EVENT DETAILS",
     `Event: ${FINALE_CONFIG.name}`,
     `Date: ${FINALE_CONFIG.dateDisplay}`,
     `Location: ${FINALE_CONFIG.location}`,
     `Registration type: ${typeLabel}`,
-    `Amount due: ${amountDisplay}`,
+    settled ? "" : `Amount due: ${amountDisplay}`,
+    `Car check-in: ${FINALE_CONFIG.checkIn}`,
     "",
-    buildCarDetailsText(application),
+    buildCarDetailsText(application, FINALE_CONFIG),
     "",
     "See you there.",
     "Giant Tsai",
@@ -328,12 +337,11 @@ const buildPaymentConfirmationEmail = ({ application, sessionId, amountPaid }) =
   const eventSubtitle = isFinale ? "NOVA FINALE: 001" : "Block Party Car Show";
   const amountDisplay = amountPaid || registrationOption?.amountDisplay || BLOCK_PARTY_CONFIG.price.amountDisplay;
   const receiptRef = String(sessionId || "").trim();
-  const introCopy = isFinale
-    ? `We are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> at Plaza of Nations on September 13. Please save this email as your receipt.`
-    : `We are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> on Lloyd Avenue on July 19th. Please save this email as your receipt.`;
-  const introText = isFinale
-    ? `We are excited to have your ${vehicleLabel} at Plaza of Nations on September 13. Please save this email as your receipt.`
-    : `We are excited to have your ${vehicleLabel} on Lloyd Avenue on July 19th. Please save this email as your receipt.`;
+  const introCopy = `We are excited to have your <strong>${escapeHtml(vehicleLabel)}</strong> at ${escapeHtml(event.location)} on ${escapeHtml(event.dateDisplay)}. Please save this email as your receipt.`;
+  const introText = `We are excited to have your ${vehicleLabel} at ${event.location} on ${event.dateDisplay}. Please save this email as your receipt.`;
+  const checkInCopy = isFinale
+    ? `Please check in at ${event.location} at ${event.checkIn} with this confirmation email.`
+    : "On the day of the event please check in at the registration booth on Lloyd Avenue at 2:00 PM with this confirmation email. Your dash plaque and car number will be waiting for you.";
 
   const subject = isFinale
     ? "Payment Confirmed - NOVA FINALE: 001"
@@ -386,14 +394,14 @@ const buildPaymentConfirmationEmail = ({ application, sessionId, amountPaid }) =
                   ${event.checkIn ? detailRow("Car check-in", escapeHtml(event.checkIn)) : ""}
                 </table>
 
-                ${buildCarDetailsSection(application)}
+                ${buildCarDetailsSection(application, event)}
 
                 <h2 style="margin:0 0 12px;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:#6f7f46;">What Happens Next</h2>
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.5;">
                   Closer to the event you will receive a final details email with your exact display spot, check-in instructions, dash plaque details, and the full day schedule.
                 </p>
                 <p style="margin:0 0 24px;font-size:15px;line-height:1.5;">
-                  On the day of the event please check in at the registration booth on Lloyd Avenue at 2:00 PM with this confirmation email. Your dash plaque and car number will be waiting for you.
+                  ${escapeHtml(checkInCopy)}
                 </p>
 
                 <p style="margin:0 0 4px;font-size:15px;">See you there.</p>
@@ -434,7 +442,8 @@ const buildPaymentConfirmationEmail = ({ application, sessionId, amountPaid }) =
     event.showHours ? `Show hours: ${event.showHours}` : "",
     event.checkIn ? `Car check-in: ${event.checkIn}` : "",
     "",
-    buildCarDetailsText(application),
+    buildCarDetailsText(application, event),
+    checkInCopy,
     "",
     "See you there.",
     "Giant Tsai",
@@ -444,20 +453,20 @@ const buildPaymentConfirmationEmail = ({ application, sessionId, amountPaid }) =
   return { subject, html, text };
 };
 
-const sendPaymentConfirmationEmail = async ({ application, sessionId, amountPaid }) => {
-  const resend = new Resend(requiredEnv("RESEND_API_KEY"));
-  const { subject, html, text } = buildPaymentConfirmationEmail({ application, sessionId, amountPaid });
+const buildPaymentConfirmationPayload = ({ application, sessionId, amountPaid }) => ({
+  from: getFromAddress(),
+  to: [application.email],
+  ...buildPaymentConfirmationEmail({ application, sessionId, amountPaid }),
+});
 
-  const { data, error } = await resend.emails.send({
-    from: getFromAddress(),
-    to: [application.email],
-    subject,
-    html,
-    text,
+const sendPaymentConfirmationEmail = async ({ payload, sessionId }) => {
+  const resend = new Resend(requiredEnv("RESEND_API_KEY"));
+  const { data, error } = await resend.emails.send(payload, {
+    idempotencyKey: `payment-confirmation/${sessionId}`,
   });
 
-  if (error) {
-    throw new Error(`Resend failed: ${error.message || JSON.stringify(error)}`);
+  if (error || !data?.id) {
+    throw new Error(`Resend failed: ${error?.message || "No email ID returned"}`);
   }
 
   return data;
@@ -704,6 +713,7 @@ module.exports = {
   buildAcceptanceEmail,
   sendAcceptanceEmail,
   buildPaymentConfirmationEmail,
+  buildPaymentConfirmationPayload,
   sendPaymentConfirmationEmail,
   sendVipParkingConfirmationEmail,
   buildEventInfoEmail,

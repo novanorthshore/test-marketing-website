@@ -112,9 +112,31 @@ Google Sheets setup:
 
 Confirmation emails:
 
-- Custom confirmation emails are not sent by this site.
-- If attendee payment receipts are needed, enable Stripe receipt emails in Stripe.
-- The Google Sheet is the confirmed RSVP/check-in source of truth.
+- Cypress attendees can receive Stripe receipts by enabling receipt emails in Stripe.
+- Show applications receive custom approval and payment confirmation emails through Resend.
+  Approved Finale applications marked `Paid` are skipped by the approval sender. Applications
+  marked `Free` receive confirmation without a payment request.
+- Finale email details use Plaza of Nations on September 13, with vehicle roll-in at 2:00 PM.
+- Payment and receipt delivery are tracked separately. A failed receipt send or tracking write
+  returns a webhook error so Stripe can retry even after the application is marked `Paid`.
+  Row-color updates do not block receipts.
+- The application sheet adds three columns after `Marketplace Photo 5 URL`: `Payment
+  Confirmation Session ID`, `Payment Confirmation Payload`, and `Payment Confirmation Email
+  Sent`. The receipt workflow expands the grid and fills missing headers automatically, keeping
+  existing columns and data in place. A conflicting header stops processing rather than
+  overwriting a custom column.
+- The saved payload includes the original sender, recipient, subject, HTML, and plain text.
+  Retries reuse it with a Resend idempotency key per Stripe session. The sent timestamp records
+  acceptance by Resend, not delivery to the recipient's inbox. Resend deduplicates identical
+  requests for [24 hours](https://resend.com/docs/dashboard/emails/idempotency-keys); the saved
+  timestamp prevents later webhook replays from resending a recorded receipt. If Resend accepts
+  an email but saving that timestamp keeps failing beyond 24 hours, a retry can send a duplicate.
+- Existing paid rows have unknown receipt status until reconciled. Deployment does not bulk
+  email them. Before manually replaying old Stripe sessions, compare their email logs and
+  application rows, since a replay with no sent marker will attempt a receipt.
+
+Run the isolated email and webhook regression tests with `npm run test:event-emails`.
+They mock external services and do not send emails or modify live sheets.
 
 Local Stripe webhook testing:
 
