@@ -17,14 +17,14 @@
     <meta property="og:image" content="assets/hero-jpg.png" />
     <meta name="theme-color" content="#050505" />
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
-    <link rel="preload" as="image" href="assets/optimized/hero-poster.webp" />
+    <link rel="preload" as="image" href="assets/optimized/hero-poster-hq-v1.webp" fetchpriority="high" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260728-carousel-mobile-safe-zone" />
+    <link rel="stylesheet" href="styles.css?v=20260905-brighter-hero" />
   </head>
   <body>
     <header class="site-header" data-header>
@@ -83,8 +83,8 @@
 
     <main>
       <section class="hero" id="home" aria-label="Nova North Shore hero">
-        <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="assets/optimized/hero-poster.webp">
-          <source src="assets/optimized/nova_shore_hero_vid.mp4" type="video/mp4" />
+        <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="assets/optimized/hero-poster-hq-v1.webp">
+          <source src="assets/optimized/nova-shore-hero-hq-v1.mp4" type="video/mp4" />
         </video>
         <div class="media-overlay"></div>
         <div class="hero-content reveal">
