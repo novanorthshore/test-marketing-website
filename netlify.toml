@@ -23,3 +23,11 @@
   schedule = "@yearly"
   included_files = ["assets/event_info.png"]
   timeout = 60
+
+# The Marketplace is temporarily unavailable. Its listing and payment code remain
+# in place so it can be restored ahead of the event.
+[[redirects]]
+  from = "/finale-marketplace.html"
+  to = "/finale-event.html"
+  status = 302
+  force = true
