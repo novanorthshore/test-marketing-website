@@ -47,8 +47,8 @@ const picks = {
 
 process.env.FINALE_VOTING_OPEN = 'false';
 test('fixed roster is sanitized and event-scoped', () => {
-  assert.equal(roster.length, 60);
-  assert.equal(new Set(roster.map((car) => car.applicationId)).size, 60);
+  assert.equal(roster.length, 61);
+  assert.equal(new Set(roster.map((car) => car.applicationId)).size, 61);
   assert.equal(roster.filter((car) => car.eligibleCategoryIds.includes('top-classic')).length, 10);
   assert(roster.every((car) => car.eligibleCategoryIds.includes('peoples-choice') && car.eligibleCategoryIds.includes('top-build')));
   assert(roster.every((car) => car.photoUrl.startsWith('https://res.cloudinary.com/')));
@@ -84,7 +84,7 @@ test('open listing contains only fixed roster and three categories', async () =>
   });
   const listed = response(await get({ httpMethod: 'GET' }));
   assert.equal(listed.status, 200);
-  assert.equal(listed.body.cars.length, 60);
+  assert.equal(listed.body.cars.length, 61);
   assert.equal(listed.body.categories.length, 3);
   assert.equal(listed.body.eventId, 'nova-finale-001');
   assert.equal(listed.body.verificationMode, 'email');
@@ -313,6 +313,54 @@ test('email codes fall back to Sheets when Redis fetch fails, without bypassing 
     else process.env.FINALE_VOTING_OPEN = oldOpen;
     if (oldSecret === undefined) delete process.env.VOTE_EMAIL_OTP_SECRET;
     else process.env.VOTE_EMAIL_OTP_SECRET = oldSecret;
+  }
+});
+
+test('Redis submission uses the fixed roster and never switches stores after a failed save', async () => {
+  const oldOpen = process.env.FINALE_VOTING_OPEN;
+  process.env.FINALE_VOTING_OPEN = 'true';
+  try {
+    for (const failure of ['', 'lookup', 'save']) {
+      let saves = 0;
+      let mirrors = 0;
+      let sheetWrites = 0;
+      const submit = loadHandler('submit-votes.js', {
+        'netlify/functions/lib/voting-redis.js': {
+          isVotingRedisConfigured: () => true,
+          hasRedisIdentityVoted: async () => {
+            if (failure === 'lookup') throw new TypeError('fetch failed');
+            return false;
+          },
+          getCachedVotingCars: async () => { throw new TypeError('fetch failed'); },
+          cacheVotingCars: async () => { throw new TypeError('fetch failed'); },
+          recordRedisBallot: async () => {
+            saves += 1;
+            if (failure === 'save') throw new TypeError('fetch failed');
+            return {};
+          },
+        },
+        'netlify/functions/lib/voting-sheet.js': {
+          appendBallot: async () => { sheetWrites += 1; },
+          mirrorBallotToSheet: async () => { mirrors += 1; },
+          isRetryableSheetsError: () => false,
+        },
+        'netlify/functions/lib/email-otp.js': {
+          hashDevice: () => 'mock-device', hashEmail: () => 'mock-email',
+          isValidDeviceId: () => true, isValidEmail: () => true,
+          normalizeDeviceId: (value) => value, normalizeEmail: (value) => value,
+          verifyEmailOtpChallenge: () => ({ valid: true }),
+        },
+        'netlify/functions/lib/voting-risk.js': { buildRiskHashes: () => ({}) },
+      });
+      const result = response(await submit(postEvent(picks)));
+      assert.equal(result.status, failure ? 503 : 200);
+      assert.equal(saves, failure === 'lookup' ? 0 : 1);
+      assert.equal(mirrors, failure ? 0 : 1);
+      assert.equal(sheetWrites, 0);
+    }
+  } finally {
+    if (oldOpen === undefined) delete process.env.FINALE_VOTING_OPEN;
+    else process.env.FINALE_VOTING_OPEN = oldOpen;
   }
 });
 

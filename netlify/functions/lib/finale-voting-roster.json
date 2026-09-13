@@ -728,5 +728,17 @@
       "top-build",
       "top-classic"
     ]
+  },
+  {
+    "applicationId": "44357388-791b-4663-aaed-858cf72add3a",
+    "vehicleYear": "2017",
+    "vehicleMake": "Lamborghini",
+    "vehicleModel": "Huracan",
+    "instagram": "",
+    "photoUrl": "https://res.cloudinary.com/voi27lgh/image/upload/v1789257002/nova-shore/applications/kevin-chan-2017-lamborghini-huracan-kl022s-44357388.jpg",
+    "eligibleCategoryIds": [
+      "peoples-choice",
+      "top-build"
+    ]
   }
 ]
