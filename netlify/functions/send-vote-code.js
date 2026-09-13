@@ -95,6 +95,7 @@ exports.handler = async (event) => {
   }
 
   const verificationMode = getVotingVerificationMode();
+  let stage = 'request-validation';
 
   try {
     const now = Date.now();
@@ -121,9 +122,23 @@ exports.handler = async (event) => {
 
       const emailHash = hashEmail(email);
       const deviceHash = hashDevice(deviceId);
-      const alreadyVoted = isVotingRedisConfigured()
-        ? await hasRedisIdentityVoted({ identityHash: emailHash, deviceHash })
-        : await hasEmailOrDeviceVoted({ emailHash, deviceHash });
+      let alreadyVoted = false;
+      if (isVotingRedisConfigured()) {
+        stage = 'redis-duplicate-check';
+        try {
+          alreadyVoted = await hasRedisIdentityVoted({ identityHash: emailHash, deviceHash });
+        } catch (redisError) {
+          console.error("Redis already-voted check failed; falling back to Sheets", {
+            message: redisError.message,
+            code: redisError.code || redisError.cause?.code,
+          });
+          stage = 'sheets-duplicate-check';
+          alreadyVoted = await hasEmailOrDeviceVoted({ emailHash, deviceHash });
+        }
+      } else {
+        stage = 'sheets-duplicate-check';
+        alreadyVoted = await hasEmailOrDeviceVoted({ emailHash, deviceHash });
+      }
       if (alreadyVoted) {
         return jsonResponse(409, {
           error: "This email or device has already voted.",
@@ -142,6 +157,7 @@ exports.handler = async (event) => {
       }
 
       const { code, challenge } = generateEmailOtpChallenge({ email, deviceId, now });
+      stage = 'email-delivery';
       await sendVotingOtpEmail({ email, code });
       cooldownKeys.forEach((key) => recentSends.set(key, now));
       recentIpSends.set(ipKey, [...ipSends, now]);
@@ -161,8 +177,15 @@ exports.handler = async (event) => {
         error: "Enter a valid mobile phone number with area code.",
       });
     }
+    stage = 'phone-duplicate-check';
     const alreadyVoted = isVotingRedisConfigured()
-      ? await hasRedisIdentityVoted({ identityHash: hashPhone(phoneE164) })
+      ? await hasRedisIdentityVoted({ identityHash: hashPhone(phoneE164) }).catch(async (redisError) => {
+        console.error("Redis already-voted check failed; falling back to Sheets", {
+          message: redisError.message,
+          code: redisError.code,
+        });
+        return hasPhoneVoted(phoneE164);
+      })
       : await hasPhoneVoted(phoneE164);
     if (alreadyVoted) {
       return jsonResponse(409, {
@@ -181,6 +204,7 @@ exports.handler = async (event) => {
       });
     }
 
+    stage = 'sms-delivery';
     await sendVoteVerificationCode(phoneE164);
     recentSends.set(phoneKey, now);
     recentIpSends.set(ipKey, [...ipSends, now]);
@@ -193,8 +217,9 @@ exports.handler = async (event) => {
     });
   } catch (error) {
     console.error("Unable to send vote verification code", {
+      stage,
       message: error.message,
-      code: error.code,
+      code: error.code || error.cause?.code,
     });
 
     if (isRetryableSheetsError(error)) {

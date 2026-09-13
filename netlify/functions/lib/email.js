@@ -681,25 +681,35 @@ const sendVotingOtpEmail = async ({ email, code }) => {
   let lastError;
 
   for (let attempt = 1; attempt <= 4; attempt += 1) {
-    const { data, error } = await resend.emails.send({
-      from: getFromAddress(),
-      to: [email],
-      subject,
-      html,
-      text,
-    });
+    try {
+      const { data, error } = await resend.emails.send({
+        from: getFromAddress(),
+        to: [email],
+        subject,
+        html,
+        text,
+      });
 
-    if (!error) {
-      return data;
-    }
+      if (!error) {
+        return data;
+      }
 
-    lastError = error;
-    const status = Number(error.statusCode || error.status || 0);
-    const retryable = status === 429
-      || status >= 500
-      || /rate limit|too many requests|temporar/i.test(String(error.message || ""));
-    if (!retryable || attempt === 4) {
-      break;
+      lastError = error;
+      const status = Number(error.statusCode || error.status || 0);
+      const retryable = status === 429
+        || status >= 500
+        || /rate limit|too many requests|temporar/i.test(String(error.message || ""));
+      if (!retryable || attempt === 4) {
+        break;
+      }
+    } catch (error) {
+      lastError = error;
+      const retryable = /fetch failed|timed out|timeout|network|ECONN|ENOTFOUND/i.test(
+        String(error.message || "")
+      );
+      if (!retryable || attempt === 4) {
+        break;
+      }
     }
 
     const delay = (500 * (2 ** (attempt - 1))) + Math.floor(Math.random() * 350);

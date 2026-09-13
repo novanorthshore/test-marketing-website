@@ -277,6 +277,45 @@ test('email code request handles invalid emails, duplicates, and delivery failur
   process.env.FINALE_VOTING_OPEN = 'false';
 });
 
+test('email codes fall back to Sheets when Redis fetch fails, without bypassing duplicates', async () => {
+  const oldOpen = process.env.FINALE_VOTING_OPEN;
+  const oldSecret = process.env.VOTE_EMAIL_OTP_SECRET;
+  process.env.FINALE_VOTING_OPEN = 'true';
+  process.env.VOTE_EMAIL_OTP_SECRET = 'local-regression-test-secret';
+  try {
+    for (const scenario of ['new-voter', 'duplicate', 'sheets-down']) {
+      let sends = 0;
+      let checks = 0;
+      const send = loadHandler('send-vote-code.js', {
+        'netlify/functions/lib/voting-redis.js': {
+          isVotingRedisConfigured: () => true,
+          hasRedisIdentityVoted: async () => { throw new TypeError('fetch failed', { cause: { code: 'ENOTFOUND' } }); },
+        },
+        'netlify/functions/lib/voting-sheet.js': {
+          hasEmailOrDeviceVoted: async () => {
+            checks += 1;
+            if (scenario === 'sheets-down') throw new Error('Sheets unavailable');
+            return scenario === 'duplicate';
+          },
+          isRetryableSheetsError: () => false,
+        },
+        'netlify/functions/lib/email.js': {
+          sendVotingOtpEmail: async () => { sends += 1; },
+        },
+      });
+      const result = response(await send(postEvent(picks)));
+      assert.equal(result.status, scenario === 'new-voter' ? 200 : scenario === 'duplicate' ? 409 : 500);
+      assert.equal(checks, 1);
+      assert.equal(sends, scenario === 'new-voter' ? 1 : 0);
+    }
+  } finally {
+    if (oldOpen === undefined) delete process.env.FINALE_VOTING_OPEN;
+    else process.env.FINALE_VOTING_OPEN = oldOpen;
+    if (oldSecret === undefined) delete process.env.VOTE_EMAIL_OTP_SECRET;
+    else process.env.VOTE_EMAIL_OTP_SECRET = oldSecret;
+  }
+});
+
 test.after(() => {
   if (originalOpen === undefined) delete process.env.FINALE_VOTING_OPEN;
   else process.env.FINALE_VOTING_OPEN = originalOpen;
