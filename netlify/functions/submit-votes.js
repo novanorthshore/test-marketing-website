@@ -110,7 +110,9 @@ exports.handler = async (event) => {
 
   if (!/^\d{4,8}$/.test(code)) {
     return jsonResponse(400, {
-      error: "Enter the verification code from your text message.",
+      error: verificationMode === "email"
+        ? "Enter the verification code from your email."
+        : "Enter the verification code from your text message.",
     });
   }
 

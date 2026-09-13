@@ -74,7 +74,7 @@
         <p class="fv-kicker">NOVA FINALE: 001 · Spectator ballot</p>
         <h1>Cast Your Votes</h1>
         <p class="fv-hero-copy">
-          Choose your favourites at NOVA FINALE: 001. Pick one car in each category, then confirm your votes by text message.
+          Choose your favourites at NOVA FINALE: 001. Pick one car in each category, then confirm your votes by email.
         </p>
         <nav class="fv-jump" aria-label="Voting categories" data-voting-jump hidden></nav>
       </section>
@@ -140,7 +140,7 @@
         <p class="fv-kicker">Your ballot</p>
         <h2 id="fv-review-title">Review your picks</h2>
         <div class="fv-review-list" data-voting-review-list></div>
-        <button type="button" class="fv-primary fv-wide" data-voting-verify-open>Verify by text message</button>
+        <button type="button" class="fv-primary fv-wide" data-voting-verify-open>Verify by email</button>
       </section>
     </div>
 
@@ -149,18 +149,20 @@
       <section class="fv-dialog-panel" role="dialog" aria-modal="true" aria-labelledby="fv-verify-title">
         <button type="button" class="fv-dialog-close" data-voting-verify-close>Close</button>
         <p class="fv-kicker">Final step</p>
-        <h2 id="fv-verify-title">Verify your ballot</h2>
-        <p class="fv-dialog-copy">Enter your mobile number. We’ll text you a code to confirm your votes.</p>
+        <h2 id="fv-verify-title">Verify your ballot by email</h2>
+        <p class="fv-dialog-copy" data-voting-verify-copy>
+          Enter your email address. We’ll send you a code to confirm your votes. One ballot per email.
+        </p>
         <form class="fv-verify-form" data-voting-verify-form>
-          <label for="fv-phone">Mobile phone</label>
+          <label for="fv-email">Email</label>
           <input
-            id="fv-phone"
-            type="tel"
-            inputmode="tel"
-            autocomplete="tel"
-            placeholder="(604) 555-1234"
+            id="fv-email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="you@email.com"
             required
-            data-voting-phone
+            data-voting-email
           />
           <div data-voting-code-wrap hidden>
             <label for="fv-code">Verification code</label>

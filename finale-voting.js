@@ -12,7 +12,7 @@
   const reviewList = $('[data-voting-review-list]');
   const verifyDialog = $('[data-voting-verify-dialog]');
   const verifyForm = $('[data-voting-verify-form]');
-  const phoneInput = $('[data-voting-phone]');
+  const emailInput = $('[data-voting-email]');
   const codeInput = $('[data-voting-code]');
   const codeWrap = $('[data-voting-code-wrap]');
   const sendButton = $('[data-voting-send-code]');
@@ -24,6 +24,23 @@
   let cars = [];
   let previousFocus = null;
   let codeSentTo = '';
+  let emailChallenge = '';
+
+  const getDeviceId = () => {
+    const storageKey = 'nova-voting-device-id';
+    try {
+      const existing = localStorage.getItem(storageKey);
+      if (existing) return existing;
+      const generated = typeof window.crypto?.randomUUID === 'function'
+        ? window.crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(storageKey, generated);
+      return generated;
+    } catch (error) {
+      return `session-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+    }
+  };
+  const deviceId = getDeviceId();
 
   const photoUrl = (url, width) => {
     if (!/^https:\/\/res\.cloudinary\.com\//.test(url || '')) return url || '';
@@ -412,7 +429,7 @@
   });
   $('[data-voting-verify-open]').addEventListener('click', () => {
     closeDialog(reviewDialog);
-    showDialog(verifyDialog, phoneInput);
+    showDialog(verifyDialog, emailInput);
   });
 
   document.addEventListener('keydown', (event) => {
@@ -453,13 +470,17 @@
   };
 
   sendButton.addEventListener('click', async () => {
-    if (!phoneInput.reportValidity()) return;
+    if (!emailInput.reportValidity()) return;
     sendButton.disabled = true;
     sendButton.textContent = 'Sending…';
     formStatus.textContent = '';
     try {
-      const result = await post('send-vote-code', { phone: phoneInput.value });
-      codeSentTo = phoneInput.value;
+      const result = await post('send-vote-code', {
+        email: emailInput.value,
+        deviceId,
+      });
+      codeSentTo = emailInput.value.trim().toLowerCase();
+      emailChallenge = result.challenge || '';
       codeWrap.hidden = false;
       codeInput.required = true;
       confirmButton.hidden = false;
@@ -473,24 +494,35 @@
     }
   });
 
-  phoneInput.addEventListener('input', () => {
-    if (phoneInput.value === codeSentTo) return;
+  emailInput.addEventListener('input', () => {
+    if (emailInput.value.trim().toLowerCase() === codeSentTo) return;
     codeWrap.hidden = true;
     codeInput.required = false;
     codeInput.value = '';
     confirmButton.hidden = true;
+    emailChallenge = '';
   });
 
   verifyForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (selectedCount() !== categories.length || phoneInput.value !== codeSentTo) return;
+    if (
+      selectedCount() !== categories.length
+      || emailInput.value.trim().toLowerCase() !== codeSentTo
+      || !emailChallenge
+    ) return;
     confirmButton.disabled = true;
     confirmButton.textContent = 'Submitting…';
     formStatus.textContent = '';
     try {
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         try {
-          await post('submit-votes', { phone: phoneInput.value, code: codeInput.value, selections });
+          await post('submit-votes', {
+            email: emailInput.value,
+            deviceId,
+            code: codeInput.value,
+            challenge: emailChallenge,
+            selections,
+          });
           verifyDialog.hidden = true;
           document.body.classList.remove('fv-dialog-open');
           categoriesRoot.hidden = true;

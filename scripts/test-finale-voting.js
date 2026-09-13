@@ -26,10 +26,18 @@ const loadHandler = (name, replacements = {}) => {
   return handler;
 };
 const response = (result) => ({ status: result.statusCode, body: JSON.parse(result.body) });
-const postEvent = (selections, code = '123456') => ({
+const DEVICE_ID = 'test-device-id-abc123';
+const postEvent = (selections, extras = {}) => ({
   httpMethod: 'POST',
   headers: { 'user-agent': 'mock-browser' },
-  body: JSON.stringify({ phone: '6045551234', code, selections }),
+  body: JSON.stringify({
+    email: 'voter@example.com',
+    deviceId: DEVICE_ID,
+    code: '123456',
+    challenge: 'mock-challenge',
+    selections,
+    ...extras,
+  }),
 });
 const picks = {
   'peoples-choice': roster[0].applicationId,
@@ -79,7 +87,7 @@ test('open listing contains only fixed roster and three categories', async () =>
   assert.equal(listed.body.cars.length, 60);
   assert.equal(listed.body.categories.length, 3);
   assert.equal(listed.body.eventId, 'nova-finale-001');
-  assert.equal(listed.body.verificationMode, 'twilio');
+  assert.equal(listed.body.verificationMode, 'email');
   assert(!('email' in listed.body.cars[0]));
   process.env.FINALE_VOTING_OPEN = 'false';
 });
@@ -93,7 +101,8 @@ test('submission accepts same car twice and rejects bad ballots and codes', asyn
   let failAppend = false;
   const submit = loadHandler('submit-votes.js', {
     'netlify/functions/lib/voting-sheet.js': {
-      hasPhoneVoted: async () => duplicate,
+      hasEmailOrDeviceVoted: async () => duplicate,
+      hasPhoneVoted: async () => false,
       hashPhone: () => 'mock-hash',
       isRetryableSheetsError: (error) => error.message === 'busy',
       appendBallot: async ({ carLabelsById }) => {
@@ -102,9 +111,14 @@ test('submission accepts same car twice and rejects bad ballots and codes', asyn
         if (failAppend) throw new Error('busy');
       },
     },
-    'netlify/functions/lib/twilio-verify.js': {
-      normalizePhoneE164: () => '+16045551234',
-      checkVoteVerificationCode: async () => ({ valid: codeValid }),
+    'netlify/functions/lib/email-otp.js': {
+      hashDevice: () => 'mock-device',
+      hashEmail: () => 'mock-email',
+      isValidDeviceId: () => true,
+      isValidEmail: () => true,
+      normalizeDeviceId: (value) => value,
+      normalizeEmail: (value) => String(value || '').trim().toLowerCase(),
+      verifyEmailOtpChallenge: () => ({ valid: codeValid }),
     },
     'netlify/functions/lib/voting-redis.js': { isVotingRedisConfigured: () => false },
     'netlify/functions/lib/voting-risk.js': { buildRiskHashes: () => ({ fingerprintHash: '', networkHash: '' }) },
@@ -222,30 +236,44 @@ test('vote storage reads dedicated Finale sheet tabs regardless of legacy settin
   }
 });
 
-test('SMS request handles invalid phones, duplicate numbers, and delivery failures', async () => {
+test('email code request handles invalid emails, duplicates, and delivery failures', async () => {
   process.env.FINALE_VOTING_OPEN = 'true';
   let duplicate = false;
   let deliveryFails = false;
   const send = loadHandler('send-vote-code.js', {
     'netlify/functions/lib/voting-sheet.js': {
-      hasPhoneVoted: async () => duplicate,
+      hasEmailOrDeviceVoted: async () => duplicate,
+      hasPhoneVoted: async () => false,
       hashPhone: () => 'mock-hash',
       isRetryableSheetsError: () => false,
     },
-    'netlify/functions/lib/twilio-verify.js': {
-      normalizePhoneE164: (value) => value === 'bad' ? null : '+16045551234',
-      sendVoteVerificationCode: async () => { if (deliveryFails) throw new Error('Twilio unavailable'); },
+    'netlify/functions/lib/email-otp.js': {
+      generateEmailOtpChallenge: () => ({ code: '123456', challenge: 'mock-challenge' }),
+      hashDevice: () => 'mock-device',
+      hashEmail: () => 'mock-email',
+      hashIp: () => 'mock-ip',
+      isValidDeviceId: (value) => value === DEVICE_ID,
+      isValidEmail: (value) => value === 'voter@example.com',
+      normalizeDeviceId: (value) => value,
+      normalizeEmail: (value) => String(value || '').trim().toLowerCase(),
+    },
+    'netlify/functions/lib/email.js': {
+      sendVotingOtpEmail: async () => { if (deliveryFails) throw new Error('Resend unavailable'); },
     },
     'netlify/functions/lib/voting-redis.js': { isVotingRedisConfigured: () => false },
-    'netlify/functions/lib/email-otp.js': { hashIp: () => 'mock-ip' },
   });
-  const event = (phone) => ({ httpMethod: 'POST', headers: {}, body: JSON.stringify({ phone }) });
+  const event = (email, deviceId = DEVICE_ID) => ({
+    httpMethod: 'POST',
+    headers: {},
+    body: JSON.stringify({ email, deviceId }),
+  });
   assert.equal(response(await send(event('bad'))).status, 400);
+  assert.equal(response(await send(event('voter@example.com', 'short'))).status, 400);
   duplicate = true;
-  assert.equal(response(await send(event('6045551234'))).status, 409);
+  assert.equal(response(await send(event('voter@example.com'))).status, 409);
   duplicate = false;
   deliveryFails = true;
-  assert.equal(response(await send(event('6045551234'))).status, 500);
+  assert.equal(response(await send(event('voter@example.com'))).status, 500);
   process.env.FINALE_VOTING_OPEN = 'false';
 });
 

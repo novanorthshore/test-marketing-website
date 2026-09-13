@@ -11,7 +11,10 @@ const isVotingOpen = () => {
   return value === "true" || value === "1" || value === "yes";
 };
 
-const getVotingVerificationMode = () => "twilio";
+const getVotingVerificationMode = () => {
+  const value = String(process.env.VOTING_VERIFICATION_MODE || "email").trim().toLowerCase();
+  return value === "twilio" ? "twilio" : "email";
+};
 const getVotingCategoryIds = () => VOTING_CATEGORIES.map(({ id }) => id);
 const getVotingCategoryById = (categoryId) => (
   VOTING_CATEGORIES.find(({ id }) => id === categoryId) || null
