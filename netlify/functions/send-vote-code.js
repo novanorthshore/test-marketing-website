@@ -204,8 +204,27 @@ exports.handler = async (event) => {
       });
     }
 
+    const message = String(error.message || "");
+    if (/Missing required environment variable:\s*VOTE_PHONE_HASH_SECRET/i.test(message)) {
+      return jsonResponse(500, {
+        error: "Voting email codes are missing VOTE_PHONE_HASH_SECRET in Netlify. Set a long random value and redeploy.",
+      });
+    }
+    if (/Missing required environment variable:\s*RESEND_API_KEY/i.test(message)) {
+      return jsonResponse(500, {
+        error: "Voting email codes are missing RESEND_API_KEY in Netlify.",
+      });
+    }
+    if (/^Resend failed:/i.test(message)) {
+      return jsonResponse(500, {
+        error: "The email provider rejected the verification send. Check EMAIL_FROM and Resend domain settings.",
+        detail: message.replace(/^Resend failed:\s*/i, "").slice(0, 180),
+      });
+    }
+
     return jsonResponse(500, {
       error: "Unable to send a verification code right now. Please try again.",
+      detail: message.slice(0, 180),
     });
   }
 };
