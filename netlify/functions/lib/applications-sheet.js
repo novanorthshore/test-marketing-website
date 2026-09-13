@@ -1,5 +1,4 @@
 const { getSheetsClient, requiredEnv } = require("./google-auth");
-const { getEligibleVotingCategoryIds } = require("./vote-config");
 const { createHash } = require("crypto");
 
 const APPLICATION_COLUMNS = [
@@ -398,67 +397,6 @@ const getApprovedUnsentEventInfoApplications = async () => {
     row.email &&
     !row.eventInfoEmailSent
   ));
-};
-
-const buildVehicleLabel = (application) => [
-  application.vehicleYear,
-  application.vehicleMake,
-  application.vehicleModel,
-].map((part) => String(part || "").trim()).filter(Boolean).join(" ");
-
-const listApprovedVotingCars = async () => {
-  // Fast path: one Sheets values.get — skip tab/header ensure (already set up in production).
-  const sheets = await getSheetsClient();
-  const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: applicationsRange(`A:${columnLetter(COL.marketplacePhoto5Url)}`),
-  });
-  const rows = response.data.values || [];
-
-  return rows
-    .map((values, index) => parseApplicationRow(values, index + 1))
-    .filter((row, index) => (
-      index > 0 &&
-      row.applicationId &&
-      row.status.toLowerCase() === "approved" &&
-      String(row.photoUrl || "").trim()
-    ))
-    .map((row) => {
-      const votingCategory = String(row.votingCategory || row.category || "").trim();
-      const modifiedFlag = String(row.modifiedFlag || "").trim();
-
-      return {
-        applicationId: row.applicationId,
-        carNumber: row.carNumber || "",
-        vehicleLabel: buildVehicleLabel(row),
-        vehicleYear: String(row.vehicleYear || "").trim(),
-        vehicleMake: String(row.vehicleMake || "").trim(),
-        vehicleModel: String(row.vehicleModel || "").trim(),
-        licensePlate: String(row.licensePlate || "").trim(),
-        instagram: String(row.instagram || "").trim(),
-        photoUrl: String(row.photoUrl || "").trim(),
-        votingCategory,
-        modifiedFlag,
-        eligibleCategoryIds: getEligibleVotingCategoryIds({ votingCategory, modifiedFlag }),
-      };
-    })
-    .sort((a, b) => {
-      const aNumber = Number.parseInt(a.carNumber, 10);
-      const bNumber = Number.parseInt(b.carNumber, 10);
-      const aHasNumber = Number.isFinite(aNumber);
-      const bHasNumber = Number.isFinite(bNumber);
-
-      if (aHasNumber && bHasNumber && aNumber !== bNumber) {
-        return aNumber - bNumber;
-      }
-
-      if (aHasNumber !== bHasNumber) {
-        return aHasNumber ? -1 : 1;
-      }
-
-      return a.vehicleLabel.localeCompare(b.vehicleLabel);
-    });
 };
 
 const publicMarketplaceContact = (application) => {
@@ -943,7 +881,6 @@ module.exports = {
   getApplicationById,
   getApprovedUnsentApplications,
   getApprovedUnsentEventInfoApplications,
-  listApprovedVotingCars,
   listPublishedMarketplaceListings,
   isPublishedMarketplaceListing,
   toPublicMarketplaceListing,

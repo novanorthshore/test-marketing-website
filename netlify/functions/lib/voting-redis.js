@@ -1,4 +1,4 @@
-const { BLOCK_PARTY_CONFIG } = require("./event-config");
+const { VOTING_EVENT_ID } = require("./vote-config");
 
 const REDIS_RETRIES = 4;
 const CAR_CACHE_SECONDS = 6 * 60 * 60;
@@ -55,7 +55,7 @@ const redisCommand = async (command) => {
   throw lastError;
 };
 
-const eventTag = () => `{${BLOCK_PARTY_CONFIG.id}}`;
+const eventTag = () => `{${VOTING_EVENT_ID}}`;
 const key = (suffix) => `nova:voting:${eventTag()}:${suffix}`;
 const identityKey = (identityHash) => key(`identity:${identityHash}`);
 const deviceKey = (deviceHash) => key(`device:${deviceHash}`);

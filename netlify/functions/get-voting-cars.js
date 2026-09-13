@@ -1,4 +1,4 @@
-const { listApprovedVotingCars } = require("./lib/applications-sheet");
+const { listFinaleVotingCars } = require("./lib/finale-voting-roster");
 const {
   VOTING_CATEGORIES,
   VOTING_EVENT_ID,
@@ -39,14 +39,12 @@ exports.handler = async (event) => {
       });
     }
 
-    const cars = (await listApprovedVotingCars()).map((car) => ({
+    const cars = listFinaleVotingCars().map((car) => ({
       applicationId: car.applicationId,
-      carNumber: car.carNumber,
       vehicleLabel: car.vehicleLabel,
       vehicleYear: car.vehicleYear,
       vehicleMake: car.vehicleMake,
       vehicleModel: car.vehicleModel,
-      licensePlate: car.licensePlate,
       instagram: car.instagram,
       photoUrl: car.photoUrl,
       eligibleCategoryIds: car.eligibleCategoryIds || [],

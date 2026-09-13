@@ -1,5 +1,5 @@
 const { randomUUID } = require("crypto");
-const { listApprovedVotingCars } = require("./lib/applications-sheet");
+const { listFinaleVotingCars } = require("./lib/finale-voting-roster");
 const {
   VOTING_CATEGORIES,
   getVotingVerificationMode,
@@ -186,7 +186,7 @@ exports.handler = async (event) => {
       ? await getCachedVotingCars()
       : null;
     if (!cars) {
-      cars = await listApprovedVotingCars();
+      cars = listFinaleVotingCars();
       if (isVotingRedisConfigured()) {
         await cacheVotingCars(cars);
       }
@@ -213,9 +213,8 @@ exports.handler = async (event) => {
         });
       }
 
-      carLabelsById[applicationId] = car.carNumber
-        ? `#${car.carNumber} ${car.vehicleLabel}`
-        : car.vehicleLabel;
+      // Keep same-name cars separate in the Google Sheets results QUERY.
+      carLabelsById[applicationId] = `${car.vehicleLabel} [${applicationId}]`;
     }
 
     const ballotId = randomUUID();

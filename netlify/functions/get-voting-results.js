@@ -1,6 +1,7 @@
 const { VOTING_CATEGORIES } = require("./lib/vote-config");
+const { listFinaleVotingCars } = require("./lib/finale-voting-roster");
+const { isVotingAdmin } = require("./lib/voting-admin");
 const {
-  getCachedVotingCars,
   getRedisTallies,
   isVotingRedisConfigured,
 } = require("./lib/voting-redis");
@@ -19,6 +20,10 @@ exports.handler = async (event) => {
     return jsonResponse(405, { error: "Method not allowed." });
   }
 
+  if (!isVotingAdmin(event)) {
+    return jsonResponse(403, { error: "Results access denied." });
+  }
+
   if (!isVotingRedisConfigured()) {
     return jsonResponse(503, {
       error: "Redis voting results are not configured.",
@@ -26,11 +31,8 @@ exports.handler = async (event) => {
   }
 
   try {
-    const [tallies, cars] = await Promise.all([
-      getRedisTallies(),
-      getCachedVotingCars(),
-    ]);
-    const carsById = new Map((cars || []).map((car) => [car.applicationId, car]));
+    const tallies = await getRedisTallies();
+    const carsById = new Map(listFinaleVotingCars().map((car) => [car.applicationId, car]));
 
     const categories = VOTING_CATEGORIES.map((category) => {
       const prefix = `${category.id}:`;
@@ -41,9 +43,7 @@ exports.handler = async (event) => {
           const car = carsById.get(applicationId);
           return {
             applicationId,
-            car: car
-              ? `${car.carNumber ? `#${car.carNumber} ` : ""}${car.vehicleLabel}`
-              : applicationId,
+            car: car ? car.vehicleLabel : applicationId,
             votes,
           };
         })

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#11130f" />
+  <meta name="description" content="Vote for your favourite cars at NOVA FINALE: 001." />
+  <meta name="robots" content="noindex" />
+  <title>Finale voting | Nova North Shore</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="finale-voting.js" defer></script>
+</head>
+<body class="finale-voting-page">
+  <header class="fv-header">
+    <a href="index.html" aria-label="Nova North Shore home"><img src="assets/optimized/NovaLogowhite.webp" alt="Nova North Shore" /></a>
+    <a class="fv-back" href="finale-event.html">← Back to Finale</a>
+  </header>
+  <main>
+    <section class="fv-hero">
+      <p class="fv-kicker">NOVA FINALE: 001 · Spectator ballot</p>
+      <h1>Pick the cars<br /><span>that stay with you.</span></h1>
+      <p>Choose one car in each category, then verify your ballot by text message. One ballot per phone number.</p>
+      <nav class="fv-jump" aria-label="Voting categories" data-voting-jump hidden></nav>
+    </section>
+    <p class="fv-status" data-voting-status role="status" aria-live="polite">Checking voting status…</p>
+    <section class="fv-closed" data-voting-closed hidden>
+      <span class="fv-closed-mark" aria-hidden="true">○</span>
+      <p class="fv-kicker">Voting is closed</p>
+      <h2>Thanks for joining us.</h2>
+      <p>The Finale ballot is unavailable right now. Check back for voting updates.</p>
+      <a href="finale-event.html" class="fv-primary">Back to Finale</a>
+    </section>
+    <div class="fv-categories" data-voting-categories hidden></div>
+    <section class="fv-success" data-voting-success hidden tabindex="-1">
+      <p class="fv-kicker">Ballot received</p>
+      <h2>Your votes are in.</h2>
+      <p>Thanks for helping choose the NOVA FINALE: 001 winners.</p>
+      <a href="finale-event.html" class="fv-primary">Back to Finale</a>
+    </section>
+  </main>
+  <div class="fv-ballot-bar" data-voting-submit-bar hidden>
+    <div class="fv-ballot-progress"><span data-voting-progress-text>0 of 3 selected</span><span class="fv-progress-track"><span data-voting-progress-fill></span></span></div>
+    <button type="button" class="fv-primary" data-voting-review disabled>Review picks</button>
+  </div>
+  <div class="fv-dialog" data-voting-review-dialog hidden>
+    <div class="fv-dialog-backdrop" data-voting-review-close></div>
+    <section class="fv-dialog-panel" role="dialog" aria-modal="true" aria-labelledby="fv-review-title">
+      <button type="button" class="fv-dialog-close" data-voting-review-close aria-label="Close review">×</button>
+      <p class="fv-kicker">Your ballot</p>
+      <h2 id="fv-review-title">Review your picks</h2>
+      <div class="fv-review-list" data-voting-review-list></div>
+      <button type="button" class="fv-primary fv-wide" data-voting-verify-open>Verify by text message</button>
+    </section>
+  </div>
+  <div class="fv-dialog" data-voting-verify-dialog hidden>
+    <div class="fv-dialog-backdrop" data-voting-verify-close></div>
+    <section class="fv-dialog-panel" role="dialog" aria-modal="true" aria-labelledby="fv-verify-title">
+      <button type="button" class="fv-dialog-close" data-voting-verify-close aria-label="Close verification">×</button>
+      <p class="fv-kicker">Final step</p>
+      <h2 id="fv-verify-title">Verify your ballot</h2>
+      <p>Enter your mobile number. We’ll text you a code to confirm your votes.</p>
+      <form data-voting-verify-form>
+        <label for="fv-phone">Mobile phone</label>
+        <input id="fv-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(604) 555-1234" required data-voting-phone />
+        <div data-voting-code-wrap hidden>
+          <label for="fv-code">Verification code</label>
+          <input id="fv-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{4,8}" placeholder="6-digit code" data-voting-code />
+        </div>
+        <p class="fv-form-status" data-voting-modal-status role="status" aria-live="polite"></p>
+        <button type="button" class="fv-secondary fv-wide" data-voting-send-code>Send code</button>
+        <button type="submit" class="fv-primary fv-wide" data-voting-confirm hidden>Confirm votes</button>
+      </form>
+    </section>
+  </div>
+</body>
+</html>

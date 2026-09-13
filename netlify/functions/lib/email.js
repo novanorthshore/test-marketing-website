@@ -637,7 +637,7 @@ const sendEventInfoEmail = async ({ application, flyerBuffer }) => {
 
 const buildVotingOtpEmail = ({ code }) => {
   const safeCode = escapeHtml(code);
-  const subject = `${code} is your Nova Block Party voting code`;
+  const subject = `${code} is your NOVA FINALE: 001 voting code`;
   const html = `<!DOCTYPE html>
 <html>
   <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#111;">
@@ -648,7 +648,7 @@ const buildVotingOtpEmail = ({ code }) => {
             <tr>
               <td style="background:#0a0a0a;padding:26px 30px;text-align:center;">
                 <h1 style="margin:0;color:#ffffff;font-size:21px;letter-spacing:0.06em;text-transform:uppercase;">Nova North Shore</h1>
-                <p style="margin:6px 0 0;color:#c7d0a8;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;">Block Party Voting</p>
+                <p style="margin:6px 0 0;color:#c7d0a8;font-size:14px;letter-spacing:0.12em;text-transform:uppercase;">Finale Voting</p>
               </td>
             </tr>
             <tr>
@@ -665,7 +665,7 @@ const buildVotingOtpEmail = ({ code }) => {
   </body>
 </html>`;
   const text = [
-    "Nova North Shore Block Party Voting",
+    "Nova North Shore Finale Voting",
     "",
     `Your verification code is: ${code}`,
     "",

@@ -39,8 +39,8 @@ const COL = {
 };
 
 const LAST_COLUMN_LETTER = String.fromCharCode(64 + VOTE_COLUMNS.length);
-const RESULTS_MARKER = "nova-voting-results-v3";
-const TALLY_BLOCK_HEIGHT = 40;
+const RESULTS_MARKER = "nova-finale-voting-results-v1";
+const TALLY_BLOCK_HEIGHT = 66;
 const TALLY_START_ROW = 12;
 
 let voteSheetReady = false;
@@ -57,8 +57,8 @@ const columnLetter = (columnIndex) => {
   return column;
 };
 
-const getVotesTab = () => process.env.GOOGLE_VOTES_SHEET_TAB || "Votes";
-const getResultsTab = () => process.env.GOOGLE_RESULTS_SHEET_TAB || "Results";
+const getVotesTab = () => "Finale Votes";
+const getResultsTab = () => "Finale Results";
 
 const votesRange = (a1Range) => {
   const escapedTab = getVotesTab().replace(/'/g, "''");
@@ -170,7 +170,7 @@ const buildResultsGrid = () => {
     ["", "", "", "", "", "", ""]
   ));
 
-  grid[0] = ["Nova Block Party — Live Results", "", "", "", "", "", ""];
+  grid[0] = ["NOVA FINALE: 001 — Live Results", "", "", "", "", "", ""];
   grid[1] = [
     "Current leaders and full standings update automatically from the Votes tab.",
     "",
@@ -641,9 +641,9 @@ const appendBallot = async ({
 
     const rowBallotId = String(values[0] || "").trim();
     const rowPhoneHash = String(values[1] || "").trim();
-    // Range begins at B. Email/device are O/P in the sheet, so 13/14 here.
-    const rowEmailHash = String(values[13] || "").trim();
-    const rowDeviceHash = String(values[14] || "").trim();
+    // The range begins at B, so shift the full-row column indexes by one.
+    const rowEmailHash = String(values[COL.emailHash - 1] || "").trim();
+    const rowDeviceHash = String(values[COL.deviceHash - 1] || "").trim();
     const identityMatches = (
       (phoneHash && rowPhoneHash === phoneHash)
       || (emailHash && rowEmailHash === emailHash)

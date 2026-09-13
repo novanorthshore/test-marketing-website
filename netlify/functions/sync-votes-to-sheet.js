@@ -1,4 +1,5 @@
 const { isVotingOpen } = require("./lib/vote-config");
+const { isVotingAdmin } = require("./lib/voting-admin");
 const {
   getRedisBallots,
   isVotingRedisConfigured,
@@ -17,6 +18,10 @@ const jsonResponse = (statusCode, body) => ({
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return jsonResponse(405, { error: "Method not allowed. Use POST." });
+  }
+
+  if (!isVotingAdmin(event)) {
+    return jsonResponse(403, { error: "Results sync access denied." });
   }
 
   if (isVotingOpen()) {
