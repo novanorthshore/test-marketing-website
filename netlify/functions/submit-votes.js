@@ -28,8 +28,6 @@ const {
   verifyEmailOtpChallenge,
 } = require("./lib/email-otp");
 const {
-  cacheVotingCars,
-  getCachedVotingCars,
   hasRedisIdentityVoted,
   isVotingRedisConfigured,
   recordRedisBallot,
@@ -131,6 +129,7 @@ exports.handler = async (event) => {
     }
   }
 
+  let stage = 'verification';
   try {
     let emailHash = "";
     let deviceHash = "";
@@ -139,6 +138,7 @@ exports.handler = async (event) => {
       emailHash = hashEmail(email);
       deviceHash = hashDevice(deviceId);
 
+      stage = isVotingRedisConfigured() ? 'redis-duplicate-check' : 'sheets-duplicate-check';
       const alreadyVoted = isVotingRedisConfigured()
         ? await hasRedisIdentityVoted({ identityHash: emailHash, deviceHash })
         : await hasEmailOrDeviceVoted({ emailHash, deviceHash });
@@ -149,6 +149,7 @@ exports.handler = async (event) => {
         });
       }
 
+      stage = 'email-code-validation';
       const verification = verifyEmailOtpChallenge({
         challenge: payload.challenge,
         code,
@@ -166,6 +167,7 @@ exports.handler = async (event) => {
     } else {
       // Reject already-voted phones before burning a Twilio Verify check when possible.
       const phoneHash = hashPhone(phoneE164);
+      stage = isVotingRedisConfigured() ? 'redis-duplicate-check' : 'sheets-duplicate-check';
       const alreadyVoted = isVotingRedisConfigured()
         ? await hasRedisIdentityVoted({ identityHash: phoneHash })
         : await hasPhoneVoted(phoneE164);
@@ -176,6 +178,7 @@ exports.handler = async (event) => {
         });
       }
 
+      stage = 'sms-code-validation';
       const verification = await checkVoteVerificationCode(phoneE164, code);
       if (!verification.valid) {
         return jsonResponse(400, {
@@ -184,15 +187,10 @@ exports.handler = async (event) => {
       }
     }
 
-    let cars = isVotingRedisConfigured()
-      ? await getCachedVotingCars()
-      : null;
-    if (!cars) {
-      cars = listFinaleVotingCars();
-      if (isVotingRedisConfigured()) {
-        await cacheVotingCars(cars);
-      }
-    }
+    // The Finale roster is fixed and bundled with the function. A cache must
+    // neither change eligibility nor prevent a valid ballot from being saved.
+    stage = 'ballot-validation';
+    const cars = listFinaleVotingCars();
     const carsById = new Map(cars.map((car) => [car.applicationId, car]));
     const carLabelsById = {};
 
@@ -252,6 +250,7 @@ exports.handler = async (event) => {
       const identityHash = verificationMode === "email"
         ? emailHash
         : hashPhone(phoneE164);
+      stage = 'redis-save';
       const redisResult = await recordRedisBallot({
         ballotId,
         identityHash,
@@ -290,6 +289,7 @@ exports.handler = async (event) => {
         });
       }
     } else {
+      stage = 'sheets-save';
       await appendBallot(ballotInput);
     }
 
@@ -309,9 +309,17 @@ exports.handler = async (event) => {
     }
 
     console.error("Unable to submit votes", {
+      stage,
       message: error.message,
-      code: error.code,
+      code: error.code || error.cause?.code,
     });
+
+    if (stage === 'redis-duplicate-check' || stage === 'redis-save') {
+      return jsonResponse(503, {
+        error: "Voting storage is unavailable right now. Please wait a moment and submit again.",
+        retryable: true,
+      });
+    }
 
     if (isRetryableSheetsError(error)) {
       return jsonResponse(503, {
