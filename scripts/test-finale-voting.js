@@ -53,7 +53,9 @@ test('fixed roster is sanitized and event-scoped', () => {
   if (legacyOpen === undefined) delete process.env.VOTING_OPEN;
   else process.env.VOTING_OPEN = legacyOpen;
   assert(!fs.existsSync(path.join(root, 'block-party-voting.html')));
-  assert.match(fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8'), /from = "\/block-party-voting\.html"\s+to = "\/finale-voting\.html"/);
+  const netlifyToml = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
+  assert.match(netlifyToml, /from = "\/block-party-voting"\s+to = "\/finale-voting\.html"/);
+  assert.match(netlifyToml, /from = "\/block-party-voting\.html"\s+to = "\/finale-voting\.html"/);
   assert.match(fs.readFileSync(path.join(root, 'finale-event.html'), 'utf8'), /href="finale-voting\.html"/);
 });
 

@@ -148,7 +148,7 @@ Use the webhook signing secret printed by the Stripe CLI as `STRIPE_WEBHOOK_SECR
 
 ## Finale spectator voting
 
-`finale-voting.html` is linked from the Finale event page. The old Block Party voting URL redirects there. The ballot uses the supplied Finale voting CSV as a fixed roster: 60 unique cars for People's Choice and Top Build, including 10 eligible for Top Classic. The committed roster contains only application IDs, vehicle details, photos, Instagram handles, and eligibility. To change entrants, update `netlify/functions/lib/finale-voting-roster.json`, review the public fields, and redeploy.
+`finale-voting.html` is linked from the Finale event page. Printed QR cards use `/block-party-voting`; that path and `/block-party-voting.html` both redirect there. The ballot uses the supplied Finale voting CSV as a fixed roster: 60 unique cars for People's Choice and Top Build, including 10 eligible for Top Classic. The committed roster contains only application IDs, vehicle details, photos, Instagram handles, and eligibility. To change entrants, update `netlify/functions/lib/finale-voting-roster.json`, review the public fields, and redeploy.
 
 Voting is closed unless `FINALE_VOTING_OPEN=true` is set in Netlify and the site is redeployed. The old `VOTING_OPEN` setting does not open this event. Voting uses Twilio Verify SMS and the existing `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID`, `VOTE_PHONE_HASH_SECRET`, and Google Sheets service account settings. Upstash Redis is optional but recommended for the live ballot. Finale ballots and tallies use Finale-specific Redis keys, plus `Finale Votes` and `Finale Results` tabs in `GOOGLE_SHEET_ID`. The older `Votes` and `Results` tabs are not read or modified.
 
