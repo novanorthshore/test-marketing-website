@@ -234,7 +234,7 @@ const buildResultsGrid = () => {
   return grid;
 };
 
-const ensureResultsSheet = async () => {
+const ensureResultsSheet = async ({ force = false } = {}) => {
   await ensureSheetTabExists(getResultsTab());
 
   const sheets = await getSheetsClient();
@@ -247,7 +247,7 @@ const ensureResultsSheet = async () => {
   const resultRow = current.data.values?.[0] || [];
   const title = String(resultRow[0] || "").trim();
   const marker = String(resultRow[25] || "").trim();
-  if (marker === RESULTS_MARKER && title === "NOVA FINALE: 001 — Live Results") {
+  if (!force && marker === RESULTS_MARKER && title === "NOVA FINALE: 001 — Live Results") {
     return;
   }
 
@@ -278,8 +278,8 @@ const ensureResultsSheet = async () => {
   }));
 };
 
-const ensureVoteHeaders = async ({ force = false } = {}) => {
-  if (voteSheetReady && !force) {
+const ensureVoteHeaders = async ({ force = false, forceResults = false } = {}) => {
+  if (voteSheetReady && !force && !forceResults) {
     return;
   }
 
@@ -317,7 +317,7 @@ const ensureVoteHeaders = async ({ force = false } = {}) => {
     }));
   }
 
-  await ensureResultsSheet();
+  await ensureResultsSheet({ force: forceResults });
   voteSheetReady = true;
 };
 
@@ -502,7 +502,7 @@ const mirrorBallotToSheet = async ({
 };
 
 const syncRedisBallotsToSheet = async (ballots) => {
-  await ensureVoteHeaders();
+  await ensureVoteHeaders({ forceResults: true });
 
   const sheets = await getSheetsClient();
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
