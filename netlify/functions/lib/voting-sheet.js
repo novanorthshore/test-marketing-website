@@ -239,13 +239,15 @@ const ensureResultsSheet = async () => {
 
   const sheets = await getSheetsClient();
   const spreadsheetId = requiredEnv("GOOGLE_SHEET_ID");
-  const current = await withSheetsRetry("results marker get", () => sheets.spreadsheets.values.get({
+  const current = await withSheetsRetry("results state get", () => sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: resultsRange("Z1"),
+    range: resultsRange("A1:Z1"),
   }));
 
-  const marker = String(current.data.values?.[0]?.[0] || "").trim();
-  if (marker === RESULTS_MARKER) {
+  const resultRow = current.data.values?.[0] || [];
+  const title = String(resultRow[0] || "").trim();
+  const marker = String(resultRow[25] || "").trim();
+  if (marker === RESULTS_MARKER && title === "NOVA FINALE: 001 — Live Results") {
     return;
   }
 

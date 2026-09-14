@@ -199,6 +199,7 @@ test('vote storage reads dedicated Finale sheet tabs regardless of legacy settin
   process.env.GOOGLE_VOTES_SHEET_TAB = 'Votes';
   process.env.GOOGLE_RESULTS_SHEET_TAB = 'Results';
   const ranges = [];
+  const updates = [];
   const sheets = { spreadsheets: {
     get: async () => ({ data: { sheets: [
       { properties: { sheetId: 1, title: 'Finale Votes' } },
@@ -207,10 +208,11 @@ test('vote storage reads dedicated Finale sheet tabs regardless of legacy settin
     values: {
       get: async ({ range }) => {
         ranges.push(range);
-        if (range.endsWith('Z1')) return { data: { values: [['nova-finale-voting-results-v1']] } };
+        if (range.endsWith('A1:Z1')) return { data: { values: [['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'nova-finale-voting-results-v1']] } };
         return { data: { values: [] } };
       },
-      update: async () => ({}),
+      update: async ({ range }) => { updates.push(range); return {}; },
+      clear: async () => ({}),
     },
   } };
   require.cache[authPath] = { id: authPath, filename: authPath, loaded: true, exports: {
@@ -224,6 +226,7 @@ test('vote storage reads dedicated Finale sheet tabs regardless of legacy settin
     assert(ranges.some((range) => range.startsWith("'Finale Votes'!")));
     assert(ranges.some((range) => range.startsWith("'Finale Results'!")));
     assert(ranges.every((range) => !range.startsWith("'Votes'!") && !range.startsWith("'Results'!")));
+    assert(updates.some((range) => range.startsWith("'Finale Results'!A1:G")));
   } finally {
     if (originalAuth) require.cache[authPath] = originalAuth;
     else delete require.cache[authPath];
